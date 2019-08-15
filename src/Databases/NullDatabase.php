@@ -2,12 +2,12 @@
 /**
  */
 
-namespace Stickee\Instrumentation;
+namespace Stickee\Instrumentation\Databases;
 
 /**
  * The Instrument class records metrics.
  */
-class NullDatabase implements InstrumentationInterface
+class NullDatabase implements DatabaseInterface
 {
 	/**
 	 * Record an event.

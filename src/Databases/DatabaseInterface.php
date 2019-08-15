@@ -1,8 +1,8 @@
 <?php
 
-namespace Stickee\Instrumentation;
+namespace Stickee\Instrumentation\Databases;
 
-interface InstrumentationInterface
+interface DatabaseInterface
 {
 	/**
 	 * Record an event.

@@ -44,34 +44,35 @@
 
 namespace Stickee\Instrumentation;
 
+use Stickee\Instrumentation\Databases\DatabaseInterface;
 use InvalidArgumentException;
 
 /**
  * The Instrument class records metrics.
  */
-class Instrument
+class Instrument implements DatabaseInterface, InstrumentInterface
 {
 	/** @var string DEFAULT_DATABASE The default database name */
 	public const DEFAULT_DATABASE = 'default';
 
 	/** @var array $databases Instrumentation databases that can be written to. */
-	private static $databases = [];
+	private $databases = [];
 
 	/**
 	 * Add a database to which metrics can be written.
 	 *
-	 * @param InstrumentationInterface $database The database to add.
+	 * @param DatabaseInterface $database The database to add.
 	 * @param string $name The name of the database, for use with `get()` or null to use the default.
 	 *
 	 * @throws InvalidArgumentException Throws if `$name` has already been added.
 	 */
-	public static function add(InstrumentationInterface $database, string $name = self::DEFAULT_DATABASE): void
+	public function add(DatabaseInterface $database, string $name = Instrument::DEFAULT_DATABASE): void
 	{
-		if (isset(static::$databases[$name])) {
+		if (isset($this->databases[$name])) {
 			throw new InvalidArgumentException('The database name "' . $name . '" has already been added.');
 		}
 
-		static::$databases[$name] = $database;
+		$this->databases[$name] = $database;
 	}
 
 	/**
@@ -79,13 +80,13 @@ class Instrument
 	 *
 	 * @param string $name The name of the database to get.  Empty string for default.
 	 */
-	public static function get(string $name = self::DEFAULT_DATABASE)
+	public function get(string $name = Instrument::DEFAULT_DATABASE): DatabaseInterface
 	{
-		if (empty(static::$databases[$name])) {
+		if (empty($this->databases[$name])) {
 			throw new InvalidArgumentException('Unknown database name "' . $name . '"');
 		}
 
-		return static::$databases[$name];
+		return $this->databases[$name];
 	}
 
 	/**
@@ -95,9 +96,9 @@ class Instrument
 	 * @param string $event The class of event, e.g. "page_load".
 	 * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200].
 	 */
-	public static function event(string $event, array $tags = []): void
+	public function event(string $event, array $tags = []): void
 	{
-		static::get()->event($event, $tags);
+		$this->get()->event($event, $tags);
 	}
 
 	/**
@@ -108,9 +109,9 @@ class Instrument
 	 * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200].
 	 * @param float $increase The amount by which to increase the counter.
 	 */
-	public static function count(string $event, array $tags = [], float $increase = 1): void
+	public function count(string $event, array $tags = [], float $increase = 1): void
 	{
-		static::get()->count($event, $tags, $increase);
+		$this->get()->count($event, $tags, $increase);
 	}
 
 	/**
@@ -121,8 +122,8 @@ class Instrument
 	 * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"].
 	 * @param float $value The value of the gauge.
 	 */
-	public static function gauge(string $event, array $tags, float $value): void
+	public function gauge(string $event, array $tags, float $value): void
 	{
-		static::get()->gauge($event, $tags, $value);
+		$this->get()->gauge($event, $tags, $value);
 	}
 }

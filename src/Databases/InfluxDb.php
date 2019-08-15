@@ -5,7 +5,7 @@
  * This is used to gather metrics and send them to a metrics server.
  */
 
-namespace Stickee\Instrumentation;
+namespace Stickee\Instrumentation\Databases;
 
 use InfluxDB\Database;
 use InfluxDB\Client;
@@ -15,7 +15,7 @@ use InfluxDB\Database\RetentionPolicy;
 /**
  * This class records metrics to InfluxDB.
  */
-class InfluxDb implements InstrumentationInterface
+class InfluxDb implements DatabaseInterface
 {
 	/** @var array $events Events generated and waiting to be recorded. */
 	private $events = [];
