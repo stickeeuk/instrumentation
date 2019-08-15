@@ -1,0 +1,19 @@
+{
+    "name": "stickee/instrumentation",
+    "description": "Stickee instrumentation module - monitor application performance and statistics",
+    "version": "dev-master",
+    "keywords": [
+        "monitoring"
+    ],
+    "homepage": "https://www.stickee.co.uk",
+    "readme": "README.md",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Stickee\\Instrumentation\\": "src/"
+        }
+    },
+    "require": {
+        "influxdb/influxdb-php": "^1.15"
+    }
+}
