@@ -13,12 +13,41 @@ This a composer module for recording metrics
 To use the basic features, you must create an instrumentation database and record events to it.
 
 ```
-//$database = new InfluxDb('https+influxdb://username:password@example.com:8086/database_name');
-$database = new InfluxDb('https+influxdb://admin:BiP9GYS9j2@influxdb.stickeedev.com:443/test');
-$instrument = new \Stickee\Instrumentation\Instrument();
-$instrument->add($database);
+// Create the database
+$database = new InfluxDb('https+influxdb://username:password@example.com:8086/database_name');
 
-Instrument::setInstrument($instrument);
+// Log an event
+$database->event('some_event');
+```
 
-Instrument::event('test');
-Instrument::event('test2');
+### Static Accessor
+
+You can access your database statically by assigning it to the `Instrument` class.
+
+```
+use Stickee\Instrumentation\Instrument;
+
+// Create the database
+$database = new InfluxDb('https+influxdb://username:password@example.com:8086/database_name');
+
+// Assign to the Instrument class
+Instrument::setDatabase($database);
+
+// Log an event
+Instrument::event('some_event')
+
+```
+
+### Event Types
+
+There are 3 event type methods defined in the `DatabaseInterface` interface.
+
+| Event | Arguments | Description |
+| ----- | --------- | ----------- |
+| `$database->event(string $name, array $tags = [])` | `$name` The event name<br>`$tags` An array of tags | Record a single event |
+| `$database->count(string $event, array $tags = [], float $increase = 1)` | `$name` The counter name<br>`$tags`  An array of tags | Record an increase in a counter |
+| `$database->count(string $event, array $tags = [], float $value)` | `$name` The gague name<br>`$tags` An array of tags | Record the current value of a gauge |
+
+Tags should be an associative array of `tag_name` => `tag_value`, e.g.
+
+`$tags = ['datacentre' => 'uk']`
