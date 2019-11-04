@@ -5,59 +5,68 @@ namespace Stickee\Instrumentation;
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 
 /**
- * The Instrument class records metrics.
+ * The Instrument class records metrics
+ * Use statically, e.g. Instrument::event(...)
  */
 class Instrument implements DatabaseInterface
 {
-	/**
-	 * The database
-	 *
-	 * @var \Stickee\Instrumentation\Databases\DatabaseInterface $database
-	 */
-	private static $database;
+    /**
+     * Constructor
+     */
+    private function __construct()
+    {
+        // Private to disallow object construction
+    }
 
-	/**
-	 * Assign a database to the class
-	 *
-	 * @param \Stickee\Instrumentation\Databases\DatabaseInterface $database The database
-	 */
-	public static function setInstrument(DatabaseInterface $database)
-	{
-		self::$database = $database;
-	}
+    /**
+     * The database
+     *
+     * @var \Stickee\Instrumentation\Databases\DatabaseInterface $database
+     */
+    private static $database;
 
-	/**
-	 * Record an event.
-	 *
-	 * @param string $event The class of event, e.g. "page_load".
-	 * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200].
-	 */
-	public function event(string $event, array $tags = []): void
-	{
-		self::$database->event($event, $tags);
-	}
+    /**
+     * Assign a database to the class
+     *
+     * @param \Stickee\Instrumentation\Databases\DatabaseInterface $database The database
+     */
+    public static function setDatabase(DatabaseInterface $database)
+    {
+        self::$database = $database;
+    }
 
-	/**
-	 * Record an increase in a counter.
-	 *
-	 * @param string $event The class of event, e.g. "page_load".
-	 * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200].
-	 * @param float $increase The amount by which to increase the counter.
-	 */
-	public function count(string $event, array $tags = [], float $increase = 1): void
-	{
-		self::$database->count($event, $tags, $increase);
-	}
+    /**
+     * Record an event
+     *
+     * @param string $event The class of event, e.g. "page_load"
+     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     */
+    public function event(string $event, array $tags = []): void
+    {
+        self::$database->event($event, $tags);
+    }
 
-	/**
-	 * Record the current value of a gauge.
-	 *
-	 * @param string $event The name of the gauge, e.g. "queue_length".
-	 * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"].
-	 * @param float $value The value of the gauge.
-	 */
-	public function gauge(string $event, array $tags, float $value): void
-	{
-		self::$database->gauge($event, $tags, $value);
-	}
+    /**
+     * Record an increase in a counter
+     *
+     * @param string $event The class of event, e.g. "page_load"
+     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param float $increase The amount by which to increase the counter
+     */
+    public function count(string $event, array $tags = [], float $increase = 1): void
+    {
+        self::$database->count($event, $tags, $increase);
+    }
+
+    /**
+     * Record the current value of a gauge
+     *
+     * @param string $event The name of the gauge, e.g. "queue_length"
+     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param float $value The value of the gauge
+     */
+    public function gauge(string $event, array $tags, float $value): void
+    {
+        self::$database->gauge($event, $tags, $value);
+    }
 }
