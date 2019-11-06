@@ -1,4 +1,4 @@
-# Stickee Instrumentation
+# Instrumentation BY ZEBRA NORTH
 
 This a composer module for recording metrics.
 
