@@ -1,7 +1,7 @@
 {
     "name": "stickee/instrumentation",
     "description": "Stickee instrumentation module - monitor application performance and statistics",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "keywords": [
         "monitoring"
     ],
@@ -15,5 +15,15 @@
     },
     "require": {
         "influxdb/influxdb-php": "^1.15"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Stickee\\Instrumentation\\Laravel\\ServiceProvider"
+            ],
+            "aliases": {
+                "Instrument": "Stickee\\Instrumentation\\Laravel\\Facade"
+            }
+        }
     }
 }
