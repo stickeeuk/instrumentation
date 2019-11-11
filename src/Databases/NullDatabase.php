@@ -1,5 +1,6 @@
 <?php
 /**
+ * The null database
  */
 
 namespace Stickee\Instrumentation\Databases;
@@ -9,6 +10,16 @@ namespace Stickee\Instrumentation\Databases;
  */
 class NullDatabase implements DatabaseInterface
 {
+    /**
+     * Set the error handler
+     *
+     * @param mixed $errorHandler An error handler function that takes an Exception as an argument - must be callable with `call_user_func()`
+     */
+    public function setErrorHandler($errorHandler): void
+    {
+        // Do nothing
+    }
+
     /**
      * Record an event
      *

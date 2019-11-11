@@ -2,9 +2,17 @@
 
 namespace Stickee\Instrumentation\Laravel;
 
+use Exception;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Stickee\Instrumentation\Instrument;
+use Log;
+use Stickee\Instrumentation\Databases\DatabaseInterface;
+use Stickee\Instrumentation\Databases\InfluxDb;
+use Stickee\Instrumentation\Databases\Log as LogDatabase;
 
+/**
+ * Instrumentation service provider
+ */
 class ServiceProvider extends BaseServiceProvider
 {
     /**
@@ -16,13 +24,52 @@ class ServiceProvider extends BaseServiceProvider
             __DIR__ . '/../../config/instrumentation.php', 'instrumentation'
         );
 
-        if (config('instrumentation.dsn')) {
-            $this->app->singleton('instrument', function() {
-                $class = config('instrumentation.database');
+        $this->app->when(InfluxDb::class)
+            ->needs('$dsn')
+            ->give(function () {
+                $value = config('instrumentation.dsn');
 
-                return new $class(config('instrumentation.dsn'));
+                if (empty($value)) {
+                    throw new Exception('Config variable `instrumentation.dsn` not set');
+                }
+
+                return $value;
             });
-        }
+
+        $this->app->when(LogDatabase::class)
+            ->needs('$filename')
+            ->give(function() {
+                $value = config('instrumentation.filename');
+
+                if (empty($value)) {
+                    throw new Exception('Config variable `instrumentation.filename` not set');
+                }
+
+                return $value;
+            });
+
+        $this->app->singleton('instrument', function(Application $app) {
+            $class = config('instrumentation.database');
+
+            if (empty($class)) {
+                throw new Exception('Config variable `instrumentation.database` not set');
+            }
+
+            if (!class_exists($class, true)) {
+                throw new Exception('Config variable `instrumentation.database` class not found: ' . $class);
+            }
+
+            if (!is_a($class, DatabaseInterface::class, true)) {
+                throw new Exception('Config variable `instrumentation.database` does not implement \Stickee\Instrumentation\Databases\DatabaseInterface: ' . $class);
+            }
+
+            $database = $app->make($class);
+            $database->setErrorHandler(function (Exception $e) {
+                Log::error($e->getMessage());
+            });
+
+            return $database;
+        });
     }
 
     /**

@@ -12,13 +12,15 @@ use InfluxDB\Client;
 use InfluxDB\Database;
 use InfluxDB\Database\RetentionPolicy;
 use InfluxDB\Point;
-use Stickee\Instrumentation\Exceptions\DatabaseWriteException;
+use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
 
 /**
  * This class records metrics to InfluxDB
  */
 class InfluxDb implements DatabaseInterface
 {
+    use HandlesErrors;
+
     /**
      * Events generated and waiting to be recorded
      *
@@ -31,22 +33,14 @@ class InfluxDb implements DatabaseInterface
      *
      * @var string $database
      */
-    private $database = null;
+    private $database;
 
     /**
      * The connection string, e.g. https+influxdb://username:password@localhost:8086/databasename
      *
      * @var string $dsn
      */
-    private $dsn = '';
-
-    /**
-     * An error handler function that takes an Exception as an argument
-     * Must be callable with `call_user_func()`
-     *
-     * @var mixed $errorHandler
-     */
-    private $errorHandler;
+    private $dsn;
 
     /**
      * Create a connection to InfluxDB
@@ -56,27 +50,6 @@ class InfluxDb implements DatabaseInterface
     public function __construct(string $dsn)
     {
         $this->dsn = $dsn;
-        $this->errorHandler = [$this, 'throwException'];
-    }
-
-    /**
-     * Set the error handler
-     *
-     * @param mixed $errorHandler An error handler function that takes an Exception as an argument - must be callable with `call_user_func()`
-     */
-    public function setErrorHandler($errorHandler)
-    {
-        $this->errorHandler = $errorHandler;
-    }
-
-    /**
-     * Default error handler - throw an exception
-     *
-     * @throws \Stickee\Instrumentation\Exceptions\DatabaseWriteException
-     */
-    private function throwException(Exception $e)
-    {
-        throw new DatabaseWriteException($e->getMessage(), $e->getCode(), $e);
     }
 
     /**
@@ -94,7 +67,7 @@ class InfluxDb implements DatabaseInterface
             // Write the events to the database
             $database->writePoints($this->events, Database::PRECISION_MICROSECONDS);
         } catch (Exception $e) {
-            call_user_func($this->errorHandler, $e);
+            $this->handleError($e);
         }
     }
 

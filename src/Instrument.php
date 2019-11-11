@@ -36,6 +36,16 @@ class Instrument implements DatabaseInterface
     }
 
     /**
+     * Set the error handler
+     *
+     * @param mixed $errorHandler An error handler function that takes an Exception as an argument - must be callable with `call_user_func()`
+     */
+    public function setErrorHandler($errorHandler): void
+    {
+        self::$database->setErrorHandler($errorHandler);
+    }
+
+    /**
      * Record an event
      *
      * @param string $event The class of event, e.g. "page_load"
