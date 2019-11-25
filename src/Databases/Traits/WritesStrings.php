@@ -87,4 +87,12 @@ trait WritesStrings
 
         $this->write($message);
     }
+
+    /**
+     * Flush any queued writes
+     */
+    public function flush(): void
+    {
+        // Do nothing - writes are not queued
+    }
 }
