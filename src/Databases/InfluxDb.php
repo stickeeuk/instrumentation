@@ -57,18 +57,7 @@ class InfluxDb implements DatabaseInterface
      */
     public function __destruct()
     {
-        if (!$this->events) {
-            return;
-        }
-
-        try {
-            $database = $this->getDatabase();
-
-            // Write the events to the database
-            $database->writePoints($this->events, Database::PRECISION_MICROSECONDS);
-        } catch (Exception $e) {
-            $this->handleError($e);
-        }
+        $this->flush();
     }
 
     /**
@@ -125,5 +114,26 @@ class InfluxDb implements DatabaseInterface
     public function gauge(string $event, array $tags, float $value): void
     {
         $this->events[] = new Point($event, $value, $tags, [], (int)(microtime(true) * 1000000));
+    }
+
+    /**
+     * Flush any queued writes
+     */
+    public function flush(): void
+    {
+        if (!$this->events) {
+            return;
+        }
+
+        try {
+            $database = $this->getDatabase();
+
+            // Write the events to the database
+            $database->writePoints($this->events, Database::PRECISION_MICROSECONDS);
+
+            $this->events = [];
+        } catch (Exception $e) {
+            $this->handleError($e);
+        }
     }
 }

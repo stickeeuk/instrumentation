@@ -2,10 +2,12 @@
 
 namespace Stickee\Instrumentation\Laravel;
 
+use Event;
 use Exception;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Log;
+use Queue;
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 use Stickee\Instrumentation\Databases\InfluxDb;
 use Stickee\Instrumentation\Databases\Log as LogDatabase;
@@ -80,5 +82,20 @@ class ServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__ . '/../../config/instrumentation.php' => config_path('instrumentation.php'),
         ]);
+
+        // Flush events when a command finishes
+        Event::listen('Illuminate\Console\Events\CommandFinished', function () {
+            app('instrument')->flush();
+        });
+
+        // Flush events when a queue job completes
+        Queue::after(function () {
+            app('instrument')->flush();
+        });
+
+        // Flush events when a queue job fails
+        Queue::failing(function () {
+            app('instrument')->flush();
+        });
     }
 }

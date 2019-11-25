@@ -54,4 +54,12 @@ class NullDatabase implements DatabaseInterface
     {
         // Do nothing
     }
+
+    /**
+     * Flush any queued writes
+     */
+    public function flush(): void
+    {
+        // Do nothing
+    }
 }

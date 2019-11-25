@@ -39,4 +39,9 @@ interface DatabaseInterface
      * @param float $value The value of the gauge
      */
     public function gauge(string $name, array $tags, float $value): void;
+
+    /**
+     * Flush any queued writes
+     */
+    public function flush(): void;
 }
