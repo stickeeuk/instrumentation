@@ -3,6 +3,7 @@
 namespace Stickee\Instrumentation\Databases\Traits;
 
 use Exception;
+use Stickee\Instrumentation\Exceptions\DatabaseWriteException;
 
 /**
  * Handles errors with a callback

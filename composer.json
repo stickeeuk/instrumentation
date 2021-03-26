@@ -1,7 +1,6 @@
 {
     "name": "stickee/instrumentation",
     "description": "Stickee instrumentation module - monitor application performance and statistics",
-    "version": "1.2.1",
     "keywords": [
         "monitoring"
     ],

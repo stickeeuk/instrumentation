@@ -38,6 +38,12 @@ class ServiceProvider extends BaseServiceProvider
                 return $value;
             });
 
+        $this->app->when(InfluxDb::class)
+            ->needs('$verifySsl')
+            ->give(function () {
+                return config('instrumentation.verifySsl', true);
+            });
+
         $this->app->when(LogDatabase::class)
             ->needs('$filename')
             ->give(function() {
