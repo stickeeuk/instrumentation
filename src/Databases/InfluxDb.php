@@ -43,13 +43,22 @@ class InfluxDb implements DatabaseInterface
     private $dsn;
 
     /**
+     * Verify the database SSL certificate
+     *
+     * @var bool $verifySsl
+     */
+    private $verifySsl;
+
+    /**
      * Create a connection to InfluxDB
      *
      * @param string $dsn The connection string
+     * @param bool $verifySsl Verify the database SSL certificate
      */
-    public function __construct(string $dsn)
+    public function __construct(string $dsn, bool $verifySsl = true)
     {
         $this->dsn = $dsn;
+        $this->verifySsl = $verifySsl;
     }
 
     /**
@@ -74,7 +83,7 @@ class InfluxDb implements DatabaseInterface
         }
 
         // Connect to InfluxDB
-        $this->database = Client::fromDSN($this->dsn, 2, true, 2);
+        $this->database = Client::fromDSN($this->dsn, 2, $this->verifySsl, 2);
 
         return $this->database;
     }

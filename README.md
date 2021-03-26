@@ -129,7 +129,7 @@ in your `.env` and add any other required variables.
 
 | Class | `INSTRUMENTATION_DATABASE` Value | Other Values |
 | ----- | -------------------------------- | ------------ |
-| InfluxDb | `"Stickee\\Instrumentation\\Databases\\InfluxDb"` | `INSTRUMENTATION_DSN="https+influxdb://username:password@example.com:8086/database_name"` - The database DSN (required) |
+| InfluxDb | `"Stickee\\Instrumentation\\Databases\\InfluxDb"` | `INSTRUMENTATION_DSN="https+influxdb://username:password@example.com:8086/database_name"` - The database DSN (required)<br>`INSTRUMENTATION_VERIFY_SSL=true` - Verify the database SSL certificate |
 | LaravelDump | `"Stickee\\Instrumentation\\Databases\\LaravelDump"` | None |
 | LaravelLog | `"Stickee\\Instrumentation\\Databases\\LaravelLog"` | None |
 | Log | `"Stickee\\Instrumentation\\Databases\\Log"` | `INSTRUMENTATION_FILENAME="/path/to/file.log"` - The log file (required) |
