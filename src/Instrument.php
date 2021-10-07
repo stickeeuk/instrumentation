@@ -79,4 +79,14 @@ class Instrument implements DatabaseInterface
     {
         self::$database->gauge($event, $tags, $value);
     }
+
+    /**
+     * Flush any queued writes
+     *
+     * @return void
+     */
+    public function flush(): void
+    {
+        self::$database->flush();
+    }
 }
