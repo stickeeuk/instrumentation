@@ -1,19 +1,29 @@
 {
     "name": "stickee/instrumentation",
-    "description": "Stickee instrumentation module - monitor application performance and statistics",
+    "description": "Stickee instrumentation module - monitor application performance and statistics.",
     "keywords": [
-        "monitoring"
+        "monitoring",
+        "instrumentation"
     ],
-    "homepage": "https://www.stickee.co.uk",
+    "homepage": "https://www.github.com/stickeeuk/instrumentation",
     "readme": "README.md",
-    "license": "proprietary",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Stickee\\Instrumentation\\": "src/"
+            "Stickee\\Instrumentation\\": "src/",
+            "Stickee\\Instrumentation\\Tests\\": "tests/"
         }
     },
     "require": {
+        "php": "^7.3 || ^8.0",
+        "illuminate/config": "^6.0 || ^7.0 || ^8.0 || ^9.0",
+        "illuminate/support": "^6.0 || ^7.0 || ^8.0 || ^9.0",
         "influxdb/influxdb-php": "^1.15"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^4.0 || ^5.0 || ^6.0 || ^7.0",
+        "pestphp/pest": "^1.00",
+        "pestphp/pest-plugin-laravel": "^1.3"
     },
     "extra": {
         "laravel": {
@@ -23,6 +33,14 @@
             "aliases": {
                 "Instrument": "Stickee\\Instrumentation\\Laravel\\Facade"
             }
+        }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }
