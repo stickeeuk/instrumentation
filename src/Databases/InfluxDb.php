@@ -145,4 +145,14 @@ class InfluxDb implements DatabaseInterface
             $this->handleError($e);
         }
     }
+
+    /**
+     * Return the internal array of events.
+     *
+     * @return array<int, \InfluxDB\Point>
+     */
+    public function getEvents(): array
+    {
+        return $this->events;
+    }
 }
