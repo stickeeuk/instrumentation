@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Config;
 use InfluxDB\Database;
 use Stickee\Instrumentation\Databases\InfluxDb;
 
+const INFLUX_EVENT = 'Event';
+const INFLUX_TAGS = [];
+const INFLUX_AMOUNT = 1.0;
+
 beforeEach(function (): void {
     Config::set('instrumentation.dsn', $this::EXAMPLE_DSN);
 
@@ -13,19 +17,19 @@ beforeEach(function (): void {
 });
 
 it('can record an event', function (): void {
-    $this->database->event('Event', [], 1.0);
+    $this->database->event(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
 
     expect($this->database->getEvents())->toHaveCount(1);
 });
 
 it('can record an increase in a counter', function (): void {
-    $this->database->count('Event', [], 1.0);
+    $this->database->count(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
 
     expect($this->database->getEvents())->toHaveCount(1);
 });
 
 it('can record the current value of a gauge', function (): void {
-    $this->database->gauge('Event', [], 1.0);
+    $this->database->gauge(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
 
     expect($this->database->getEvents())->toHaveCount(1);
 });
@@ -74,6 +78,26 @@ it('will call flush on deconstruction', function (): void {
     unset($this->database);
 });
 
+it('will return an existing database if it already has one', function (): void {
+    $mockDatabase = mock(Database::class)
+        ->expects('writePoints')
+        ->withAnyArgs()
+        ->atLeast()->once()
+        ->andReturnNull()
+        ->getMock();
+
+    mock('overload:\InfluxDB\Client')
+        ->expects('fromDSN')
+        ->withAnyArgs()
+        ->once() // This is important, as otherwise it would be called *twice*.
+        ->andReturn($mockDatabase)
+        ->getMock();
+
+    $this->database->event(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
+    $this->database->flush();
+});
+
+
 it('can get the underlying array of events', function (): void {
-    expect(app(InfluxDb::class)->getEvents())->toBeArray();
+    expect($this->database->getEvents())->toBeArray();
 });
