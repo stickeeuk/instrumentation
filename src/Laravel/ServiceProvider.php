@@ -2,12 +2,12 @@
 
 namespace Stickee\Instrumentation\Laravel;
 
-use Event;
 use Exception;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Log;
-use Queue;
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 use Stickee\Instrumentation\Databases\InfluxDb;
 use Stickee\Instrumentation\Databases\Log as LogDatabase;
