@@ -47,8 +47,7 @@ it('can flush any queued writes and persist to database', function (): void {
         ->expects('fromDSN')
         ->withAnyArgs()
         ->once()
-        ->andReturn($mockDatabase)
-        ->getMock();
+        ->andReturn($mockDatabase);
 
     // Add a value to the events array to prevent early returning:
     $this->database->gauge('Event', [], 1.0);
@@ -56,6 +55,33 @@ it('can flush any queued writes and persist to database', function (): void {
 
     // Now the events array is empty, calling flush again will not call the above mocked methods:
     $this->database->flush();
+});
+
+it('will call handle error if an exception is encountered whilst flushing', function (): void {
+    $mockInflux = mock(InfluxDb::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->expects('handleError')
+        ->once()
+        ->withAnyArgs()
+        ->andReturnNull()
+        ->getMock();
+
+    $mockDatabase = mock(Database::class)
+        ->expects('writePoints')
+        ->withAnyArgs()
+        ->atLeast()->once()
+        ->andThrow(Exception::class)
+        ->getMock();
+
+    mock('overload:\InfluxDB\Client')
+        ->expects('fromDSN')
+        ->withAnyArgs()
+        ->once()
+        ->andReturn($mockDatabase);
+
+    $mockInflux->gauge('Event', [], 1.0);
+    $mockInflux->flush();
 });
 
 it('will call flush on deconstruction', function (): void {
@@ -70,8 +96,7 @@ it('will call flush on deconstruction', function (): void {
         ->expects('fromDSN')
         ->withAnyArgs()
         ->once()
-        ->andReturn($mockDatabase)
-        ->getMock();
+        ->andReturn($mockDatabase);
 
     $this->database->gauge('Event', [], 1.0);
 
@@ -90,8 +115,7 @@ it('will return an existing database if it already has one', function (): void {
         ->expects('fromDSN')
         ->withAnyArgs()
         ->once() // This is important, as otherwise it would be called *twice*.
-        ->andReturn($mockDatabase)
-        ->getMock();
+        ->andReturn($mockDatabase);
 
     $this->database->event(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
     $this->database->flush();
