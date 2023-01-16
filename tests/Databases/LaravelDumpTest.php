@@ -18,8 +18,6 @@ beforeEach(function (): void {
         ->willReturn(null);
 });
 
-it('will write to the symfony dump method on an event', function (): void {
-    $sentence = fake()->sentence();
-
-    $this->database->event($sentence);
-});
+it('will write to the symfony dump method on an event', function (array $tags): void {
+    $this->database->event($this->message, $tags);
+})->with('writable values');
