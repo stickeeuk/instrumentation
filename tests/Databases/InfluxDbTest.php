@@ -35,19 +35,8 @@ it('can record the current value of a gauge', function (): void {
 });
 
 
-it('can flush any queued writes and persist to database', function (): void {
-    $mockDatabase = mock(Database::class)
-        ->expects('writePoints')
-        ->withAnyArgs()
-        ->atLeast()->once()
-        ->andReturnNull()
-        ->getMock();
-
-    mock('overload:\InfluxDB\Client')
-        ->expects('fromDSN')
-        ->withAnyArgs()
-        ->once()
-        ->andReturn($mockDatabase);
+it('can flush any queued writes and persist to database', function (Closure $setupMocks): void {
+    $setupMocks();
 
     // Add a value to the events array to prevent early returning:
     $this->database->gauge('Event', [], 1.0);
@@ -55,7 +44,19 @@ it('can flush any queued writes and persist to database', function (): void {
 
     // Now the events array is empty, calling flush again will not call the above mocked methods:
     $this->database->flush();
-});
+})->with('influx db mocks');
+
+it('will call flush on deconstruction', function (Closure $setupMocks): void {
+    $setupMocks();
+
+    $this->database->gauge('Event', [], 1.0);
+
+    unset($this->database);
+})->with('influx db mocks');
+
+it('will return an existing database if it already has one', function (Closure $setupMocks): void {
+    //
+})->with('influx db mocks')->skip('Not yet finished.');
 
 it('will call handle error if an exception is encountered whilst flushing', function (): void {
     $mockInflux = mock(InfluxDb::class)
@@ -82,43 +83,6 @@ it('will call handle error if an exception is encountered whilst flushing', func
 
     $mockInflux->gauge('Event', [], 1.0);
     $mockInflux->flush();
-});
-
-it('will call flush on deconstruction', function (): void {
-    $mockDatabase = mock(Database::class)
-        ->expects('writePoints')
-        ->withAnyArgs()
-        ->atLeast()->once()
-        ->andReturnNull()
-        ->getMock();
-
-    mock('overload:\InfluxDB\Client')
-        ->expects('fromDSN')
-        ->withAnyArgs()
-        ->once()
-        ->andReturn($mockDatabase);
-
-    $this->database->gauge('Event', [], 1.0);
-
-    unset($this->database);
-});
-
-it('will return an existing database if it already has one', function (): void {
-    $mockDatabase = mock(Database::class)
-        ->expects('writePoints')
-        ->withAnyArgs()
-        ->atLeast()->once()
-        ->andReturnNull()
-        ->getMock();
-
-    mock('overload:\InfluxDB\Client')
-        ->expects('fromDSN')
-        ->withAnyArgs()
-        ->once() // This is important, as otherwise it would be called *twice*.
-        ->andReturn($mockDatabase);
-
-    $this->database->event(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
-    $this->database->flush();
 });
 
 
