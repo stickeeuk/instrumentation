@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 dataset('valid rfc 5424 events', [
     '0 - Emergency' => ['emergency'],
     '1 - Alert' => ['alert'],
