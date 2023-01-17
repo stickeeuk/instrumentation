@@ -24,18 +24,11 @@ beforeEach(function () {
     };
 });
 
-it('can set an error handler', function (): void {
+it('can set an error handler and view its contents', function (): void {
     $method = 'var_dump';
     $this->database->setErrorHandler($method);
 
-    $bypass = function (): ?string {
-        return $this->errorHandler; // Ignore any IDE/Canary errors - this is fine! (But naughty magic)
-    };
-
-    $bypass = $bypass->bindTo($this->database, $this->database);
-    $handler = $bypass();
-
-    expect($handler)->toEqual($method);
+    expect($this->database->getErrorHandler())->toEqual($method);
 });
 
 it('can call a custom error handler', function (): void {

@@ -29,6 +29,16 @@ trait HandlesErrors
     }
 
     /**
+     * View the current error handler.
+     *
+     * @return mixed
+     */
+    public function getErrorHandler()
+    {
+        return $this->errorHandler;
+    }
+
+    /**
      * Handle an exception
      *
      * @param \Exception $e The exception to handle
