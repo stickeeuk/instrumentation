@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 use Stickee\Instrumentation\Databases\Log;
 use Stickee\Instrumentation\Instrument;
