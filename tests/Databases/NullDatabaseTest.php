@@ -25,6 +25,15 @@ it('does nothing when an error handler is set', function (): void {
     }
 });
 
+it('receives null when an error handler is set', function (): void {
+    expect($this->database->getErrorHandler())->toBeNull();
+
+    // It will still do this even after it's "set":
+    $this->database->setErrorHandler('test');
+
+    expect($this->database->getErrorHandler())->toBeNull();
+});
+
 it('does nothing when receiving an event', function (): void {
     try {
         $this->database->event(

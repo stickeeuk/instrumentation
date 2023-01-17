@@ -21,6 +21,16 @@ class NullDatabase implements DatabaseInterface
     }
 
     /**
+     * Returns the error handler.
+     *
+     * @return mixed
+     */
+    public function getErrorHandler()
+    {
+        return null;
+    }
+
+    /**
      * Record an event
      *
      * @param string $event The class of event, e.g. "page_load"

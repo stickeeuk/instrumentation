@@ -15,6 +15,13 @@ interface DatabaseInterface
     public function setErrorHandler($errorHandler): void;
 
     /**
+     * Returns the error handler.
+     *
+     * @return mixed
+     */
+    public function getErrorHandler();
+
+    /**
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load"
