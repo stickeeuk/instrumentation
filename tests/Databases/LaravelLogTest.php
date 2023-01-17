@@ -11,3 +11,10 @@ it('can write to the laravel log', function (string $event): void {
     $log = new LaravelLog($event);
     $log->event($event);
 })->with('valid rfc 5424 events');
+
+it('will crash if given an invalid event', function (): void {
+    $this->expectException(Throwable::class);
+
+    $log = new LaravelLog('1234');
+    $log->event('Event');
+});
