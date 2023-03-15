@@ -26,8 +26,8 @@ it('will throw an exception if the given database class is not a database interf
 })->throws(Exception::class);
 
 it('will set the default error handler to a laravel log', function (): void {
-    if (version_compare('8.0.0', PHP_VERSION, '>')) {
-        $this::markTestSkipped('Test currently incompatible with PHP 7.x.');
+    if ((int) substr(app()->version(), 0, 1) < 9) {
+        $this::markTestSkipped('Test incompatible with Laravel 8.');
     }
 
     Config::set('instrumentation.database', GoodDatabase::class);
