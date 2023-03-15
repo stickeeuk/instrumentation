@@ -9,7 +9,7 @@ uses(PHPMock::class);
 
 beforeEach(function (): void {
     $this->database = new LaravelDump();
-    $this->message = fake()->sentence();
+    $this->message = $this->faker()->sentence();
 
     $this
         ->getFunctionMock('\\Stickee\\Instrumentation\\Databases\\', 'dump')

@@ -37,7 +37,7 @@ it('receives null when an error handler is set', function (): void {
 it('does nothing when receiving an event', function (): void {
     try {
         $this->database->event(
-            fake()->sentence(),
+            $this->faker()->sentence(),
         );
 
         expect(true)->toBeTrue();
@@ -49,9 +49,9 @@ it('does nothing when receiving an event', function (): void {
 it('does nothing when receiving a count', function (): void {
     try {
         $this->database->count(
-            fake()->sentence(),
+            $this->faker()->sentence(),
             [],
-            fake()->randomFloat(2),
+            $this->faker()->randomFloat(2),
         );
 
         expect(true)->toBeTrue();
@@ -63,9 +63,9 @@ it('does nothing when receiving a count', function (): void {
 it('does nothing when receiving a gauge', function (): void {
     try {
         $this->database->gauge(
-            fake()->sentence(),
+            $this->faker()->sentence(),
             [],
-            fake()->randomFloat(2),
+            $this->faker()->randomFloat(2),
         );
 
         expect(true)->toBeTrue();
