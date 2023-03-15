@@ -59,7 +59,7 @@ it('will return an existing database if it already has one', function (Closure $
 })->with('influx db mocks')->skip('Not yet finished.');
 
 it('will call handle error if an exception is encountered whilst flushing', function (): void {
-    $mockInflux = mock(InfluxDb::class)
+    $mockInflux = Mockery::mock(InfluxDb::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->expects('handleError')
@@ -68,18 +68,20 @@ it('will call handle error if an exception is encountered whilst flushing', func
         ->andReturnNull()
         ->getMock();
 
-    $mockDatabase = mock(Database::class)
+    $mockDatabase = Mockery::mock(Database::class)
         ->expects('writePoints')
         ->withAnyArgs()
         ->atLeast()->once()
         ->andThrow(Exception::class)
         ->getMock();
 
-    mock('overload:\InfluxDB\Client')
+    $this->app->instance(\InfluxDB\Client::class, Mockery::mock('overload:\InfluxDB\Client')
         ->expects('fromDSN')
         ->withAnyArgs()
         ->once()
-        ->andReturn($mockDatabase);
+        ->andReturn($mockDatabase)
+        ->getMock(),
+    );
 
     $mockInflux->gauge('Event', [], 1.0);
     $mockInflux->flush();
