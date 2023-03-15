@@ -6,4 +6,4 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Stickee\Instrumentation\Tests\TestCase;
 
 
-uses(TestCase::class, WithFaker::class)->in(__DIR__);
+uses(TestCase::class)->in(__DIR__);
