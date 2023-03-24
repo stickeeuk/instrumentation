@@ -13,7 +13,6 @@ use Stickee\Instrumentation\Laravel\ServiceProvider;
  * Class TestCase
  */
 abstract class TestCase extends OrchestraTestCase
-
 {
     use WithFaker;
 
