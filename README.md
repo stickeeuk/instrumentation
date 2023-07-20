@@ -149,7 +149,7 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 ### Using Open Telemetry
 
- - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:1.0.0beta-12 open-telemetry/opentelemetry-logger-monolog:^0.0.2`
+ - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:1.0.0beta-12 open-telemetry/opentelemetry-logger-monolog:^0.0.2 google/protobuf`
  - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
  - Set the required .env variables `INSTRUMENTATION_DATABASE` and `INSTRUMENTATION_DSN`
 
