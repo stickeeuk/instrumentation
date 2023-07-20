@@ -45,12 +45,14 @@ trait WritesStrings
     /**
      * Record an event
      *
-     * @param string $event The class of event, e.g. "page_load"
+     * @param string $name The name of the event, e.g. "page_load_time"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param float $value The value of the event, e.g. 12.3
      */
-    public function event(string $event, array $tags = []): void
+    public function event(string $name, array $tags = [], float $value = 1): void
     {
-        $message = date('Y-m-d H:i:s') . ' EVENT: ' . $event
+        $message = date('Y-m-d H:i:s') . ' EVENT: ' . $name
+            . ($value !== null ? ' = ' . $value : '')
             . $this->getTagsString($tags);
 
         $this->write($message);
@@ -59,15 +61,13 @@ trait WritesStrings
     /**
      * Record an increase in a counter
      *
-     * Use the `CUMULATIVE_SUM()` function in the InfluxDB query
-     *
-     * @param string $event The class of event, e.g. "page_load"
+     * @param string $name The counter name, e.g. "page_load"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $event, array $tags = [], float $increase = 1): void
+    public function count(string $name, array $tags = [], float $increase = 1): void
     {
-        $message = date('Y-m-d H:i:s') . ' COUNT: ' . $event . ' += ' . $increase
+        $message = date('Y-m-d H:i:s') . ' COUNT: ' . $name . ' += ' . $increase
             . $this->getTagsString($tags);
 
         $this->write($message);
@@ -76,13 +76,13 @@ trait WritesStrings
     /**
      * Record the current value of a gauge
      *
-     * @param string $event The name of the gauge, e.g. "queue_length"
+     * @param string $name The name of the gauge, e.g. "queue_length"
      * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
-    public function gauge(string $event, array $tags, float $value): void
+    public function gauge(string $name, array $tags, float $value): void
     {
-        $message = date('Y-m-d H:i:s') . ' GAUGE: ' . $event . ' = ' . $value
+        $message = date('Y-m-d H:i:s') . ' GAUGE: ' . $name . ' = ' . $value
             . $this->getTagsString($tags);
 
         $this->write($message);

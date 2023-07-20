@@ -15,16 +15,19 @@
         }
     },
     "require": {
-        "php": "^7.3 || ^8.0",
-        "illuminate/config": "^8.0 || ^9.0 || ^10.0",
-        "illuminate/support": "^8.0 || ^9.0|| ^10.0",
-        "influxdb/influxdb-php": "^1.15"
+        "php": "^8.1",
+        "plunkettscott/laravel-otel": "dev-feature/php-8.1"
     },
     "require-dev": {
         "orchestra/testbench": "^6.0 || ^7.0 || ^8.0",
         "pestphp/pest": "^1.00",
         "pestphp/pest-plugin-laravel": "^1.3 || ^2.0",
         "php-mock/php-mock-phpunit": "^2.6"
+    },
+    "suggest": {
+        "influxdb/influxdb-php": "Send metrics to InfluxDB",
+        "open-telemetry/exporter-otlp:1.0.0beta-12": "Send metrics using OpenTelemetry",
+        "open-telemetry/opentelemetry-logger-monolog:^0.0.2": "Send metrics using OpenTelemetry"
     },
     "extra": {
         "laravel": {
@@ -36,12 +39,20 @@
             }
         }
     },
+    "minimum-stability": "beta",
     "config": {
         "preferred-install": "dist",
         "sort-packages": true,
         "optimize-autoloader": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.stickee.co.uk"
+        }
+    ]
 }

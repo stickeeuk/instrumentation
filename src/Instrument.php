@@ -60,10 +60,11 @@ class Instrument implements DatabaseInterface
      *
      * @param string $event The class of event, e.g. "page_load"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param float $value The value of the event, e.g. 1.0
      */
-    public function event(string $event, array $tags = []): void
+    public function event(string $name, array $tags = [], float $value = 1): void
     {
-        self::$database->event($event, $tags);
+        self::$database->event($event, $tags, $value);
     }
 
     /**
