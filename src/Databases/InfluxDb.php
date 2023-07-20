@@ -50,13 +50,17 @@ class InfluxDb implements DatabaseInterface
     private $verifySsl;
 
     /**
-     * Create a connection to InfluxDB
+     * Constructor
      *
      * @param string $dsn The connection string
      * @param bool $verifySsl Verify the database SSL certificate
      */
     public function __construct(string $dsn, bool $verifySsl = true)
     {
+        if (!class_exists(Client::class)) {
+            throw new Exception('InfluxDB client library not installed, please run: composer require influxdb/influxdb-php');
+        }
+
         $this->dsn = $dsn;
         $this->verifySsl = $verifySsl;
     }
@@ -91,12 +95,13 @@ class InfluxDb implements DatabaseInterface
     /**
      * Record an event
      *
-     * @param string $event The class of event, e.g. "page_load"
+     * @param string $name The name of the event, e.g. "page_load_time"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param float $value The value of the event, e.g. 12.3
      */
-    public function event(string $event, array $tags = []): void
+    public function event(string $name, array $tags = [], float $value = 1): void
     {
-        $this->gauge($event, $tags, 1);
+        $this->gauge($name, $tags, $value);
     }
 
     /**
@@ -104,25 +109,25 @@ class InfluxDb implements DatabaseInterface
      *
      * Use the `CUMULATIVE_SUM()` function in the InfluxDB query
      *
-     * @param string $event The class of event, e.g. "page_load"
+     * @param string $name The counter name, e.g. "page_load"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $event, array $tags = [], float $increase = 1): void
+    public function count(string $name, array $tags = [], float $increase = 1): void
     {
-        $this->gauge($event, $tags, $increase);
+        $this->gauge($name, $tags, $increase);
     }
 
     /**
      * Record the current value of a gauge
      *
-     * @param string $event The name of the gauge, e.g. "queue_length"
+     * @param string $name The name of the gauge, e.g. "queue_length"
      * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
-    public function gauge(string $event, array $tags, float $value): void
+    public function gauge(string $name, array $tags, float $value): void
     {
-        $this->events[] = new Point($event, $value, $tags, [], (int)(microtime(true) * 1000000));
+        $this->events[] = new Point($name, $value, $tags, [], (int)(microtime(true) * 1000000));
     }
 
     /**
