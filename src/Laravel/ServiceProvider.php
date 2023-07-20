@@ -141,7 +141,7 @@ class ServiceProvider extends OtelApplicationServiceProvider
                 throw new Exception('Config variable `instrumentation.dsn` not set');
             }
 
-            $transport = (new StreamTransportFactory())->create('php://stdout', 'application/json');
+            $transport = (new OtlpHttpTransportFactory())->create($endpoint . '/v1/metrics', 'application/json');
             $exporter = new MetricExporter($transport);
 
             $meterProvider = MeterProvider::builder()
