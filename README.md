@@ -48,9 +48,9 @@ There are 3 event type methods defined in the `DatabaseInterface` interface.
 
 | Event                                                                    | Arguments                                                                                                 | Description                         |
 |--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
-| `$database->event(string $name, array $tags = [])`                       | `$name` The event name<br>`$tags` An array of tags                                                        | Record a single event               |
+| `$database->event(string $name, array $tags = [], float value = 1)`      | `$name` The event name<br>`$tags` An array of tags                                                        | Record a single event               |
 | `$database->count(string $event, array $tags = [], float $increase = 1)` | `$name` The counter name<br>`$tags` An array of tags<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
-| `$database->gauge(string $event, array $tags = [], float $value)`        | `$name` The gauge name<br>`$tags` An array of tags<br>`$value` The value to record                        | Record the current value of a gauge |
+| `$database->gauge(string $event, array $tags = [], float $value)         | `$name` The gauge name<br>`$tags` An array of tags<br>`$value` The value to record                        | Record the current value of a gauge |
 
 Tags should be an associative array of `tag_name` => `tag_value`, e.g.
 
@@ -78,15 +78,17 @@ $database->setErrorHandler(function (Exception $e) {
 Databases are classes implementing the `Stickee\Instrumentation\Databases\DatabaseInterface` interface.
 This module ships with the following classes:
 
-| Class        | Description                                                                             |
-|--------------|-----------------------------------------------------------------------------------------|
-| InfluxDb     | Writes to [InfluxDB](https://www.influxdata.com/products/influxdb-overview/)            |
-| LaravelDump  | Uses the [Laravel `dump()`](https://laravel.com/docs/master/helpers#method-dump) helper |
-| LaravelLog   | Writes to the [Laravel `Log`](https://laravel.com/docs/master/logging)                  |
-| Log          | Writes to a log file                                                                    |
-| NullDatabase | Discards all data                                                                       |
+| Class         | Description                                                                             |
+|---------------|-----------------------------------------------------------------------------------------|
+| OpenTelemetry | Writes to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)        |
+| InfluxDb      | Writes to [InfluxDB](https://www.influxdata.com/products/influxdb-overview/)            |
+| LaravelDump   | Uses the [Laravel `dump()`](https://laravel.com/docs/master/helpers#method-dump) helper |
+| LaravelLog    | Writes to the [Laravel `Log`](https://laravel.com/docs/master/logging)                  |
+| Log           | Writes to a log file                                                                    |
+| NullDatabase  | Discards all data                                                                       |
 
-**Note:** Only `InfluxDb` is for production use. The others are for development / debugging.
+**Note:** Only `OpenTelemetry` and `InfluxDb` are recommended for production use.
+The others are for development / debugging.
 
 ## Laravel
 
@@ -129,13 +131,14 @@ If you want to use the `Instrument` facade, add this to the `facades` array in `
 The configuration defaults to the `NullDatabase`. To change this, set `INSTRUMENTATION_DATABASE`
 in your `.env` and add any other required variables.
 
-| Class        | `INSTRUMENTATION_DATABASE` Value                      | Other Values                                                                                                                                                                                       |
-|--------------|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| InfluxDb     | `"Stickee\\Instrumentation\\Databases\\InfluxDb"`     | `INSTRUMENTATION_DSN="https+influxdb://username:password@example.com:8086/database_name"` - The database DSN (required)<br>`INSTRUMENTATION_VERIFY_SSL=true` - Verify the database SSL certificate |
-| LaravelDump  | `"Stickee\\Instrumentation\\Databases\\LaravelDump"`  | None                                                                                                                                                                                               |
-| LaravelLog   | `"Stickee\\Instrumentation\\Databases\\LaravelLog"`   | None                                                                                                                                                                                               |
-| Log          | `"Stickee\\Instrumentation\\Databases\\Log"`          | `INSTRUMENTATION_FILENAME="/path/to/file.log"` - The log file (required)                                                                                                                           |
-| NullDatabase | `"Stickee\\Instrumentation\\Databases\\NullDatabase"` | None                                                                                                                                                                                               |
+| Class         | `INSTRUMENTATION_DATABASE` Value                       | Other Values                                                                                                                                                                                       |
+|---------------|--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| OpenTelemetry | `"Stickee\\Instrumentation\\Databases\\OpenTelemetry"` | `INSTRUMENTATION_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL                                                                                                                  |
+| InfluxDb      | `"Stickee\\Instrumentation\\Databases\\InfluxDb"`      | `INSTRUMENTATION_DSN="https+influxdb://username:password@example.com:8086/database_name"` - The database DSN (required)<br>`INSTRUMENTATION_VERIFY_SSL=true` - Verify the database SSL certificate |
+| LaravelDump   | `"Stickee\\Instrumentation\\Databases\\LaravelDump"`   | None                                                                                                                                                                                               |
+| LaravelLog    | `"Stickee\\Instrumentation\\Databases\\LaravelLog"`    | None                                                                                                                                                                                               |
+| Log           | `"Stickee\\Instrumentation\\Databases\\Log"`           | `INSTRUMENTATION_FILENAME="/path/to/file.log"` - The log file (required)                                                                                                                           |
+| NullDatabase  | `"Stickee\\Instrumentation\\Databases\\NullDatabase"`  | None                                                                                                                                                                                               |
 
 If you wish to, you can copy the package config to your local config with the publish command,
 however this is **unnecessary** in normal usage:
@@ -144,7 +147,18 @@ however this is **unnecessary** in normal usage:
 php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServiceProvider"
 ```
 
-### Custom Database
+### Using Open Telemetry
+
+ - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:1.0.0beta-12 open-telemetry/opentelemetry-logger-monolog:^0.0.2`
+ - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
+ - Set the required .env variables `INSTRUMENTATION_DATABASE` and `INSTRUMENTATION_DSN`
+
+### Using InfluxDb
+
+ - Install the InfluxDB PHP client: `composer require influxdb/influxdb-php`
+ - Set the required .env variables `INSTRUMENTATION_DATABASE` and `INSTRUMENTATION_DSN`
+
+### Using a Custom Database
 
 If you wish to use a custom database class for `INSTRUMENTATION_DATABASE` then you simply need to implement `Stickee\Instrumentation\Databases\DatabaseInterface` and make sure it is constructable by the service container.
 
