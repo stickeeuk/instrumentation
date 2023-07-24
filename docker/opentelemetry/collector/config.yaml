@@ -1,0 +1,107 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+  # prometheus:
+  #   config:
+  #     scrape_configs:
+  #       - job_name: app
+  #         honor_timestamps: true
+  #         scrape_interval: 15s
+  #         scrape_timeout: 10s
+  #         metrics_path: /metrics
+  #         scheme: http
+  #         static_configs:
+  #           - targets:
+  #             - laravel.test:80
+
+exporters:
+  logging:
+    # loglevel: debug
+    verbosity: detailed
+  influxdb:
+    endpoint: http://influxdb:8086
+    org: stickee
+    bucket: test
+    token: my-super-secret-auth-token
+
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+#   prometheus:
+#   endpoint: 'prometheus:9000'
+#   namespace: pet-insurance
+#   const_labels:
+#     label1: value1
+#     "another label": spaced value
+#   send_timestamps: true
+#   metric_expiration: 60m
+#   resource_to_telemetry_conversion:
+#     enabled: true
+
+processors:
+  # TODO make this look for KPIs properly instead of just checking body is a number
+  # Use library name or something?
+  filter/kpis-only:
+    logs:
+      log_record:
+        - 'not IsMatch(body, "^\\d+\\.\\d+$")' # Drop all logs that are not a number
+
+  # TODO make this look for KPIs properly instead of just checking body is a number
+  # Use library name or something?
+  filter/remove-kpis:
+    logs:
+      log_record:
+        - 'IsMatch(body, "^\\d+\\.\\d+$")'
+
+  transform:
+    log_statements:
+      # - context: resource
+      #   statements:
+      #   - keep_keys(attributes, [])
+      # - context: scope
+      #   statements:
+      #   - keep_keys(attributes, ["logs"])
+      - context: log
+        statements:
+        - keep_keys(attributes, ["observed_timestamp", "attributes[\"event.name\"]", "body"])
+
+service:
+  pipelines:
+    logs:
+      receivers:
+        - otlp
+      processors:
+        # May or may not want this
+        - filter/remove-kpis
+      exporters:
+        - logging
+        - loki
+        # - file
+    logs/kpis:
+      receivers:
+        - otlp
+      processors:
+        - filter/kpis-only
+        - transform
+      exporters:
+        - influxdb
+    # metrics:
+    #   receivers:
+    #   - prometheus
+    #   exporters:
+    #   # - prometheus
+    #   - logging
+    traces:
+      receivers:
+        - otlp
+      exporters:
+        - otlp
+        - logging
