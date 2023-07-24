@@ -3,6 +3,7 @@
 namespace Stickee\Instrumentation\Laravel;
 
 use Exception;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +15,6 @@ use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
-use OpenTelemetry\SDK\Common\Export\Stream\StreamTransportFactory;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
 use OpenTelemetry\SDK\Logs\Processor\SimpleLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
@@ -29,6 +29,7 @@ use PlunkettScott\LaravelOpenTelemetry\OtelApplicationServiceProvider;
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 use Stickee\Instrumentation\Databases\InfluxDb;
 use Stickee\Instrumentation\Databases\Log as LogDatabase;
+use Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware;
 use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 
 /**
@@ -134,7 +135,7 @@ class ServiceProvider extends OtelApplicationServiceProvider
             return $database;
         });
 
-        $this->app->bind(OpenTelemetryConfig::class, static function () {
+        $this->app->bindIf(OpenTelemetryConfig::class, static function () {
             $endpoint = config('instrumentation.dsn');
 
             if (empty($endpoint)) {
@@ -166,7 +167,7 @@ class ServiceProvider extends OtelApplicationServiceProvider
             return new OpenTelemetryConfig($meterProvider, $meter, $loggerProvider, $eventLogger);
         });
 
-        $this->app->bind(Handler::class, static function () {
+        $this->app->bindIf(Handler::class, static function () {
             $endpoint = config('instrumentation.dsn');
 
             if (empty($endpoint)) {
@@ -210,6 +211,13 @@ class ServiceProvider extends OtelApplicationServiceProvider
             app('instrument')->flush();
         });
 
+        if ($this->app->runningUnitTests()) {
+            return;
+        }
+
+        // TODO make this optional / configurable
+        $this->registerResponseTimeMiddleware();
+
         if (!$this->app->runningInConsole()) {
             return;
         }
@@ -217,5 +225,18 @@ class ServiceProvider extends OtelApplicationServiceProvider
         $this->publishes([
             __DIR__ . '/../../config/instrumentation.php' => config_path('instrumentation.php'),
         ]);
+    }
+
+    private function registerResponseTimeMiddleware()
+    {
+        // We attach to the HttpKernel, so we need it to be available.
+        if (!$this->app->bound(Kernel::class)) {
+            return;
+        }
+
+        /** @var \use Illuminate\Contracts\Http\Kernel $httpKernel */
+        $httpKernel = $this->app->make(Kernel::class);
+
+        $httpKernel->prependMiddleware(InstrumentationResponseTimeMiddleware::class);
     }
 }

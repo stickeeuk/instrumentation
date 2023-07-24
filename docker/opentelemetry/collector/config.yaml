@@ -52,26 +52,27 @@ processors:
   filter/kpis-only:
     logs:
       log_record:
-        - 'not IsMatch(body, "^\\d+\\.\\d+$")' # Drop all logs that are not a number
+        - 'not IsMatch(body, "^\\d+(\\.\\d+)?$")' # Drop all logs that are not a number
 
   # TODO make this look for KPIs properly instead of just checking body is a number
   # Use library name or something?
   filter/remove-kpis:
     logs:
       log_record:
-        - 'IsMatch(body, "^\\d+\\.\\d+$")'
+        - 'IsMatch(body, "^\\d+(\\.\\d+)?$")'
 
   transform:
     log_statements:
-      # - context: resource
-      #   statements:
-      #   - keep_keys(attributes, [])
+      - context: resource
+        statements:
+        - keep_keys(attributes, [])
       # - context: scope
       #   statements:
       #   - keep_keys(attributes, ["logs"])
       - context: log
         statements:
-        - keep_keys(attributes, ["observed_timestamp", "attributes[\"event.name\"]", "body"])
+        - set(attributes["value"], attributes["body"])
+        - keep_keys(attributes, ["observed_timestamp", "event.domain", "event.name", "value"])
 
 service:
   pipelines:
@@ -81,27 +82,34 @@ service:
       processors:
         # May or may not want this
         - filter/remove-kpis
+        - batch
       exporters:
         - logging
         - loki
-        # - file
+
     logs/kpis:
       receivers:
         - otlp
       processors:
         - filter/kpis-only
         - transform
+        - batch
       exporters:
+        - logging
         - influxdb
+
     # metrics:
     #   receivers:
     #   - prometheus
     #   exporters:
-    #   # - prometheus
     #   - logging
+    #   - prometheus
+
     traces:
       receivers:
         - otlp
+      processors:
+        - batch
       exporters:
-        - otlp
         - logging
+        - otlp
