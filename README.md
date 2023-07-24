@@ -193,9 +193,23 @@ You can run tests on your own system by invoking Pest:
 ./vendor/bin/pest
 ```
 
-## Documentation
+### Databases and Visualisation
 
-Currently in-progress.
+#### OpenTelemetry
+
+Go to `./vendor/stickee/instrumentation/docker/opentelemetry` and run `docker compose up`.
+This will start Grafana, Loki, Tempo InfluxDB, and the OpenTelemetry Collector and expose them on your local machine.
+
+ - Grafana: http://localhost:3000
+ - OpenTelemetry Collector: http://localhost:4318 (this should be used for `INSTRUMENTATION_DSN`)
+
+### InfluxDB
+
+Go to `./vendor/stickee/instrumentation/docker/influxdb` and run `docker compose up`.
+This will start Chronograf and InfluxDB and expose them on your local machine.
+
+ - Chronograf: http://localhost:8888
+ - InfluxDB: http://localhost:8086 (this should be used for `INSTRUMENTATION_DSN`)
 
 ## Contributions
 

@@ -23,13 +23,6 @@ class OpenTelemetry implements DatabaseInterface
     use HandlesErrors;
 
     /**
-     * Events generated and waiting to be recorded
-     *
-     * @var array $events
-     */
-    private $events = [];
-
-    /**
      * The config
      *
      * @var \Stickee\Instrumentation\Utils\OpenTelemetryConfig $config
@@ -69,7 +62,7 @@ class OpenTelemetry implements DatabaseInterface
     public function event(string $name, array $tags = [], float $value = 1): void
     {
         $log = (new LogRecord($value))
-            ->setTimestamp(time() * LogRecord::NANOS_PER_SECOND) // Can we do this at the processor level?
+            ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND) // Can we do this at the processor level?
             ->setAttributes($tags);
 
         $this->config->eventLogger->logEvent($name, $log);
