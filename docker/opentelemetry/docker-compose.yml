@@ -1,0 +1,93 @@
+version: '3'
+
+services:
+  influxdb:
+      image: influxdb:2.7-alpine
+      container_name: pet-insurance-influxdb
+      restart: always
+      environment:
+          - DOCKER_INFLUXDB_INIT_MODE=setup
+          - DOCKER_INFLUXDB_INIT_USERNAME=admin
+          - DOCKER_INFLUXDB_INIT_PASSWORD=Password123
+          - DOCKER_INFLUXDB_INIT_ORG=stickee
+          - DOCKER_INFLUXDB_INIT_BUCKET=test
+          - DOCKER_INFLUXDB_INIT_RETENTION=2w
+          - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+          - INFLUXD_LOG_LEVEL=debug
+      ports:
+      - '8086:8086'
+      volumes:
+      - influxdbdata:/var/lib/influxdb
+      networks:
+          - sail
+
+  grafana:
+    image: grafana/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/main.yaml # configures dashboards
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards
+    depends_on:
+      - loki
+      # - prometheus
+      - tempo
+    networks:
+      - opentelemetry-network
+
+  loki:
+    image: grafana/loki:2.8.2
+    ports:
+    - '3100:3100'
+    volumes:
+    - ./loki/config.yaml:/mnt/config/loki-config.yaml
+    command: -config.file=/mnt/config/loki-config.yaml
+    networks:
+    - opentelemetry-network
+
+  # prometheus:
+  #   image: prom/prometheus
+  #   ports:
+  #   - '9000'
+  #   - '9090:9090'
+  #   volumes:
+  #   - ./prometheus:/etc/prometheus
+  #   # - prom_data:/prometheus
+  #   command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yaml
+  #   restart: unless-stopped
+  #   networks:
+  #   - opentelemetry-network
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.81.0
+    command: ['--config=/etc/otel/config.yaml']
+    volumes:
+      - './collector:/etc/otel'
+    ports:
+      - '4317:4317' # OTLP gRPC receiver
+      - '4318:4318' # OTLP http receiver
+      - '8888:8888' # Prometheus metrics exposed by the collector
+      - '8889' # Prometheus exporter metrics
+    networks:
+      - opentelemetry-network
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ['--config.file=/etc/config.yaml']
+    volumes:
+      - './tempo/config.yaml:/etc/config.yaml'
+    ports:
+      - '3200'
+      - '4317'
+      - '4318'
+    networks:
+      - opentelemetry-network
+
+networks:
+  opentelemetry-network:
+    driver: bridge
