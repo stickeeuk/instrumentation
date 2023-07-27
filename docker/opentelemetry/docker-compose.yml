@@ -3,23 +3,22 @@ version: '3'
 services:
   influxdb:
       image: influxdb:2.7-alpine
-      container_name: pet-insurance-influxdb
       restart: always
       environment:
-          - DOCKER_INFLUXDB_INIT_MODE=setup
-          - DOCKER_INFLUXDB_INIT_USERNAME=admin
-          - DOCKER_INFLUXDB_INIT_PASSWORD=Password123
-          - DOCKER_INFLUXDB_INIT_ORG=stickee
-          - DOCKER_INFLUXDB_INIT_BUCKET=test
-          - DOCKER_INFLUXDB_INIT_RETENTION=2w
-          - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
-          - INFLUXD_LOG_LEVEL=debug
-      ports:
-      - '8086:8086'
-      volumes:
-      - influxdbdata:/var/lib/influxdb
+        - DOCKER_INFLUXDB_INIT_MODE=setup
+        - DOCKER_INFLUXDB_INIT_USERNAME=admin
+        - DOCKER_INFLUXDB_INIT_PASSWORD=Password123
+        - DOCKER_INFLUXDB_INIT_ORG=stickee
+        - DOCKER_INFLUXDB_INIT_BUCKET=test
+        - DOCKER_INFLUXDB_INIT_RETENTION=2w
+        - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+        - INFLUXD_LOG_LEVEL=debug
+      expose:
+       - '8086'
+      # volumes:
+      #  - influxdbdata:/var/lib/influxdb
       networks:
-          - sail
+          - opentelemetry-network
 
   grafana:
     image: grafana/grafana
@@ -42,13 +41,13 @@ services:
 
   loki:
     image: grafana/loki:2.8.2
-    ports:
-    - '3100:3100'
+    expose:
+      - '3100'
     volumes:
-    - ./loki/config.yaml:/mnt/config/loki-config.yaml
+      - ./loki/config.yaml:/mnt/config/loki-config.yaml
     command: -config.file=/mnt/config/loki-config.yaml
     networks:
-    - opentelemetry-network
+      - opentelemetry-network
 
   # prometheus:
   #   image: prom/prometheus
@@ -71,7 +70,8 @@ services:
     ports:
       - '4317:4317' # OTLP gRPC receiver
       - '4318:4318' # OTLP http receiver
-      - '8888:8888' # Prometheus metrics exposed by the collector
+    expose:
+      - '8888' # Prometheus metrics exposed by the collector
       - '8889' # Prometheus exporter metrics
     networks:
       - opentelemetry-network
@@ -81,10 +81,8 @@ services:
     command: ['--config.file=/etc/config.yaml']
     volumes:
       - './tempo/config.yaml:/etc/config.yaml'
-    ports:
+    expose:
       - '3200'
-      - '4317'
-      - '4318'
     networks:
       - opentelemetry-network
 

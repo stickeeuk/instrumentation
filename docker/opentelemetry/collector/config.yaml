@@ -47,6 +47,8 @@ exporters:
 #     enabled: true
 
 processors:
+  batch:
+
   # TODO make this look for KPIs properly instead of just checking body is a number
   # Use library name or something?
   filter/kpis-only:

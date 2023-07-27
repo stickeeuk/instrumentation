@@ -14,6 +14,7 @@ use OpenTelemetry\API\Metrics\MeterInterface;
 use OpenTelemetry\API\Logs\EventLoggerInterface;
 use OpenTelemetry\API\Logs\LogRecord;
 use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
+use Stickee\Instrumentation\Databases\Traits\OpenTelemetrySpans;
 
 /**
  * This class records metrics to OpenTelemetry
@@ -21,6 +22,7 @@ use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
 class OpenTelemetry implements DatabaseInterface
 {
     use HandlesErrors;
+    use OpenTelemetrySpans;
 
     /**
      * The config
