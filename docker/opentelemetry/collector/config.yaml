@@ -63,18 +63,19 @@ processors:
       log_record:
         - 'IsMatch(body, "^\\d+(\\.\\d+)?$")'
 
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor
   transform:
     log_statements:
       - context: resource
         statements:
-        - keep_keys(attributes, [])
+          - keep_keys(attributes, [])
       # - context: scope
       #   statements:
-      #   - keep_keys(attributes, ["logs"])
-      - context: log
-        statements:
-        - set(attributes["value"], attributes["body"])
-        - keep_keys(attributes, ["observed_timestamp", "event.domain", "event.name", "value"])
+      #     - keep_keys(attributes, ["logs"])
+      #- context: log
+      #  statements:
+      #    - set(attributes["value"], attributes["body"])
+      #    - keep_keys(attributes, ["observed_timestamp", "event.domain", "event.name", "value"])
 
 service:
   pipelines:
