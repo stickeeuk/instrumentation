@@ -6,6 +6,7 @@
 namespace Stickee\Instrumentation\Databases;
 
 use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
+use Stickee\Instrumentation\Databases\Traits\NullSpans;
 
 /**
  * This class discards metrics
@@ -13,6 +14,7 @@ use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
 class NullDatabase implements DatabaseInterface
 {
     use HandlesErrors;
+    use NullSpans;
 
     /**
      * Record an event

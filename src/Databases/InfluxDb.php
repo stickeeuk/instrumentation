@@ -10,9 +10,9 @@ namespace Stickee\Instrumentation\Databases;
 use Exception;
 use InfluxDB\Client;
 use InfluxDB\Database;
-use InfluxDB\Database\RetentionPolicy;
 use InfluxDB\Point;
 use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
+use Stickee\Instrumentation\Databases\Traits\NullSpans;
 
 /**
  * This class records metrics to InfluxDB
@@ -20,6 +20,7 @@ use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
 class InfluxDb implements DatabaseInterface
 {
     use HandlesErrors;
+    use NullSpans;
 
     /**
      * Events generated and waiting to be recorded

@@ -4,6 +4,7 @@ namespace Stickee\Instrumentation\Databases;
 
 use Exception;
 use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
+use Stickee\Instrumentation\Databases\Traits\NullSpans;
 use Stickee\Instrumentation\Databases\Traits\WritesStrings;
 
 /**
@@ -11,7 +12,9 @@ use Stickee\Instrumentation\Databases\Traits\WritesStrings;
  */
 class Log implements DatabaseInterface
 {
-    use HandlesErrors, WritesStrings;
+    use HandlesErrors;
+    use WritesStrings;
+    use NullSpans;
 
     /**
      * The log file name
