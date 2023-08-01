@@ -24,7 +24,7 @@ $database = new InfluxDb('influxdb://username:password@example.com:8086/database
 $database->event('some_event');
 ```
 
-### Static Accessor
+### Static Accessor (Non-Laravel projects, for Laravel use the Facade)
 
 You can access your database statically by assigning it to the `Instrument` class.
 
@@ -151,6 +151,7 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
  - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:1.0.0beta-12 open-telemetry/opentelemetry-logger-monolog:^0.0.2 google/protobuf`
  - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
+ - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
  - Set the required .env variables `INSTRUMENTATION_DATABASE` and `INSTRUMENTATION_DSN`
 
 ### Using InfluxDb

@@ -33,6 +33,7 @@ use PlunkettScott\LaravelOpenTelemetry\OtelApplicationServiceProvider;
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 use Stickee\Instrumentation\Databases\InfluxDb;
 use Stickee\Instrumentation\Databases\Log as LogDatabase;
+use Stickee\Instrumentation\Databases\NullDatabase;
 use Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware;
 use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 
@@ -109,7 +110,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
             });
 
         $this->app->singleton('instrument', function(Application $app) {
-            $class = config('instrumentation.database');
+            $class = config('instrumentation.enabled')
+                ? config('instrumentation.database')
+                : NullDatabase::class;
 
             if (empty($class)) {
                 throw new Exception('Config variable `instrumentation.database` not set');
@@ -131,7 +134,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
             return $database;
         });
 
-        $this->registerOpenTelemetry();
+        if (config('instrumentation.enabled')) {
+            $this->registerOpenTelemetry();
+        }
 
         parent::register();
     }
