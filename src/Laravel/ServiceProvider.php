@@ -19,14 +19,15 @@ use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
 use OpenTelemetry\SDK\Common\Export\Http\PsrTransport;
+use OpenTelemetry\SDK\Common\Time\ClockFactory;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
-use OpenTelemetry\SDK\Logs\Processor\SimpleLogRecordProcessor;
+use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\SamplerInterface;
-use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
+use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessorBuilder;
 use OpenTelemetry\SDK\Trace\SpanProcessorInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
 use PlunkettScott\LaravelOpenTelemetry\OtelApplicationServiceProvider;
@@ -73,11 +74,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
     public function spanProcessors(): array
     {
         $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
+        $processor = (new BatchSpanProcessorBuilder($exporter))->build();
 
-        return [
-            // TODO use batches
-            new SimpleSpanProcessor($exporter),
-        ];
+        return [$processor];
     }
 
     /**
@@ -156,9 +155,10 @@ class ServiceProvider extends OtelApplicationServiceProvider
 
         $this->app->bindIf(LoggerProvider::class, function () {
             $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
+            $clock = ClockFactory::create()->build();
 
             return LoggerProvider::builder()
-                ->addLogRecordProcessor(new SimpleLogRecordProcessor($exporter)) // TODO use batches
+                ->addLogRecordProcessor(new BatchLogRecordProcessor($exporter, $clock))
                 ->build();
         });
 
@@ -170,9 +170,6 @@ class ServiceProvider extends OtelApplicationServiceProvider
 
             $loggerProvider = $this->app->make(LoggerProvider::class);
             $logger = $loggerProvider->getLogger($appName);
-
-            // TODO do we need this?
-            // register_shutdown_function(static fn () => $loggerProvider->shutdown());
 
             $eventLogger = new EventLogger($logger, $appName);
 
@@ -247,8 +244,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
             return;
         }
 
-        // TODO make this optional / configurable
-        $this->registerResponseTimeMiddleware();
+        if (config('instrumentation.response_time_middleware_enabled')) {
+            $this->registerResponseTimeMiddleware();
+        }
 
         if (!$this->app->runningInConsole()) {
             return;
