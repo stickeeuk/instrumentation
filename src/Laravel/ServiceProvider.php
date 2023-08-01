@@ -15,6 +15,7 @@ use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
+use OpenTelemetry\SDK\Common\Export\Http\PsrTransport;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
 use OpenTelemetry\SDK\Logs\Processor\SimpleLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
@@ -38,7 +39,9 @@ use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 class ServiceProvider extends OtelApplicationServiceProvider
 {
     /**
-     * Return an implementation of SamplerInterface to use for sampling traces.
+     * Return an implementation of SamplerInterface to use for sampling traces
+     *
+     * @return \OpenTelemetry\SDK\Trace\SamplerInterface
      */
     public function sampler(): SamplerInterface
     {
@@ -46,7 +49,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
     }
 
     /**
-     * Return a ResourceInfo instance to merge with default resource attributes.
+     * Return a ResourceInfo instance to merge with default resource attributes
+     *
+     * @return \OpenTelemetry\SDK\Resource\ResourceInfo
      */
     public function resourceInfo(): ResourceInfo
     {
@@ -63,13 +68,11 @@ class ServiceProvider extends OtelApplicationServiceProvider
      */
     public function spanProcessors(): array
     {
+        $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
+
         return [
-            new SimpleSpanProcessor(
-                new SpanExporter(
-                    (new OtlpHttpTransportFactory())
-                        ->create(config('instrumentation.dsn') . '/v1/traces', 'application/x-protobuf'),
-                ),
-            ),
+            // TODO use batches
+            new SimpleSpanProcessor($exporter),
         ];
     }
 
@@ -84,21 +87,11 @@ class ServiceProvider extends OtelApplicationServiceProvider
 
         $this->app->when(InfluxDb::class)
             ->needs('$dsn')
-            ->give(function () {
-                $value = config('instrumentation.dsn');
-
-                if (empty($value)) {
-                    throw new Exception('Config variable `instrumentation.dsn` not set');
-                }
-
-                return $value;
-            });
+            ->give(fn () => $this->getDsn());
 
         $this->app->when(InfluxDb::class)
             ->needs('$verifySsl')
-            ->give(function () {
-                return config('instrumentation.verifySsl', true);
-            });
+            ->give(fn () => config('instrumentation.verifySsl', true));
 
         $this->app->when(LogDatabase::class)
             ->needs('$filename')
@@ -135,60 +128,87 @@ class ServiceProvider extends OtelApplicationServiceProvider
             return $database;
         });
 
-        $this->app->bindIf(OpenTelemetryConfig::class, static function () {
-            $endpoint = config('instrumentation.dsn');
+        $this->registerOpenTelemetry();
 
-            if (empty($endpoint)) {
-                throw new Exception('Config variable `instrumentation.dsn` not set');
-            }
+        parent::register();
+    }
 
-            $transport = (new OtlpHttpTransportFactory())->create($endpoint . '/v1/metrics', 'application/json');
-            $exporter = new MetricExporter($transport);
+    /**
+     * Register Open Telemetry classes
+     */
+    private function registerOpenTelemetry(): void
+    {
+        $this->app->bindIf(MeterProviderInterface::class, function () {
+            $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'));
 
-            $meterProvider = MeterProvider::builder()
+            return MeterProvider::builder()
                 ->addReader(new ExportingReader($exporter))
                 ->build();
+        });
 
-            $meter = $meterProvider->getMeter('pet-insurance');
+        $this->app->bindIf(LoggerProvider::class, function () {
+            $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
 
-            $transport = (new OtlpHttpTransportFactory())->create($endpoint . '/v1/logs', 'application/json');
-            $exporter = new LogsExporter($transport);
-
-            $loggerProvider = LoggerProvider::builder()
-                ->addLogRecordProcessor(new SimpleLogRecordProcessor($exporter))
+            return LoggerProvider::builder()
+                ->addLogRecordProcessor(new SimpleLogRecordProcessor($exporter)) // TODO use batches
                 ->build();
+        });
 
-            $logger = $loggerProvider->getLogger('pet-insurance');
+        $this->app->singleton(OpenTelemetryConfig::class, function () {
+            $appName = config('app.name', 'laravel');
 
-            register_shutdown_function(static fn () => $loggerProvider->shutdown());
+            $meterProvider = $this->app->make(MeterProviderInterface::class);
+            $meter = $meterProvider->getMeter($appName);
 
-            $eventLogger = new EventLogger($logger, 'pet-insurance');
+            $loggerProvider = $this->app->make(LoggerProvider::class);
+            $logger = $loggerProvider->getLogger($appName);
+
+            // TODO do we need this?
+            // register_shutdown_function(static fn () => $loggerProvider->shutdown());
+
+            $eventLogger = new EventLogger($logger, $appName);
 
             return new OpenTelemetryConfig($meterProvider, $meter, $loggerProvider, $eventLogger);
         });
 
-        $this->app->bindIf(Handler::class, static function () {
-            $endpoint = config('instrumentation.dsn');
-
-            if (empty($endpoint)) {
-                throw new Exception('Config variable `instrumentation.dsn` not set');
-            }
-
-            $transport = (new OtlpHttpTransportFactory())->create($endpoint . '/v1/logs', 'application/json');
-            $exporter = new LogsExporter($transport);
-
-            $loggerProvider = LoggerProvider::builder()
-                ->addLogRecordProcessor(new SimpleLogRecordProcessor($exporter))
-                ->build();
-
+        // Handler for sending `Log::...` calls to the OpenTelemetry collector
+        $this->app->bindIf(Handler::class, function () {
             return new Handler(
-                $loggerProvider,
+                $this->app->make(OpenTelemetryConfig::class)->loggerProvider,
                 'info',
                 true,
             );
         });
+    }
 
-        parent::register();
+    /**
+     * Get the DSN
+     *
+     * @return string
+     */
+    private function getDsn(): string
+    {
+        $dsn = config('instrumentation.dsn');
+
+        if (empty($dsn)) {
+            throw new Exception('Config variable `instrumentation.dsn` not set');
+        }
+
+        return $dsn;
+    }
+
+    /**
+     * Get an OTLP transport
+     *
+     * @param string $path The path to append to the DSN
+     * @param string $contentType The content type
+     *
+     * @return \OpenTelemetry\SDK\Common\Export\Http\PsrTransport
+     */
+    private function getOtlpTransport(string $path, $contentType = 'application/json'): PsrTransport
+    {
+        return (new OtlpHttpTransportFactory())
+            ->create($this->getDsn() . $path, $contentType, [], null, 1, 100, 1);
     }
 
     /**
@@ -227,6 +247,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
         ]);
     }
 
+    /**
+     * Register the response time middleware
+     */
     private function registerResponseTimeMiddleware()
     {
         // We attach to the HttpKernel, so we need it to be available.
