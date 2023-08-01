@@ -8,6 +8,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\API\Logs\EventLogger;
 use OpenTelemetry\Contrib\Logs\Monolog\Handler;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
@@ -214,8 +217,12 @@ class ServiceProvider extends OtelApplicationServiceProvider
     /**
      * Bootstrap any application services
      */
-    public function boot()
+    public function boot(): void
     {
+        // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
+        // is not available, the logs will still be sent to stderr instead of throwing an exception
+        LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
+
         // Flush events when a command finishes
         Event::listen('Illuminate\Console\Events\CommandFinished', function () {
             app('instrument')->flush();
@@ -250,7 +257,7 @@ class ServiceProvider extends OtelApplicationServiceProvider
     /**
      * Register the response time middleware
      */
-    private function registerResponseTimeMiddleware()
+    private function registerResponseTimeMiddleware(): void
     {
         // We attach to the HttpKernel, so we need it to be available.
         if (!$this->app->bound(Kernel::class)) {
