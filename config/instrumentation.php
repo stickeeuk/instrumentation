@@ -3,6 +3,15 @@
 return [
     /*
      |--------------------------------------------------------------------------
+     | Enable instrumentation
+     |--------------------------------------------------------------------------
+     |
+     | true / false (NullDatabase will be used if not enabled)
+     */
+    'enabled' => env('INSTRUMENTATION_ENABLED', true),
+
+    /*
+     |--------------------------------------------------------------------------
      | Database class
      |--------------------------------------------------------------------------
      |
@@ -38,4 +47,13 @@ return [
      | storage_path('app/instrument.log')
      */
     'filename' => env('INSTRUMENTATION_FILENAME'),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Response Time Middleware
+     |--------------------------------------------------------------------------
+     |
+     | Enable the automatic response time instrumentation middleware
+     */
+    'response_time_middleware_enabled' => env('INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED', true),
 ];
