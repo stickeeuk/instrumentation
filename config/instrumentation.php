@@ -36,7 +36,7 @@ return [
      |
      | Verify the database SSL certificate if using HTTPS
      */
-    'verifySsl' => env('INSTRUMENTATION_VERIFY_SSL', true),
+    'verify_ssl' => env('INSTRUMENTATION_VERIFY_SSL', true),
 
     /*
      |--------------------------------------------------------------------------
@@ -56,4 +56,13 @@ return [
      | Enable the automatic response time instrumentation middleware
      */
     'response_time_middleware_enabled' => env('INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED', true),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Trace Sample Rate
+     |--------------------------------------------------------------------------
+     |
+     | 0 = never sample, 1 = always sample
+     */
+    'trace_sample_rate' => env('INSTRUMENTATION_TRACE_SAMPLE_RATE', 1),
 ];
