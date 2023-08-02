@@ -25,7 +25,8 @@ use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
-use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
+use OpenTelemetry\SDK\Trace\Sampler\AlwaysOffSampler;
+use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\SamplerInterface;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessorBuilder;
 use OpenTelemetry\SDK\Trace\SpanProcessorInterface;
@@ -50,7 +51,11 @@ class ServiceProvider extends OtelApplicationServiceProvider
      */
     public function sampler(): SamplerInterface
     {
-        return new AlwaysOnSampler();
+        if (!config('instrumentation.enabled')) {
+            return new AlwaysOffSampler();
+        }
+
+        return new TraceIdRatioBasedSampler(config('instrumentation.trace_sample_rate'));
     }
 
     /**
@@ -94,7 +99,7 @@ class ServiceProvider extends OtelApplicationServiceProvider
 
         $this->app->when(InfluxDb::class)
             ->needs('$verifySsl')
-            ->give(fn () => config('instrumentation.verifySsl', true));
+            ->give(fn () => config('instrumentation.verify_ssl', true));
 
         $this->app->when(LogDatabase::class)
             ->needs('$filename')
