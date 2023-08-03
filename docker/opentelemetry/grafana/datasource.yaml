@@ -5,7 +5,7 @@ datasources:
     type: prometheus
     uid: prometheus
     url: http://prometheus:9090
-    isDefault: true
+    isDefault: false
     access: proxy
     editable: true
   - name: Loki
@@ -13,13 +13,13 @@ datasources:
     uid: loki
     access: proxy
     url: http://loki:3100
-    isDefault: false
+    isDefault: true
     jsonData:
       derivedFields:
         - datasourceName: Tempo
           datasourceUid: tempo
           matcherRegex: trace_id\":\"(\w+)
-          name: trace
+          name: traceid
           url: $${__value.raw}
   - name: Tempo
     type: tempo
@@ -37,7 +37,7 @@ datasources:
         filterByTraceID: false
         filterBySpanID: false
         customQuery: true
-        query: '{trace_id="$${__trace.traceId}"}'
+        query: '{exporter="OTLP"} |= `"traceid":"$${__trace.traceId}"`'
         lokiSearch:
           datasourceUid: "loki"
         nodeGraph:
