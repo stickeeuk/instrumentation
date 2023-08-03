@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\LoggerHolder;
@@ -25,65 +26,26 @@ use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
-use OpenTelemetry\SDK\Trace\Sampler\AlwaysOffSampler;
+use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
+use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
-use OpenTelemetry\SDK\Trace\SamplerInterface;
-use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessorBuilder;
-use OpenTelemetry\SDK\Trace\SpanProcessorInterface;
+use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
+use OpenTelemetry\SDK\Trace\TracerProvider;
+use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
-use PlunkettScott\LaravelOpenTelemetry\OtelApplicationServiceProvider;
 use Stickee\Instrumentation\Databases\DatabaseInterface;
 use Stickee\Instrumentation\Databases\InfluxDb;
 use Stickee\Instrumentation\Databases\Log as LogDatabase;
 use Stickee\Instrumentation\Databases\NullDatabase;
+use Stickee\Instrumentation\Databases\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware;
 use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 
 /**
  * Instrumentation service provider
  */
-class ServiceProvider extends OtelApplicationServiceProvider
+class ServiceProvider extends LaravelServiceProvider
 {
-    /**
-     * Return an implementation of SamplerInterface to use for sampling traces
-     *
-     * @return \OpenTelemetry\SDK\Trace\SamplerInterface
-     */
-    public function sampler(): SamplerInterface
-    {
-        if (!config('instrumentation.enabled')) {
-            return new AlwaysOffSampler();
-        }
-
-        return new TraceIdRatioBasedSampler(config('instrumentation.trace_sample_rate'));
-    }
-
-    /**
-     * Return a ResourceInfo instance to merge with default resource attributes
-     *
-     * @return \OpenTelemetry\SDK\Resource\ResourceInfo
-     */
-    public function resourceInfo(): ResourceInfo
-    {
-        return ResourceInfo::create(Attributes::create([
-            ResourceAttributes::SERVICE_NAME => config('app.name', 'Laravel'),
-            ResourceAttributes::DEPLOYMENT_ENVIRONMENT => config('app.env', 'production'),
-        ]));
-    }
-
-    /**
-     * Return an array of additional processors to add to the tracer provider.
-     *
-     * @return SpanProcessorInterface[]
-     */
-    public function spanProcessors(): array
-    {
-        $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
-        $processor = (new BatchSpanProcessorBuilder($exporter))->build();
-
-        return [$processor];
-    }
-
     /**
      * Register the service provider
      */
@@ -114,23 +76,7 @@ class ServiceProvider extends OtelApplicationServiceProvider
             });
 
         $this->app->singleton('instrument', function(Application $app) {
-            $class = config('instrumentation.enabled')
-                ? config('instrumentation.database')
-                : NullDatabase::class;
-
-            if (empty($class)) {
-                throw new Exception('Config variable `instrumentation.database` not set');
-            }
-
-            if (!class_exists($class, true)) {
-                throw new Exception('Config variable `instrumentation.database` class not found: ' . $class);
-            }
-
-            if (!is_a($class, DatabaseInterface::class, true)) {
-                throw new Exception('Config variable `instrumentation.database` does not implement \Stickee\Instrumentation\Databases\DatabaseInterface: ' . $class);
-            }
-
-            $database = $app->make($class);
+            $database = $app->make($this->getDatabaseClass());
             $database->setErrorHandler(function (Exception $e) {
                 Log::error($e->getMessage());
             });
@@ -138,11 +84,9 @@ class ServiceProvider extends OtelApplicationServiceProvider
             return $database;
         });
 
-        if (config('instrumentation.enabled')) {
+        if (config('instrumentation.enabled') && is_a($this->getDatabaseClass(), OpenTelemetry::class, true)) {
             $this->registerOpenTelemetry();
         }
-
-        parent::register();
     }
 
     /**
@@ -150,6 +94,28 @@ class ServiceProvider extends OtelApplicationServiceProvider
      */
     private function registerOpenTelemetry(): void
     {
+        $this->app->singleton(TracerProviderInterface::class, function () {
+            $sampler = config('instrumentation.trace_sample_rate') == 1
+                ? new AlwaysOnSampler()
+                : new TraceIdRatioBasedSampler(config('instrumentation.trace_sample_rate'));
+
+            $resourceInfo = ResourceInfo::create(Attributes::create([
+                ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
+                ResourceAttributes::DEPLOYMENT_ENVIRONMENT => config('app.env', 'production'),
+            ]));
+
+            $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
+            $processor = BatchSpanProcessor::builder($exporter)->build();
+
+            register_shutdown_function(fn () => $processor->shutdown());
+
+            return TracerProvider::builder()
+                ->setSampler($sampler)
+                ->setResource(ResourceInfoFactory::merge($resourceInfo, ResourceInfoFactory::defaultResource()))
+                ->addSpanProcessor($processor)
+                ->build();
+        });
+
         $this->app->bindIf(MeterProviderInterface::class, function () {
             $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'));
 
@@ -160,10 +126,12 @@ class ServiceProvider extends OtelApplicationServiceProvider
 
         $this->app->bindIf(LoggerProvider::class, function () {
             $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
-            $clock = ClockFactory::create()->build();
+            $processor = (new BatchLogRecordProcessor($exporter, ClockFactory::getDefault()));
+
+            register_shutdown_function(fn () => $processor->shutdown());
 
             return LoggerProvider::builder()
-                ->addLogRecordProcessor(new BatchLogRecordProcessor($exporter, $clock))
+                ->addLogRecordProcessor($processor)
                 ->build();
         });
 
@@ -189,6 +157,32 @@ class ServiceProvider extends OtelApplicationServiceProvider
                 true,
             );
         });
+    }
+
+    /**
+     * Get the database class
+     *
+     * @return string
+     */
+    private function getDatabaseClass(): string
+    {
+        $class = config('instrumentation.enabled')
+            ? config('instrumentation.database')
+            : NullDatabase::class;
+
+        if (empty($class)) {
+            throw new Exception('Config variable `instrumentation.database` not set');
+        }
+
+        if (!class_exists($class, true)) {
+            throw new Exception('Config variable `instrumentation.database` class not found: ' . $class);
+        }
+
+        if (!is_a($class, DatabaseInterface::class, true)) {
+            throw new Exception('Config variable `instrumentation.database` does not implement \Stickee\Instrumentation\Databases\DatabaseInterface: ' . $class);
+        }
+
+        return $class;
     }
 
     /**
