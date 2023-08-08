@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Stickee\Instrumentation\Databases\Traits\WritesStrings;
+use Stickee\Instrumentation\Exporters\Events\Traits\WritesStrings;
 
 beforeEach(function (): void {
     $this->database = new class () {
@@ -25,4 +25,3 @@ it('can call the flush, which in turn does nothing for databases that write stri
 
     expect(true)->toBeTrue();
 });
-

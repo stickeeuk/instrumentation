@@ -1,20 +1,19 @@
 <?php
 
-namespace Stickee\Instrumentation\Databases;
+namespace Stickee\Instrumentation\Exporters\Events;
 
-use Log;
-use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
-use Stickee\Instrumentation\Databases\Traits\NullSpans;
-use Stickee\Instrumentation\Databases\Traits\WritesStrings;
+use Illuminate\Support\Facades\Log;
+use Stickee\Instrumentation\Exporters\Events\Traits\WritesStrings;
+use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
+use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 
 /**
  * This class records metrics to the Laravel log
  */
-class LaravelLog implements DatabaseInterface
+class LaravelLog implements EventsExporterInterface
 {
     use HandlesErrors;
     use WritesStrings;
-    use NullSpans;
 
     /**
      * The log level

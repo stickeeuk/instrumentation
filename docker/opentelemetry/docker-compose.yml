@@ -13,8 +13,8 @@ services:
         - DOCKER_INFLUXDB_INIT_RETENTION=2w
         - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
         - INFLUXD_LOG_LEVEL=debug
-      expose:
-       - '8086'
+      ports:
+       - '8086:8086'
       # volumes:
       #  - influxdbdata:/var/lib/influxdb
       networks:

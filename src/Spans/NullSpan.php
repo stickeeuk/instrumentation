@@ -6,11 +6,19 @@ use Throwable;
 
 class NullSpan implements SpanInterface
 {
+    /**
+     * Record an exception
+     *
+     * @param \Throwable $exception The exception
+     */
     public function recordException(Throwable $exception): void
     {
         // Do nothing
     }
 
+    /**
+     * End the span
+     */
     public function end(): void
     {
         // Do nothing

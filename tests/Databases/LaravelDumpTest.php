@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use phpmock\phpunit\PHPMock;
-use Stickee\Instrumentation\Databases\LaravelDump;
+use Stickee\Instrumentation\Exporters\Events\LaravelDump;
 
 uses(PHPMock::class);
 

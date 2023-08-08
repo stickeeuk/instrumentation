@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
 use InfluxDB\Database;
-use Stickee\Instrumentation\Databases\InfluxDb;
+use Stickee\Instrumentation\Exporters\Events\InfluxDb;
 
 const INFLUX_EVENT = 'Event';
 const INFLUX_TAGS = [];

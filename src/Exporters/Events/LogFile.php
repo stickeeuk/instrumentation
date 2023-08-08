@@ -1,20 +1,19 @@
 <?php
 
-namespace Stickee\Instrumentation\Databases;
+namespace Stickee\Instrumentation\Exporters\Events;
 
 use Exception;
-use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
-use Stickee\Instrumentation\Databases\Traits\NullSpans;
-use Stickee\Instrumentation\Databases\Traits\WritesStrings;
+use Stickee\Instrumentation\Exporters\Events\Traits\WritesStrings;
+use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
+use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 
 /**
  * This class records metrics to a log file
  */
-class Log implements DatabaseInterface
+class LogFile implements EventsExporterInterface
 {
     use HandlesErrors;
     use WritesStrings;
-    use NullSpans;
 
     /**
      * The log file name

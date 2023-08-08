@@ -1,16 +1,14 @@
 <?php
 
-namespace Stickee\Instrumentation\Databases\Traits;
+namespace Stickee\Instrumentation\Exporters\Interfaces;
 
 use OpenTelemetry\API\Trace\SpanKind;
-use PlunkettScott\LaravelOpenTelemetry\Otel;
-use Stickee\Instrumentation\Spans\OpenTelemetrySpan;
 use Stickee\Instrumentation\Spans\SpanInterface;
 
 /**
- * Create OpenTelemetry spans
+ * Instrumentation spans exporter interface
  */
-trait OpenTelemetrySpans
+interface SpansExporterInterface extends HandlesErrorsInterface
 {
     /**
      * Creates a new span wrapping the given callable.
@@ -23,10 +21,7 @@ trait OpenTelemetrySpans
      *
      * @return mixed The result of the callable
      */
-    public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
-    {
-        return Otel::span($name, $callable, $kind, $attributes);
-    }
+    public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed;
 
     /**
      * Start a span and scope
@@ -35,15 +30,12 @@ trait OpenTelemetrySpans
      * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
      *
-     * @return \Stickee\Instrumentation\Utils\Span
+     * @return \Stickee\Instrumentation\Spans\SpanInterface
      */
-    public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
-    {
-        $span = Otel::tracer()->spanBuilder($name)
-            ->setSpanKind($kind)
-            ->setAttributes($attributes)
-            ->startSpan();
+    public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface;
 
-        return new OpenTelemetrySpan($span);
-    }
+    /**
+     * Flush any queued writes
+     */
+    public function flush(): void;
 }
