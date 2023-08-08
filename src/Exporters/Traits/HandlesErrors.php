@@ -1,9 +1,9 @@
 <?php
 
-namespace Stickee\Instrumentation\Databases\Traits;
+namespace Stickee\Instrumentation\Exporters\Traits;
 
 use Exception;
-use Stickee\Instrumentation\Exceptions\DatabaseWriteException;
+use Stickee\Instrumentation\Exceptions\WriteException;
 
 /**
  * Handles errors with a callback
@@ -29,16 +29,6 @@ trait HandlesErrors
     }
 
     /**
-     * View the current error handler.
-     *
-     * @return mixed
-     */
-    public function getErrorHandler()
-    {
-        return $this->errorHandler;
-    }
-
-    /**
      * Handle an exception
      *
      * @param \Exception $e The exception to handle
@@ -48,7 +38,7 @@ trait HandlesErrors
         if ($this->errorHandler) {
             call_user_func($this->errorHandler, $e);
         } else {
-            throw new DatabaseWriteException($e->getMessage(), $e->getCode(), $e);
+            throw new WriteException($e->getMessage(), $e->getCode(), $e);
         }
     }
 }

@@ -25,7 +25,7 @@
         "php-mock/php-mock-phpunit": "^2.6"
     },
     "suggest": {
-        "influxdb/influxdb-php": "Send metrics to InfluxDB",
+        "influxdata/influxdb-client-php": "Send metrics to InfluxDB",
         "open-telemetry/exporter-otlp:1.0.0beta-12": "Send metrics using OpenTelemetry",
         "open-telemetry/opentelemetry-logger-monolog:^0.0.2": "Send metrics using OpenTelemetry"
     },

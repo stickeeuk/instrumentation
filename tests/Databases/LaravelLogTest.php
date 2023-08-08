@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Log;
-use Stickee\Instrumentation\Databases\LaravelLog;
+use Stickee\Instrumentation\Exporters\Events\LaravelLog;
 
 it('can write to the laravel log for an event', function (string $event, array $tags): void {
     Log::shouldReceive($event)->once()->andReturnNull();

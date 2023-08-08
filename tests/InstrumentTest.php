@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use Stickee\Instrumentation\Databases\DatabaseInterface;
-use Stickee\Instrumentation\Databases\Log;
+use Stickee\Instrumentation\Exporters\Events\Log;
+use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Instrument;
 
 test('set database will change the internal database implementation', function (): void {
     Instrument::setDatabase(new Log('test.log'));
 
     // Check whether the internal database has actually changed using black magic:
-    $bypass = static function (): DatabaseInterface {
+    $bypass = static function (): EventsExporterInterface {
         /** @noinspection PhpExpressionAlwaysNullInspection */
         return static::$database;
     };
@@ -19,6 +19,6 @@ test('set database will change the internal database implementation', function (
     $database = $bypass();
 
     expect($database)
-        ->toBeInstanceOf(DatabaseInterface::class)
+        ->toBeInstanceOf(EventsExporterInterface::class)
         ->toBeInstanceOf(Log::class);
 });

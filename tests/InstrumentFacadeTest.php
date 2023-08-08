@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
-use Stickee\Instrumentation\Databases\Log;
+use Stickee\Instrumentation\Exporters\Events\Log;
 
 beforeEach(function (): void {
     $this->filename = base_path('test.log');
@@ -15,13 +15,6 @@ afterEach(function (): void {
     if (file_exists($this->filename)) {
         unlink($this->filename);
     }
-});
-
-it('will forward the necessary get and set error handlers onto the underlying database', function (): void {
-    $shrike = app('instrument');
-    $shrike->setErrorHandler('var_dump');
-
-    expect($shrike->getErrorHandler())->toEqual('var_dump');
 });
 
 it('can forward data events onto the underlying database', function (string $event): void {

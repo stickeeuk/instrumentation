@@ -1,6 +1,6 @@
 <?php
 
-namespace Stickee\Instrumentation\Databases\Traits;
+namespace Stickee\Instrumentation\Exporters\Events\Traits;
 
 /**
  * Writes events as strings

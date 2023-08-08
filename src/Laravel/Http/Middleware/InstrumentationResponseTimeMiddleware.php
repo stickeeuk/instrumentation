@@ -3,14 +3,13 @@
 namespace Stickee\Instrumentation\Laravel\Http\Middleware;
 
 use Closure;
-use Exception;
 use Illuminate\Http\Request;
 use Stickee\Instrumentation\Laravel\Facade as Instrument;
 
 class InstrumentationResponseTimeMiddleware
 {
     /**
-     * @throws Exception
+     * Handle the request
      */
     public function handle(Request $request, Closure $next)
     {

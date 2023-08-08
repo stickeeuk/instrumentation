@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Stickee\Instrumentation\Tests\Fixtures;
 
 use Exception;
-use Stickee\Instrumentation\Databases\DatabaseInterface;
+use Stickee\Instrumentation\Exporters\Events\DatabaseInterface;
 
 final class GoodDatabase implements DatabaseInterface
 {
@@ -29,12 +29,6 @@ final class GoodDatabase implements DatabaseInterface
     public function setErrorHandler($errorHandler): void
     {
         $this->errorHandler = $errorHandler;
-    }
-
-    /** @inheritDoc */
-    public function getErrorHandler()
-    {
-        return $this->errorHandler;
     }
 
     /** @inheritDoc */

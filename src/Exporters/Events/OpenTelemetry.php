@@ -1,28 +1,18 @@
 <?php
-/**
- * OpenTelemetry instrumentation class file.
- *
- * This is used to gather metrics and send them to a metrics server.
- */
 
-namespace Stickee\Instrumentation\Databases;
+namespace Stickee\Instrumentation\Exporters\Events;
 
-use Exception;
-use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
-
-use OpenTelemetry\API\Metrics\MeterInterface;
-use OpenTelemetry\API\Logs\EventLoggerInterface;
 use OpenTelemetry\API\Logs\LogRecord;
-use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
-use Stickee\Instrumentation\Databases\Traits\OpenTelemetrySpans;
+use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
+use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
+use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 
 /**
  * This class records metrics to OpenTelemetry
  */
-class OpenTelemetry implements DatabaseInterface
+class OpenTelemetry implements EventsExporterInterface
 {
     use HandlesErrors;
-    use OpenTelemetrySpans;
 
     /**
      * The config

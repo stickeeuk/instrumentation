@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Log;
-use Stickee\Instrumentation\Databases\NullDatabase;
+use Stickee\Instrumentation\Exporters\Events\NullDatabase;
 
 beforeEach(function (): void {
     $this->database = new NullDatabase();

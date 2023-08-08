@@ -3,18 +3,17 @@
  * The null database
  */
 
-namespace Stickee\Instrumentation\Databases;
+namespace Stickee\Instrumentation\Exporters\Events;
 
-use Stickee\Instrumentation\Databases\Traits\HandlesErrors;
-use Stickee\Instrumentation\Databases\Traits\NullSpans;
+use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
+use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 
 /**
  * This class discards metrics
  */
-class NullDatabase implements DatabaseInterface
+class NullEvents implements EventsExporterInterface
 {
     use HandlesErrors;
-    use NullSpans;
 
     /**
      * Record an event

@@ -1,42 +1,27 @@
 <?php
 
-namespace Stickee\Instrumentation;
+namespace Stickee\Instrumentation\Exporters;
 
 use OpenTelemetry\API\Trace\SpanKind;
-use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface;
 use Stickee\Instrumentation\Spans\SpanInterface;
 
-/**
- * The Instrument class records metrics
- * Use statically, e.g. Instrument::event(...)
- */
-class Instrument implements EventsExporterInterface, SpansExporterInterface
+class Exporter implements EventsExporterInterface, SpansExporterInterface
 {
+    private EventsExporterInterface $eventsExporter;
+    private SpansExporterInterface $spansExporter;
+
     /**
      * Constructor
-     */
-    private function __construct()
-    {
-        // Private to disallow object construction
-    }
-
-    /**
-     * The exporter
      *
-     * @var \Stickee\Instrumentation\Exporters\Exporter $exporter
+     * @param string $dsn The connection string
+     * @param bool $verifySsl Verify the database SSL certificate
      */
-    private static $exporter;
-
-    /**
-     * Assign a exporter to the class
-     *
-     * @param \Stickee\Instrumentation\Exporters\Exporter $exporter The exporter
-     */
-    public static function setExporter(Exporter $exporter)
+    public function __construct(EventsExporterInterface $eventsExporter, SpansExporterInterface $spansExporter)
     {
-        self::$exporter = $exporter;
+        $this->eventsExporter = $eventsExporter;
+        $this->spansExporter = $spansExporter;
     }
 
     /**
@@ -46,31 +31,34 @@ class Instrument implements EventsExporterInterface, SpansExporterInterface
      */
     public function setErrorHandler($errorHandler): void
     {
-        self::$exporter->setErrorHandler($errorHandler);
+        $this->eventsExporter->setErrorHandler($errorHandler);
+        $this->spansExporter->setErrorHandler($errorHandler);
     }
 
     /**
      * Record an event
      *
-     * @param string $name The class of event, e.g. "page_load"
+     * @param string $name The name of the event, e.g. "page_load_time"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
-     * @param float $value The value of the event, e.g. 1.0
+     * @param float $value The value of the event, e.g. 12.3
      */
     public function event(string $name, array $tags = [], float $value = 1): void
     {
-        self::$exporter->event($name, $tags, $value);
+        $this->eventsExporter->event($name, $tags, $value);
     }
 
     /**
      * Record an increase in a counter
      *
-     * @param string $name The class of event, e.g. "page_load"
+     * Use the `CUMULATIVE_SUM()` function in the InfluxDB query
+     *
+     * @param string $name The counter name, e.g. "page_load"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
     public function count(string $name, array $tags = [], float $increase = 1): void
     {
-        self::$exporter->count($name, $tags, $increase);
+        $this->eventsExporter->count($name, $tags, $increase);
     }
 
     /**
@@ -82,17 +70,16 @@ class Instrument implements EventsExporterInterface, SpansExporterInterface
      */
     public function gauge(string $name, array $tags, float $value): void
     {
-        self::$exporter->gauge($name, $tags, $value);
+        $this->eventsExporter->gauge($name, $tags, $value);
     }
 
     /**
      * Flush any queued writes
-     *
-     * @return void
      */
     public function flush(): void
     {
-        self::$exporter->flush();
+        $this->eventsExporter->flush();
+        $this->spansExporter->flush();
     }
 
     /**
@@ -108,7 +95,7 @@ class Instrument implements EventsExporterInterface, SpansExporterInterface
      */
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
-        return self::$exporter->span($name, $callable, $kind, $attributes);
+        return $this->spansExporter->span($name, $callable, $kind, $attributes);
     }
 
     /**
@@ -122,6 +109,6 @@ class Instrument implements EventsExporterInterface, SpansExporterInterface
      */
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
-        return self::$exporter->startSpan($name, $kind, $attributes);
+        return $this->spansExporter->startSpan($name, $kind, $attributes);
     }
 }

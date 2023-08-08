@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Facade as BaseFacade;
 class Facade extends BaseFacade
 {
     /**
-     * Get the facade accessor - an object implementing
-     * \Stickee\Instrumentation\Databases\DatabaseInterface
+     * Get the facade accessor
      */
     protected static function getFacadeAccessor()
     {

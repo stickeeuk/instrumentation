@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
-use Stickee\Instrumentation\Databases\Log;
+use Stickee\Instrumentation\Exporters\Events\Log;
 
 it('will resolve the filename from the service container', function (): void {
     Config::set('instrumentation.filename', base_path('test.log'));

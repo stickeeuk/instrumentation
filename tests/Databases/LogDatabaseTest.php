@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
 use phpmock\phpunit\PHPMock;
-use Stickee\Instrumentation\Databases\Log;
+use Stickee\Instrumentation\Exporters\Events\Log;
 use Stickee\Instrumentation\Exceptions\DatabaseWriteException;
 
 const LOG_EVENT = 'Event';
