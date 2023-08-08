@@ -15,10 +15,12 @@ composer require stickee/instrumentation
 To use the basic features, you must create an instrumentation exporter and record events to it.
 
 ```php
+use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
+use Stickee\Instrumentation\Exporters\Spans\NullSpan;
 
 // Create the exporter
-$exporter = new LogFile('/path/to/file.log');
+$exporter = new Exporter(new LogFile('/path/to/file.log'), new NullSpan());
 
 // Log an event
 $exporter->event('some_event');
@@ -29,11 +31,13 @@ $exporter->event('some_event');
 You can access your exporter statically by assigning it to the `Instrument` class.
 
 ```php
-use Stickee\Instrumentation\Exporters\Events\InfluxDb;
+use Stickee\Instrumentation\Exporters\Exporter;
+use Stickee\Instrumentation\Exporters\Events\LogFile;
+use Stickee\Instrumentation\Exporters\Spans\NullSpan;
 use Stickee\Instrumentation\Instrument;
 
 // Create the exporter
-$exporter = new LogFile('/path/to/file.log');
+$exporter = new Exporter(new LogFile('/path/to/file.log'), new NullSpan());
 
 // Assign to the Instrument class
 Instrument::setExporter($exporter);
@@ -215,7 +219,7 @@ This will start Grafana, Loki, Tempo InfluxDB, and the OpenTelemetry Collector a
  - OpenTelemetry Collector: http://localhost:4318 (this should be used for `INSTRUMENTATION_OPENTELEMETRY_DSN`)
  - InfluxDb: http://localhost:8086 (this should be used for `INSTRUMENTATION_INFLUXDB_URL`)
 
-### InfluxDB
+#### InfluxDB
 
 Go to `./vendor/stickee/instrumentation/docker/influxdb` and run `docker compose up`.
 This will start Chronograf and InfluxDB and expose them on your local machine.
