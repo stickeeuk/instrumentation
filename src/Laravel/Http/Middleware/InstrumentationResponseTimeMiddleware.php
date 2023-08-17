@@ -17,12 +17,12 @@ class InstrumentationResponseTimeMiddleware
 
         $response = $next($request);
 
-        if ($response->exception) {
+        if ($response->exception ?? null) {
             Instrument::event('exception', ['exception' => get_class($response->exception)]);
         }
 
         $tags = [
-            'status' => $response->status(),
+            'status' => $response->getStatusCode(),
             'success' => (bool)$response->isSuccessful()
         ];
 
