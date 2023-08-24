@@ -152,7 +152,7 @@ class ServiceProvider extends LaravelServiceProvider
 
             return TracerProvider::builder()
                 ->setSampler($sampler)
-                ->setResource(ResourceInfoFactory::merge($resourceInfo, ResourceInfoFactory::defaultResource()))
+                ->setResource($resourceInfo->merge($resourceInfo, ResourceInfoFactory::defaultResource()))
                 ->addSpanProcessor($processor)
                 ->build();
         });
