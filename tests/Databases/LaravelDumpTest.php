@@ -12,7 +12,7 @@ beforeEach(function (): void {
     $this->message = $this->faker()->sentence();
 
     $this
-        ->getFunctionMock('\\Stickee\\Instrumentation\\Databases\\', 'dump')
+        ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'dump')
         ->expects($this::once())
         ->withAnyParameters()
         ->willReturn(null);

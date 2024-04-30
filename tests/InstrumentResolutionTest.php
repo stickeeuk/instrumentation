@@ -6,21 +6,31 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Stickee\Instrumentation\Tests\Fixtures\BadDatabase;
 use Stickee\Instrumentation\Tests\Fixtures\GoodDatabase;
+use Stickee\Instrumentation\Exporters\Events\NullEvents;
+use Stickee\Instrumentation\Exporters\Spans\NullSpans;
 
-it('will throw an exception if the instrumentation database is not set', function (): void {
-    Config::set('instrumentation.database');
+it('will throw an exception if the events exporter is not set', function (): void {
+    Config::set('instrumentation.events_exporter', NullEvents::class);
+    Config::set('instrumentation.spans_exporter');
+
+    app('instrument');
+})->throws(Exception::class);
+
+it('will throw an exception if the spans exporter is not set', function (): void {
+    Config::set('instrumentation.events_exporter');
+    Config::set('instrumentation.spans_exporter', NullSpans::class);
 
     app('instrument');
 })->throws(Exception::class);
 
 it('will throw an exception if the given database class does not exist', function (): void {
-    Config::set('instrumentation.database', '\App\NonExisting\Class');
+    Config::set('instrumentation.events_exporter', '\App\NonExisting\Class');
 
     app('instrument');
 })->throws(Exception::class);
 
 it('will throw an exception if the given database class is not a database interface implementation', function (): void {
-    Config::set('instrumentation.database', BadDatabase::class);
+    Config::set('instrumentation.events_exporter', BadDatabase::class);
 
     app('instrument');
 })->throws(Exception::class);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
 use phpmock\phpunit\PHPMock;
-use Stickee\Instrumentation\Exporters\Events\Log;
-use Stickee\Instrumentation\Exceptions\DatabaseWriteException;
+use Stickee\Instrumentation\Exporters\Events\LogFile;
+use Stickee\Instrumentation\Exceptions\WriteException;
 
 const LOG_EVENT = 'Event';
 
@@ -13,9 +13,9 @@ uses(PHPMock::class);
 
 beforeEach(function (): void {
     $this->logFile = base_path('test.log');
-    Config::set('instrumentation.filename', $this->logFile);
+    Config::set('instrumentation.log_file.filename', $this->logFile);
 
-    $this->database = app(Log::class);
+    $this->database = app(LogFile::class);
 
     if (file_exists($this->logFile)) {
         rename($this->logFile, $this->logFile . '.backup');
@@ -24,16 +24,16 @@ beforeEach(function (): void {
 
 it('will handle any exception thrown whilst attempting to write to the log file', function (array $tags): void {
     $this
-        ->getFunctionMock('\\Stickee\\Instrumentation\\Databases\\', 'fopen')
+        ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'fopen')
         ->expects($this::once())
         ->withAnyParameters()
         ->willThrowException(new Exception('Not enough disk space!'));
 
     // Without an overridden handler, we will expect this exception thrown, not \Exception.
-    $this->expectException(DatabaseWriteException::class);
+    $this->expectException(WriteException::class);
 
     // For this test, we'll create another log database class.
-    $log = new Log($this->logFile);
+    $log = new LogFile($this->logFile);
     $log->event(LOG_EVENT, $tags);
 })->with('writable values');
 
