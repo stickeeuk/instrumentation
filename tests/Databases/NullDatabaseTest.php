@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Log;
-use Stickee\Instrumentation\Exporters\Events\NullDatabase;
+use Stickee\Instrumentation\Exporters\Events\NullEvents;
 
 beforeEach(function (): void {
-    $this->database = new NullDatabase();
+    $this->database = new NullEvents();
 });
 
 it('does nothing when receiving an event', function (): void {

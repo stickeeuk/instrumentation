@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
-use Stickee\Instrumentation\Exporters\Events\Log;
+use Stickee\Instrumentation\Exporters\Events\LogFile;
 
 beforeEach(function (): void {
     $this->filename = base_path('test.log');
-    Config::set('instrumentation.database', Log::class);
-    Config::set('instrumentation.filename', $this->filename);
+    Config::set('instrumentation.events_exporter', LogFile::class);
+    Config::set('instrumentation.log_file.filename', $this->filename);
 });
 
 afterEach(function (): void {

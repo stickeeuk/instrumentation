@@ -29,6 +29,10 @@ class LogFile implements EventsExporterInterface
      */
     public function __construct(string $filename)
     {
+        if ($filename === '') {
+            throw new Exception('Filename not specified');
+        }
+
         $this->filename = $filename;
     }
 
