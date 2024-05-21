@@ -6,7 +6,13 @@ use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 
-beforeEach(function (): void {
+$skipAll = !class_exists(OtlpHttpTransportFactory::class);
+
+beforeEach(function () use ($skipAll): void {
+    if ($skipAll) {
+        return;
+    }
+
     $this->mockTransport = $this->createMock(TransportInterface::class);
     $this->mockTransport->method('contentType')
         ->willReturn('application/json');
@@ -40,4 +46,4 @@ it('can record an event', function (): void {
     $this->exporter->event($eventName, []);
 
     $this->exporter->flush();
-});
+})->skip($skipAll, 'Skipped: OpenTelemetry composer packages not installed');

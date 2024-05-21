@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+use InfluxDB\Database;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\LoggerHolder;
@@ -94,7 +95,7 @@ class ServiceProvider extends LaravelServiceProvider
      */
     private function registerInfluxDb(): void
     {
-        if (!class_exists(InfluxDb::class)) {
+        if (!class_exists(Database::class)) {
             $this->app->bind(InfluxDb::class, function () {
                 throw new Exception('InfluxDB client library not installed, please run: composer require influxdata/influxdb-client-php');
             });
