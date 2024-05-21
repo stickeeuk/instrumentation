@@ -22,7 +22,6 @@ jobs:
                     - laravel: 10.*
                       testbench: 8.*
 
-
         name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
         steps:
@@ -44,7 +43,15 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+                  composer require \
+                    "laravel/framework:${{ matrix.laravel }}" \
+                    "orchestra/testbench:${{ matrix.testbench }}" \
+                    open-telemetry/exporter-otlp:^1.0 \
+                    open-telemetry/opentelemetry-logger-monolog:^1.0 \
+                    google/protobuf \
+                    influxdata/influxdb-client-php \
+                    --no-interaction \
+                    --no-update
                   composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
 
             - name: Execute tests
