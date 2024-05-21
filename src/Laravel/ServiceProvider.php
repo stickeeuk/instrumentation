@@ -19,7 +19,7 @@ use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
-use OpenTelemetry\SDK\Common\Export\Http\PsrTransport;
+use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Common\Time\ClockFactory;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
 use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
@@ -128,8 +128,8 @@ class ServiceProvider extends LaravelServiceProvider
      */
     private function registerOpenTelemetry(): void
     {
-        if (!class_exists(AlwaysOnSampler::class)) {
-            $this->app->bind(TracerProviderInterface::class, function () {
+        if (!class_exists(OtlpHttpTransportFactory::class)) {
+            $this->app->bind(OpenTelemetryConfig::class, function () {
                 throw new Exception('OpenTelemetry client library not installed, please run composer require - see README.md for packages required');
             });
 
@@ -207,11 +207,11 @@ class ServiceProvider extends LaravelServiceProvider
      * @param string $path The path to append to the DSN
      * @param string $contentType The content type
      *
-     * @return \OpenTelemetry\SDK\Common\Export\Http\PsrTransport
+     * @return \OpenTelemetry\SDK\Common\Export\TransportInterface
      */
-    private function getOtlpTransport(string $path, $contentType = 'application/json'): PsrTransport
+    private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {
-        return (new OtlpHttpTransportFactory())
+        return (app(OtlpHttpTransportFactory::class))
             ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
     }
 
