@@ -59,21 +59,11 @@ return [
      | Log file
      |--------------------------------------------------------------------------
      |
-     | Configuration for OpenTelemetry
+     | Configuration for LogFile
      */
     'log_file' => [
         'filename' => env('INSTRUMENTATION_LOG_FILE_FILENAME', 'instrumentation.log'),
     ],
-
-    /*
-     |--------------------------------------------------------------------------
-     | Filename
-     |--------------------------------------------------------------------------
-     |
-     | The log file name for file-based databases e.g.
-     | storage_path('app/instrument.log')
-     */
-    'filename' => env('INSTRUMENTATION_FILENAME'),
 
     /*
      |--------------------------------------------------------------------------
