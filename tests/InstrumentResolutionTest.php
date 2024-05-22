@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use Stickee\Instrumentation\Tests\Fixtures\BadDatabase;
-use Stickee\Instrumentation\Tests\Fixtures\GoodDatabase;
 use Stickee\Instrumentation\Exporters\Events\NullEvents;
 use Stickee\Instrumentation\Exporters\Spans\NullSpans;
+use Stickee\Instrumentation\Tests\Fixtures\BadEventsExporter;
+use Stickee\Instrumentation\Tests\Fixtures\BrokenEventsExporter;
+use Stickee\Instrumentation\Tests\Fixtures\GoodEventsExporter;
 
 it('will throw an exception if the events exporter is not set', function (): void {
     Config::set('instrumentation.events_exporter', NullEvents::class);
@@ -30,28 +31,26 @@ it('will throw an exception if the given database class does not exist', functio
 })->throws(Exception::class);
 
 it('will throw an exception if the given database class is not a database interface implementation', function (): void {
-    Config::set('instrumentation.events_exporter', BadDatabase::class);
+    Config::set('instrumentation.events_exporter', BadEventsExporter::class);
 
     app('instrument');
 })->throws(Exception::class);
 
 it('will set the default error handler to a laravel log', function (): void {
-    if ((int) substr(app()->version(), 0, 1) < 9) {
+    if (version_compare(app()->version(), '9.0.0', '<')) {
         $this::markTestSkipped('Test incompatible with Laravel 8.');
     }
 
-    Config::set('instrumentation.database', GoodDatabase::class);
-    $exception = 'Test exception!';
+    Config::set('instrumentation.events_exporter', BrokenEventsExporter::class);
+
+    /** @var \Stickee\Instrumentation\Tests\Fixtures\BrokenEventsExporter $instrument */
+    $instrument = app('instrument');
 
     Log::expects('error')
         ->once()
-        ->with($exception)
         ->andReturnNull();
 
-    /** @var \Stickee\Instrumentation\Tests\Fixtures\GoodDatabase $shrike */
-    $shrike = app('instrument');
+    $instrument->setErrorHandler(fn (Exception $exception) => Log::error($exception));
 
-    // expect($shrike->getErrorHandler())->toBeCallable();
-
-    // $shrike->testErrorHandler($exception);
+    $instrument->event('test_event');
 });

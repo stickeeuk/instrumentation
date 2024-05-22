@@ -17,10 +17,10 @@ To use the basic features, you must create an instrumentation exporter and recor
 ```php
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
-use Stickee\Instrumentation\Exporters\Spans\NullSpan;
+use Stickee\Instrumentation\Exporters\Spans\NullSpans;
 
 // Create the exporter
-$exporter = new Exporter(new LogFile('/path/to/file.log'), new NullSpan());
+$exporter = new Exporter(new LogFile('/path/to/file.log'), new NullSpans());
 
 // Log an event
 $exporter->event('some_event');
@@ -33,11 +33,11 @@ You can access your exporter statically by assigning it to the `Instrument` clas
 ```php
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
-use Stickee\Instrumentation\Exporters\Spans\NullSpan;
+use Stickee\Instrumentation\Exporters\Spans\NullSpans;
 use Stickee\Instrumentation\Instrument;
 
 // Create the exporter
-$exporter = new Exporter(new LogFile('/path/to/file.log'), new NullSpan());
+$exporter = new Exporter(new LogFile('/path/to/file.log'), new NullSpans());
 
 // Assign to the Instrument class
 Instrument::setExporter($exporter);
@@ -89,7 +89,7 @@ This module ships with the following classes:
 | LaravelDump   | Uses the [Laravel `dump()`](https://laravel.com/docs/master/helpers#method-dump) helper |
 | LaravelLog    | Writes to the [Laravel `Log`](https://laravel.com/docs/master/logging)                  |
 | LogFile       | Writes to a log file                                                                    |
-| NullDatabase  | Discards all data                                                                       |
+| NullEvents    | Discards all data                                                                       |
 
 **Note:** Only `OpenTelemetry` and `InfluxDb` are recommended for production use.
 The others are for development / debugging.
@@ -102,7 +102,7 @@ This module ships with the following classes:
 | Class         | Description                                                                      |
 |---------------|----------------------------------------------------------------------------------|
 | OpenTelemetry | Writes to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) |
-| NullSpan      | Discards all data                                                                |
+| NullSpans     | Discards all data                                                                |
 
 ## Laravel
 
@@ -116,7 +116,7 @@ composer require stickee/instrumentation
 
 This module ships with a Laravel service provider and facade, which will be automatically registered.
 
-If you're using InfluxDb then you can simply set `INSTRUMENTATION_EVENTS_EXPORTER` in your .env file
+If you're using InfluxDb then you can simply install the package (see below), set `INSTRUMENTATION_EVENTS_EXPORTER` in your .env file
 (and `INSTRUMENTATION_INFLUXDB_*` if necessary) then use the facade in your code - no further
 configuration is necessary:
 
@@ -142,17 +142,38 @@ If you want to use the `Instrument` facade, add this to the `facades` array in `
 
 ### Configuration
 
-The configuration defaults to the `NullDatabase`. To change this, set `INSTRUMENTATION_EVENTS_EXPORTER`
+| Variable                                           | Description                                                                                                    |
+|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation module. Default: `true`                                                  |
+| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents` |
+| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpan`       |
+| `INSTRUMENTATION_INFLUXDB_URL`                     | The URL of the InfluxDB database. Default: `http://localhost:8086`                                             |
+| `INSTRUMENTATION_INFLUXDB_TOKEN`                   | The authorization token for the InfluxDB database. Default: `my-super-secret-auth-token`                       |
+| `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                          |
+| `INSTRUMENTATION_INFLUXDB_ORG`                     | The organisation name for the InfluxDB database. Default: `stickee`                                            |
+| `INSTRUMENTATION_INFLUXDB_VERIFY_SSL`              | Verify the SSL certificate for the InfluxDB database. Default: `false`                                         |
+| `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector. Default: `http://localhost:4318`                                       |
+| `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to. Default: `instrumentation.log`                                                       |
+| `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware. Default: `true`                                                |
+| `INSTRUMENTATION_TRACE_SAMPLE_RATE`                | The rate at which to sample traces. Default: `1.0`                                                             |
+
+The configuration defaults to using `Null` exporters, which discard any data sent to them.
+To change this, set `INSTRUMENTATION_EVENTS_EXPORTER` and / or `INSTRUMENTATION_SPANS_EXPORTER`
 in your `.env` and add any other required variables.
 
-| Class         | `INSTRUMENTATION_EVENTS_EXPORTER` Value                               | Other Values                                                                                                                                                                                                                                                                                                                                                                                  |
+| Class         | `INSTRUMENTATION_EVENTS_EXPORTER` Value                        | Other Values                                                                                                                                                                                                                                                                                                                                                                                  |
 |---------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL                                                                                                                                                                                                                                                                                               |
 | InfluxDb      | `"Stickee\\Instrumentation\\Exporters\\Events\\InfluxDb"`      | `INSTRUMENTATION_INFLUXDB_URL="http://localhost:8086"` - The database URL<br>`INSTRUMENTATION_INFLUXDB_TOKEN="my-super-secret-auth-token"` - The authorization token<br>`INSTRUMENTATION_INFLUXDB_BUCKET="test"` - The bucket (database) name<br>`INSTRUMENTATION_INFLUXDB_ORG="stickee"` - The organisation name<br>`INSTRUMENTATION_INFLUXDB_VERIFY_SSL=false` - Verify the SSL certificate |
 | LaravelDump   | `"Stickee\\Instrumentation\\Exporters\\Events\\LaravelDump"`   | None                                                                                                                                                                                                                                                                                                                                                                                          |
 | LaravelLog    | `"Stickee\\Instrumentation\\Exporters\\Events\\LaravelLog"`    | None                                                                                                                                                                                                                                                                                                                                                                                          |
-| Log           | `"Stickee\\Instrumentation\\Exporters\\Events\\Log"`           | `INSTRUMENTATION_LOG_FILE_FILENAME="/path/to/file.log"` - The log file                                                                                                                                                                                                                                                                                                                        |
-| NullDatabase  | `"Stickee\\Instrumentation\\Exporters\\Events\\NullDatabase"`  | None                                                                                                                                                                                                                                                                                                                                                                                          |
+| LogFile       | `"Stickee\\Instrumentation\\Exporters\\Events\\LogFile"`       | `INSTRUMENTATION_LOG_FILE_FILENAME="/path/to/file.log"` - The log file                                                                                                                                                                                                                                                                                                                        |
+| NullEvents    | `"Stickee\\Instrumentation\\Exporters\\Events\\NullEvents"`    | None                                                                                                                                                                                                                                                                                                                                                                                          |
+
+| Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                         | Other Values                                                                                    |
+|---------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
+| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Events\\NullSpans"`     | None                                                                                            |
 
 If you wish to, you can copy the package config to your local config with the publish command,
 however this is **unnecessary** in normal usage:
@@ -163,10 +184,10 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 ### Using Open Telemetry
 
- - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:1.0.0beta-12 open-telemetry/opentelemetry-logger-monolog:^0.0.2 google/protobuf`
+ - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.0 open-telemetry/opentelemetry-logger-monolog:^1.0 google/protobuf`
  - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
  - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
- - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_OPENTELMETRY_*`
+ - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_OPENTELEMETRY_*`
 
 ### Using InfluxDb
 

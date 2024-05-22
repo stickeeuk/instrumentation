@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+use InfluxDB\Database;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\LoggerHolder;
@@ -19,11 +20,12 @@ use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
-use OpenTelemetry\SDK\Common\Export\Http\PsrTransport;
+use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Common\Time\ClockFactory;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
 use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
+use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
@@ -93,7 +95,7 @@ class ServiceProvider extends LaravelServiceProvider
      */
     private function registerInfluxDb(): void
     {
-        if (!class_exists(InfluxDb::class)) {
+        if (!class_exists(Database::class)) {
             $this->app->bind(InfluxDb::class, function () {
                 throw new Exception('InfluxDB client library not installed, please run: composer require influxdata/influxdb-client-php');
             });
@@ -127,8 +129,8 @@ class ServiceProvider extends LaravelServiceProvider
      */
     private function registerOpenTelemetry(): void
     {
-        if (!class_exists(AlwaysOnSampler::class)) {
-            $this->app->bind(TracerProviderInterface::class, function () {
+        if (!class_exists(OtlpHttpTransportFactory::class)) {
+            $this->app->bind(OpenTelemetryConfig::class, function () {
                 throw new Exception('OpenTelemetry client library not installed, please run composer require - see README.md for packages required');
             });
 
@@ -206,11 +208,11 @@ class ServiceProvider extends LaravelServiceProvider
      * @param string $path The path to append to the DSN
      * @param string $contentType The content type
      *
-     * @return \OpenTelemetry\SDK\Common\Export\Http\PsrTransport
+     * @return \OpenTelemetry\SDK\Common\Export\TransportInterface
      */
-    private function getOtlpTransport(string $path, $contentType = 'application/json'): PsrTransport
+    private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {
-        return (new OtlpHttpTransportFactory())
+        return (app(OtlpHttpTransportFactory::class))
             ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
     }
 

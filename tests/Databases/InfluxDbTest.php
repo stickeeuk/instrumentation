@@ -10,7 +10,13 @@ const INFLUX_EVENT = 'Event';
 const INFLUX_TAGS = [];
 const INFLUX_AMOUNT = 1.0;
 
-beforeEach(function (): void {
+$skipAll = !class_exists(Database::class);
+
+beforeEach(function () use ($skipAll): void {
+    if ($skipAll) {
+        return;
+    }
+
     Config::set('instrumentation.dsn', $this::EXAMPLE_DSN);
 
     $this->database = app(InfluxDb::class);
