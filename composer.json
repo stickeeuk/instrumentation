@@ -16,7 +16,7 @@
     },
     "require": {
         "php": "^8.2",
-        "plunkettscott/laravel-otel": "^0.4.1"
+        "plunkettscott/laravel-otel": "^0.4.2"
     },
     "require-dev": {
         "orchestra/testbench": "^8.0 || ^9.0",
