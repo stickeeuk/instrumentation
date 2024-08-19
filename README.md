@@ -172,8 +172,8 @@ in your `.env` and add any other required variables.
 
 | Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                         | Other Values                                                                                    |
 |---------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
-| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Events\\NullSpans"`     | None                                                                                            |
+| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Spans\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
+| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans"`     | None                                                                                            |
 
 If you wish to, you can copy the package config to your local config with the publish command,
 however this is **unnecessary** in normal usage:
