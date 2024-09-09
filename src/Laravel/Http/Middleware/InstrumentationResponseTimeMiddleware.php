@@ -4,7 +4,7 @@ namespace Stickee\Instrumentation\Laravel\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Stickee\Instrumentation\Laravel\Facade as Instrument;
+use Stickee\Instrumentation\Laravel\Facades\Instrument;
 
 class InstrumentationResponseTimeMiddleware
 {
