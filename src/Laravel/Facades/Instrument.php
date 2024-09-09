@@ -1,13 +1,13 @@
 <?php
 
-namespace Stickee\Instrumentation\Laravel;
+namespace Stickee\Instrumentation\Laravel\Facades;
 
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use Illuminate\Support\Facades\Facade;
 
 /**
  * Instrumentation Laravel facade
  */
-class Facade extends BaseFacade
+class Instrument extends Facade
 {
     /**
      * Get the facade accessor
