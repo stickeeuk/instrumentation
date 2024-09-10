@@ -108,7 +108,7 @@ This module ships with the following classes:
 
 ### Installation
 
-First install with Composer as normal:
+First install with Composer:
 
 ```bash
 composer require stickee/instrumentation
@@ -121,7 +121,7 @@ If you're using InfluxDb then you can simply install the package (see below), se
 configuration is necessary:
 
 ```php
-use Instrument;
+use Stickee\Instrumentation\Laravel\Facades\Instrument;
 
 Instrument::event('Hello World');
 ```
@@ -134,10 +134,10 @@ The module can be manually registered by adding this to the `providers` array in
 Stickee\Instrumentation\Laravel\ServiceProvider::class,
 ```
 
-If you want to use the `Instrument` facade, add this to the `facades` array in `config/app.php`:
+If you want to use the `Instrument` facade alias, add this to the `facades` array in `config/app.php`:
 
 ```php
-'Instrument' => Stickee\Instrumentation\Laravel\Facade::class,
+'Instrument' => Stickee\Instrumentation\Laravel\Facades\Instrument::class,
 ```
 
 ### Configuration
@@ -145,8 +145,8 @@ If you want to use the `Instrument` facade, add this to the `facades` array in `
 | Variable                                           | Description                                                                                                    |
 |----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation module. Default: `true`                                                  |
-| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents` |
-| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpan`       |
+| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents`   |
+| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpans`      |
 | `INSTRUMENTATION_INFLUXDB_URL`                     | The URL of the InfluxDB database. Default: `http://localhost:8086`                                             |
 | `INSTRUMENTATION_INFLUXDB_TOKEN`                   | The authorization token for the InfluxDB database. Default: `my-super-secret-auth-token`                       |
 | `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                          |

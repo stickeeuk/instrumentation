@@ -17,5 +17,5 @@ it('has a valid facade accessor', function (): void {
         }
     };
 
-    expect($facade::getAccessor())->toContain('instrument');
+    expect($facade::getAccessor())->toEqual('instrument');
 });

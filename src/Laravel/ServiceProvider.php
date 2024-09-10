@@ -78,12 +78,12 @@ class ServiceProvider extends LaravelServiceProvider
         });
 
         $this->app->singleton('instrument', function(Application $app) {
-            $database = $app->make(Exporter::class);
-            $database->setErrorHandler(function (Exception $e) {
+            $exporter = $app->make(Exporter::class);
+            $exporter->setErrorHandler(function (Exception $e) {
                 Log::error($e->getMessage());
             });
 
-            return $database;
+            return $exporter;
         });
 
         $this->registerInfluxDb();
