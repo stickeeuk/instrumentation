@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
+use Psr\Log\LogLevel;
+
 dataset('valid rfc 5424 events', [
-    '0 - Emergency' => ['emergency'],
-    '1 - Alert' => ['alert'],
-    '2 - Critical' => ['critical'],
-    '3 - Error' => ['error'],
-    '4 - Warning' => ['warning'],
-    '5 - Notice' => ['notice'],
-    '6 - Informational' => ['info'],
-    '7 - Debug' => ['debug'],
+    '0 - Emergency' => [LogLevel::EMERGENCY],
+    '1 - Alert' => [LogLevel::ALERT],
+    '2 - Critical' => [LogLevel::CRITICAL],
+    '3 - Error' => [LogLevel::ERROR],
+    '4 - Warning' => [LogLevel::WARNING],
+    '5 - Notice' => [LogLevel::NOTICE],
+    '6 - Informational' => [LogLevel::INFO],
+    '7 - Debug' => [LogLevel::DEBUG],
 ]);

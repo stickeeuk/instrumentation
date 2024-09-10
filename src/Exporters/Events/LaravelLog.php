@@ -3,6 +3,8 @@
 namespace Stickee\Instrumentation\Exporters\Events;
 
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Psr\Log\LogLevel;
 use Stickee\Instrumentation\Exporters\Events\Traits\WritesStrings;
 use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
@@ -16,28 +18,15 @@ class LaravelLog implements EventsExporterInterface
     use WritesStrings;
 
     /**
-     * The log level
-     *
-     * @var string $level
-     */
-    private $level;
-
-    /**
-     * An error handler function that takes an Exception as an argument
-     * Must be callable with `call_user_func()`
-     *
-     * @var mixed $errorHandler
-     */
-    private $errorHandler;
-
-    /**
      * Constructor
      *
-     * @param string $level The log level - must be one from the RFC 5424 specification: emergency, alert, critical, error, warning, notice, info and debug
+     * @param string $level The log level - must be one from the RFC 5424 / PSR-3 specification (\Psr\Log\LogLevel)
      */
-    public function __construct(string $level = 'debug')
+    public function __construct(private string $level = LogLevel::DEBUG)
     {
-        $this->level = $level;
+        if (!defined(LogLevel::class . '::' . strtoupper($this->level))) {
+            throw new InvalidArgumentException("Invalid log level: {$this->level}");
+        }
     }
 
     /**
@@ -45,7 +34,7 @@ class LaravelLog implements EventsExporterInterface
      *
      * @param string $message The message to write
      */
-    protected function write($message): void
+    protected function write(string $message): void
     {
         Log::{$this->level}($message);
     }

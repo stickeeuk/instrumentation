@@ -11,8 +11,7 @@ beforeEach(function (): void {
     $this->database = new LaravelDump();
     $this->message = $this->faker()->sentence();
 
-    $this
-        ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'dump')
+    $this->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'dump')
         ->expects($this::once())
         ->withAnyParameters()
         ->willReturn(null);
