@@ -57,7 +57,7 @@ class OpenTelemetry implements EventsExporterInterface
             ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND) // Can we do this at the processor level?
             ->setAttributes($tags);
 
-        $this->config->eventLogger->logEvent($name, $log);
+        $this->config->eventLogger->emit($name, $log);
     }
 
     /**
