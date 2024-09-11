@@ -15,8 +15,7 @@
         }
     },
     "require": {
-        "php": "^8.3",
-        "plunkettscott/laravel-otel": "^0.4.2"
+        "php": "^8.3"
     },
     "require-dev": {
         "orchestra/testbench": "^8.0 || ^9.0",
@@ -27,15 +26,17 @@
     "suggest": {
         "influxdata/influxdb-client-php": "Send metrics to InfluxDB",
         "open-telemetry/exporter-otlp:^1.1.": "Send metrics using OpenTelemetry",
-        "open-telemetry/opentelemetry-logger-monolog:^1.0": "Send metrics using OpenTelemetry"
+        "open-telemetry/opentelemetry-logger-monolog:^1.0": "Send logs using OpenTelemetry"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Stickee\\Instrumentation\\Laravel\\ServiceProvider"
+                "Stickee\\Instrumentation\\Laravel\\Providers\\InfluxDbServiceProvider",
+                "Stickee\\Instrumentation\\Laravel\\Providers\\InstrumentationServiceProvider",
+                "Stickee\\Instrumentation\\Laravel\\Providers\\OpenTelemetryServiceProvider"
             ],
             "aliases": {
-                "Instrument": "Stickee\\Instrumentation\\Laravel\\Facade"
+                "Instrument": "Stickee\\Instrumentation\\Laravel\\Facades\\Instrument"
             }
         }
     },
