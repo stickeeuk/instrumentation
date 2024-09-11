@@ -18,13 +18,6 @@ abstract class TestCase extends OrchestraTestCase
 {
     use WithFaker;
 
-    /**
-     * Example DSN for use in tests.
-     *
-     * @var string
-     */
-    public const EXAMPLE_DSN = 'https+influxdb://username:password@localhost:8086/databasename';
-
     /** @inheritDoc */
     protected function getPackageProviders($app): array
     {
