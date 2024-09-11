@@ -9,19 +9,16 @@ use Stickee\Instrumentation\Spans\SpanInterface;
 
 class Exporter implements EventsExporterInterface, SpansExporterInterface
 {
-    private EventsExporterInterface $eventsExporter;
-    private SpansExporterInterface $spansExporter;
-
     /**
      * Constructor
      *
-     * @param string $dsn The connection string
-     * @param bool $verifySsl Verify the database SSL certificate
+     * @param \Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface $eventsExporter The events exporter
+     * @param \Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface $spansExporter The spans exporter
      */
-    public function __construct(EventsExporterInterface $eventsExporter, SpansExporterInterface $spansExporter)
-    {
-        $this->eventsExporter = $eventsExporter;
-        $this->spansExporter = $spansExporter;
+    public function __construct(
+        private readonly EventsExporterInterface $eventsExporter,
+        private readonly SpansExporterInterface $spansExporter
+    ) {
     }
 
     /**
@@ -49,8 +46,6 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
 
     /**
      * Record an increase in a counter
-     *
-     * Use the `CUMULATIVE_SUM()` function in the InfluxDB query
      *
      * @param string $name The counter name, e.g. "page_load"
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]

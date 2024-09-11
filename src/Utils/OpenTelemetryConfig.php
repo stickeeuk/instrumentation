@@ -10,34 +10,6 @@ use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 class OpenTelemetryConfig
 {
     /**
-     * The meter provider
-     *
-     * @var \OpenTelemetry\SDK\Metrics\MeterProviderInterface $meterProvider
-     */
-    public MeterProviderInterface $meterProvider;
-
-    /**
-     * The meter
-     *
-     * @var \OpenTelemetry\API\Metrics\MeterInterface $meter
-     */
-    public MeterInterface $meter;
-
-    /**
-     * The logger provider
-     *
-     * @var \OpenTelemetry\SDK\Logs\LoggerProviderInterface $loggerProvider
-     */
-    public LoggerProviderInterface $loggerProvider;
-
-    /**
-     * The event logger
-     *
-     * @var \OpenTelemetry\API\Logs\EventLoggerInterface $eventLogger
-     */
-    public EventLoggerInterface $eventLogger;
-
-    /**
      * Constructor
      *
      * @param \OpenTelemetry\SDK\Metrics\MeterProviderInterface $meterProvider The meter provider
@@ -46,14 +18,10 @@ class OpenTelemetryConfig
      * @param \OpenTelemetry\API\Logs\EventLoggerInterface $eventLogger The event logger
      */
     public function __construct(
-        MeterProviderInterface $meterProvider,
-        MeterInterface $meter,
-        LoggerProviderInterface $loggerProvider,
-        EventLoggerInterface $eventLogger
+        public readonly MeterProviderInterface $meterProvider,
+        public readonly MeterInterface $meter,
+        public readonly LoggerProviderInterface $loggerProvider,
+        public readonly EventLoggerInterface $eventLogger
     ) {
-        $this->meterProvider = $meterProvider;
-        $this->meter = $meter;
-        $this->loggerProvider = $loggerProvider;
-        $this->eventLogger = $eventLogger;
     }
 }
