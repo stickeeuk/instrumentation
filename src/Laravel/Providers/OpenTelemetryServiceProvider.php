@@ -1,15 +1,9 @@
 <?php
 
-namespace Stickee\Instrumentation\Laravel;
+namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
-use InfluxDB\Database;
+use Illuminate\Support\ServiceProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
@@ -36,18 +30,14 @@ use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
-use Stickee\Instrumentation\Exporters\Events\InfluxDb;
-use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
-use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Laravel\Config;
-use Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware;
 use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 
 /**
- * Instrumentation service provider
+ * Open Telemetry service provider
  */
-class ServiceProvider extends LaravelServiceProvider
+class OpenTelemetryServiceProvider extends ServiceProvider
 {
     /**
      * The config
@@ -63,74 +53,7 @@ class ServiceProvider extends LaravelServiceProvider
     {
         $this->config = $this->app->make(Config::class);
 
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../config/instrumentation.php', 'instrumentation'
-        );
-
-        $this->app->when(LogFile::class)
-            ->needs('$filename')
-            ->give(fn () => $this->config->logFile('filename'));
-
-        $this->app->bind(Exporter::class, function(Application $app) {
-            $eventsExporter = $app->make($this->config->eventsExporterClass());
-            $spansExporter = $app->make($this->config->spansExporterClass());
-
-            return new Exporter($eventsExporter, $spansExporter);
-        });
-
-        $this->app->singleton('instrument', function(Application $app) {
-            $exporter = $app->make(Exporter::class);
-            $exporter->setErrorHandler(function (Exception $e) {
-                Log::error($e->getMessage());
-            });
-
-            return $exporter;
-        });
-
-        $this->registerInfluxDb();
-        $this->registerOpenTelemetry();
-    }
-
-    /**
-     * Register InfluxDb
-     */
-    private function registerInfluxDb(): void
-    {
-        if (!class_exists(Database::class)) {
-            $this->app->bind(InfluxDb::class, function () {
-                throw new Exception('InfluxDB client library not installed, please run: composer require influxdata/influxdb-client-php');
-            });
-
-            return;
-        }
-
-        $this->app->when(InfluxDb::class)
-            ->needs('$url')
-            ->give(fn () => $this->config->influxDb('url'));
-
-        $this->app->when(InfluxDb::class)
-            ->needs('$token')
-            ->give(fn () => $this->config->influxDb('token'));
-
-        $this->app->when(InfluxDb::class)
-            ->needs('$bucket')
-            ->give(fn () => $this->config->influxDb('bucket'));
-
-        $this->app->when(InfluxDb::class)
-            ->needs('$org')
-            ->give(fn () => $this->config->influxDb('org'));
-
-        $this->app->when(InfluxDb::class)
-            ->needs('$verifySsl')
-            ->give(fn () => $this->config->influxDb('verify_ssl'));
-    }
-
-    /**
-     * Register Open Telemetry classes
-     */
-    private function registerOpenTelemetry(): void
-    {
-        if (!class_exists(OtlpHttpTransportFactory::class)) {
+        if (!$this->openTelemetryIsInstalled()) {
             $this->app->bind(OpenTelemetryConfig::class, function () {
                 throw new Exception('OpenTelemetry client library not installed, please run composer require - see README.md for packages required');
             });
@@ -222,55 +145,20 @@ class ServiceProvider extends LaravelServiceProvider
      */
     public function boot(): void
     {
+        if (!$this->openTelemetryIsInstalled()) {
+            return;
+        }
+
         // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
         // is not available, the logs will still be sent to stderr instead of throwing an exception
         LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
-
-        // Flush events when a command finishes
-        Event::listen('Illuminate\Console\Events\CommandFinished', function () {
-            app('instrument')->flush();
-        });
-
-        // Flush events when a queue job completes
-        Queue::after(function () {
-            app('instrument')->flush();
-        });
-
-        // Flush events when a queue job fails
-        Queue::failing(function () {
-            app('instrument')->flush();
-        });
-
-        if ($this->app->runningUnitTests()) {
-            return;
-        }
-
-        if ($this->config->responseTimeMiddlewareEnabled()) {
-            $this->registerResponseTimeMiddleware();
-        }
-
-        if (!$this->app->runningInConsole()) {
-            return;
-        }
-
-        $this->publishes([
-            __DIR__ . '/../../config/instrumentation.php' => config_path('instrumentation.php'),
-        ]);
     }
 
     /**
-     * Register the response time middleware
+     * Check if OpenTelemetry is installed
      */
-    private function registerResponseTimeMiddleware(): void
+    private function openTelemetryIsInstalled(): bool
     {
-        // We attach to the HttpKernel, so we need it to be available.
-        if (!$this->app->bound(Kernel::class)) {
-            return;
-        }
-
-        /** @var \use Illuminate\Contracts\Http\Kernel $httpKernel */
-        $httpKernel = $this->app->make(Kernel::class);
-
-        $httpKernel->prependMiddleware(InstrumentationResponseTimeMiddleware::class);
+        return class_exists(OtlpHttpTransportFactory::class);
     }
 }

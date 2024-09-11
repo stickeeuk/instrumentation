@@ -134,7 +134,9 @@ Instrument::event('Hello World');
 The module can be manually registered by adding this to the `providers` array in `config/app.php`:
 
 ```php
-Stickee\Instrumentation\Laravel\ServiceProvider::class,
+Stickee\Instrumentation\Laravel\Providers\InfluxDbServiceProvider::class,
+Stickee\Instrumentation\Laravel\Providers\InstrumentationServiceProvider::class,
+Stickee\Instrumentation\Laravel\Providers\OpenTelemetryServiceProvider::class,
 ```
 
 If you want to use the `Instrument` facade alias, add this to the `facades` array in `config/app.php`:
@@ -187,7 +189,7 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 ### Using Open Telemetry
 
- - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.1 open-telemetry/opentelemetry-logger-monolog:^1.0`
+ - Install OpenTelemetry packages: `composer require plunkettscott/laravel-otel open-telemetry/exporter-otlp:^1.1 open-telemetry/opentelemetry-logger-monolog:^1.0`
  - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
  - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_OPENTELEMETRY_*`
