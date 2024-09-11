@@ -189,10 +189,12 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 ### Using Open Telemetry
 
- - Install OpenTelemetry packages: `composer require plunkettscott/laravel-otel open-telemetry/exporter-otlp:^1.1 open-telemetry/opentelemetry-logger-monolog:^1.0`
- - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
- - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
+ - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.1 open-telemetry/opentelemetry-logger-monolog:^1.0`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_OPENTELEMETRY_*`
+ - For automated tracking of some events, install [laravel-otel](https://github.com/plunkettscott/laravel-otel):
+   - `composer require plunkettscott/laravel-opentelemetry`
+   - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
+   - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
 
 ### Using InfluxDb
 
