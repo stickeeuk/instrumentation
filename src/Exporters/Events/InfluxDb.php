@@ -44,14 +44,16 @@ class InfluxDb implements EventsExporterInterface
      */
     public function __construct(string $url, string $token, string $bucket, string $org, bool $verifySsl = true)
     {
-        $this->client = new Client([
-            'url' => $url,
-            'token' => $token,
-            'bucket' => $bucket,
-            'org' => $org,
-            'precision' => WritePrecision::NS,
-            'timeout' => 2,
-            'verifySSL' => $verifySsl,
+        $this->client = app(Client::class, [
+            'options' => [
+                'url' => $url,
+                'token' => $token,
+                'bucket' => $bucket,
+                'org' => $org,
+                'precision' => WritePrecision::NS,
+                'timeout' => 2,
+                'verifySSL' => $verifySsl,
+            ],
         ]);
     }
 

@@ -6,10 +6,8 @@ use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 
-$skipAll = !class_exists(OtlpHttpTransportFactory::class);
-
-beforeEach(function () use ($skipAll): void {
-    if ($skipAll) {
+beforeEach(function (): void {
+    if (!class_exists(OtlpHttpTransportFactory::class)) {
         return;
     }
 
@@ -34,7 +32,7 @@ beforeEach(function () use ($skipAll): void {
     });
 
     $this->exporter = app(OpenTelemetry::class);
-});
+})->skip(!class_exists(OtlpHttpTransportFactory::class), 'Skipped: OpenTelemetry composer packages not installed');
 
 it('can record an event', function (): void {
     $eventName = 'STICKEE TEST EVENT';
@@ -46,4 +44,4 @@ it('can record an event', function (): void {
     $this->exporter->event($eventName, []);
 
     $this->exporter->flush();
-})->skip($skipAll, 'Skipped: OpenTelemetry composer packages not installed');
+});

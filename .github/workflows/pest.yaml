@@ -13,7 +13,6 @@ jobs:
       matrix:
         php: ["8.3"]
         laravel: [11.*]
-        dependency-version: [prefer-stable]
         os: [ubuntu-latest]
         include:
           - laravel: 11.*
@@ -44,13 +43,11 @@ jobs:
           composer require \
             "laravel/framework:${{ matrix.laravel }}" \
             "orchestra/testbench:${{ matrix.testbench }}" \
-            open-telemetry/exporter-otlp:^1.0 \
+            plunkettscott/laravel-otel \
+            open-telemetry/exporter-otlp:^1.1 \
             open-telemetry/opentelemetry-logger-monolog:^1.0 \
-            google/protobuf \
             influxdata/influxdb-client-php \
-            --no-interaction \
-            --no-update
-          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
+            --no-interaction
 
       - name: Execute tests
         run: vendor/bin/pest
