@@ -85,9 +85,12 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         $this->app->bindIf(MeterProviderInterface::class, function () {
             $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
+            $reader = new ExportingReader($exporter);
+
+            register_shutdown_function(fn () => $reader->shutdown());
 
             return MeterProvider::builder()
-                ->addReader(new ExportingReader($exporter))
+                ->addReader($reader)
                 ->build();
         });
 
