@@ -8,6 +8,9 @@ This a Composer module for recording metrics.
 composer require stickee/instrumentation
 ```
 
+> Installing the [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php)
+> is recommended for performance reasons if using OpenTelemetry.
+
 ## Configuration
 
 ### Basic Usage
@@ -184,7 +187,7 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 ### Using Open Telemetry
 
- - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.0 open-telemetry/opentelemetry-logger-monolog:^1.0 google/protobuf`
+ - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.1 open-telemetry/opentelemetry-logger-monolog:^1.0`
  - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
  - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_OPENTELEMETRY_*`

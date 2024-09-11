@@ -12,8 +12,8 @@ use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use InfluxDB\Database;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use OpenTelemetry\API\Common\Time\Clock;
 use OpenTelemetry\API\LoggerHolder;
-use OpenTelemetry\API\Logs\EventLogger;
 use OpenTelemetry\Contrib\Logs\Monolog\Handler;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
@@ -21,9 +21,10 @@ use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
-use OpenTelemetry\SDK\Common\Time\ClockFactory;
+use OpenTelemetry\SDK\Logs\EventLogger;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
 use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
+use OpenTelemetry\SDK\Metrics\Data\Temporality;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
@@ -160,7 +161,7 @@ class ServiceProvider extends LaravelServiceProvider
         });
 
         $this->app->bindIf(MeterProviderInterface::class, function () {
-            $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'));
+            $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
 
             return MeterProvider::builder()
                 ->addReader(new ExportingReader($exporter))
@@ -169,7 +170,7 @@ class ServiceProvider extends LaravelServiceProvider
 
         $this->app->bindIf(LoggerProvider::class, function () {
             $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
-            $processor = (new BatchLogRecordProcessor($exporter, ClockFactory::getDefault()));
+            $processor = (new BatchLogRecordProcessor($exporter, Clock::getDefault()));
 
             register_shutdown_function(fn () => $processor->shutdown());
 
@@ -187,7 +188,7 @@ class ServiceProvider extends LaravelServiceProvider
             $loggerProvider = $this->app->make(LoggerProvider::class);
             $logger = $loggerProvider->getLogger($appName);
 
-            $eventLogger = new EventLogger($logger, $appName);
+            $eventLogger = new EventLogger($logger, Clock::getDefault());
 
             return new OpenTelemetryConfig($meterProvider, $meter, $loggerProvider, $eventLogger);
         });

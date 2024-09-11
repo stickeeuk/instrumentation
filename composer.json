@@ -26,7 +26,7 @@
     },
     "suggest": {
         "influxdata/influxdb-client-php": "Send metrics to InfluxDB",
-        "open-telemetry/exporter-otlp:^1.0.": "Send metrics using OpenTelemetry",
+        "open-telemetry/exporter-otlp:^1.1.": "Send metrics using OpenTelemetry",
         "open-telemetry/opentelemetry-logger-monolog:^1.0": "Send metrics using OpenTelemetry"
     },
     "extra": {
@@ -46,7 +46,8 @@
         "optimize-autoloader": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     }
 }
