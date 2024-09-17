@@ -60,8 +60,10 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             return new Handler(Globals::loggerProvider(), 'info', true);
         });
 
-        $this->app->bind(EventLoggerProviderInterface::class, fn () => Globals::eventLoggerProvider());
+        $this->app->bind(TracerProviderInterface::class, fn () => Globals::tracerProvider());
         $this->app->bind(MeterProviderInterface::class, fn () => Globals::meterProvider());
+        $this->app->bind(LoggerProviderInterface::class, fn () => Globals::loggerProvider());
+        $this->app->bind(EventLoggerProviderInterface::class, fn () => Globals::eventLoggerProvider());
     }
 
     private function getTracerProvider(): TracerProviderInterface
