@@ -2,11 +2,12 @@
 
 namespace Stickee\Instrumentation\Laravel\Providers;
 
-use Exception;
 use Illuminate\Support\ServiceProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
+use OpenTelemetry\API\Globals;
+use OpenTelemetry\API\Instrumentation\Configurator;
 use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\Contrib\Logs\Monolog\Handler;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
@@ -15,8 +16,10 @@ use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
-use OpenTelemetry\SDK\Logs\EventLogger;
+use OpenTelemetry\SDK\Logs\EventLoggerProvider;
+use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
+use OpenTelemetry\SDK\Logs\LoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\Data\Temporality;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
@@ -32,7 +35,6 @@ use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
-use Stickee\Instrumentation\Utils\OpenTelemetryConfig;
 
 /**
  * Open Telemetry service provider
@@ -53,80 +55,60 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     {
         $this->config = $this->app->make(Config::class);
 
-        if (!$this->openTelemetryIsInstalled()) {
-            $this->app->bind(OpenTelemetryConfig::class, function () {
-                throw new Exception('OpenTelemetry client library not installed, please run composer require - see README.md for packages required');
-            });
-
-            return;
-        }
-
-        $this->app->singleton(TracerProviderInterface::class, function () {
-            $sampler = $this->config->traceSampleRate() == 1
-                ? new AlwaysOnSampler()
-                : new TraceIdRatioBasedSampler($this->config->traceSampleRate());
-
-            $resourceInfo = ResourceInfo::create(Attributes::create([
-                ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
-                ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
-            ]));
-
-            $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
-            $processor = BatchSpanProcessor::builder($exporter)->build();
-
-            register_shutdown_function(fn () => $processor->shutdown());
-
-            return TracerProvider::builder()
-                ->setSampler($sampler)
-                ->setResource($resourceInfo->merge($resourceInfo, ResourceInfoFactory::defaultResource()))
-                ->addSpanProcessor($processor)
-                ->build();
-        });
-
-        $this->app->bindIf(MeterProviderInterface::class, function () {
-            $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
-            $reader = new ExportingReader($exporter);
-
-            register_shutdown_function(fn () => $reader->shutdown());
-
-            return MeterProvider::builder()
-                ->addReader($reader)
-                ->build();
-        });
-
-        $this->app->bindIf(LoggerProvider::class, function () {
-            $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
-            $processor = (new BatchLogRecordProcessor($exporter, Clock::getDefault()));
-
-            register_shutdown_function(fn () => $processor->shutdown());
-
-            return LoggerProvider::builder()
-                ->addLogRecordProcessor($processor)
-                ->build();
-        });
-
-        $this->app->singleton(OpenTelemetryConfig::class, function () {
-            $appName = config('app.name', 'laravel');
-
-            $meterProvider = $this->app->make(MeterProviderInterface::class);
-            $meter = $meterProvider->getMeter($appName);
-
-            $loggerProvider = $this->app->make(LoggerProvider::class);
-            $logger = $loggerProvider->getLogger($appName);
-
-            $eventLogger = new EventLogger($logger, Clock::getDefault());
-
-            return new OpenTelemetryConfig($meterProvider, $meter, $loggerProvider, $eventLogger);
-        });
-
         // Handler for sending `Log::...` calls to the OpenTelemetry collector
         $this->app->bindIf(Handler::class, function () {
-            return new Handler(
-                $this->app->make(OpenTelemetryConfig::class)->loggerProvider,
-                'info',
-                true,
-            );
+            return new Handler(Globals::loggerProvider(), 'info', true);
         });
+
+        $this->app->bind(EventLoggerProviderInterface::class, fn () => Globals::eventLoggerProvider());
+        $this->app->bind(MeterProviderInterface::class, fn () => Globals::meterProvider());
+    }
+
+    private function getTracerProvider(): TracerProviderInterface
+    {
+        $sampler = $this->config->traceSampleRate() == 1
+            ? new AlwaysOnSampler()
+            : new TraceIdRatioBasedSampler($this->config->traceSampleRate());
+
+        $resourceInfo = ResourceInfo::create(Attributes::create([
+            ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
+            ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
+        ]));
+
+        $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
+        $processor = BatchSpanProcessor::builder($exporter)->build();
+
+        register_shutdown_function(fn () => $processor->shutdown());
+
+        return TracerProvider::builder()
+            ->setSampler($sampler)
+            ->setResource($resourceInfo->merge($resourceInfo, ResourceInfoFactory::defaultResource()))
+            ->addSpanProcessor($processor)
+            ->build();
+    }
+
+    private function getMeterProvider(): MeterProviderInterface
+    {
+        $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
+        $reader = new ExportingReader($exporter);
+
+        register_shutdown_function(fn () => $reader->shutdown());
+
+        return MeterProvider::builder()
+            ->addReader($reader)
+            ->build();
+    }
+
+    private function getLoggerProvider(): LoggerProviderInterface
+    {
+        $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
+        $processor = (new BatchLogRecordProcessor($exporter, Clock::getDefault()));
+
+        register_shutdown_function(fn () => $processor->shutdown());
+
+        return LoggerProvider::builder()
+            ->addLogRecordProcessor($processor)
+            ->build();
     }
 
     /**
@@ -139,6 +121,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {
+        dump(app(OtlpHttpTransportFactory::class));
         return (app(OtlpHttpTransportFactory::class))
             ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
     }
@@ -148,20 +131,26 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!$this->openTelemetryIsInstalled()) {
-            return;
+        static $booted = false;
+
+        if (!$booted) {
+            dump('booting OpenTelemetryServiceProvider');
+            // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
+            // is not available, the logs will still be sent to stderr instead of throwing an exception
+            LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
+
+            $loggerProvider = $this->getLoggerProvider();
+
+            $configurator = Configurator::create()
+                ->withTracerProvider($this->getTracerProvider())
+                ->withMeterProvider($this->getMeterProvider())
+                ->withLoggerProvider($loggerProvider)
+                ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
+
+            $scope = $configurator->activate();
+
+            register_shutdown_function(fn () => $scope->detach());
+            // $booted = true;
         }
-
-        // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
-        // is not available, the logs will still be sent to stderr instead of throwing an exception
-        LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
-    }
-
-    /**
-     * Check if OpenTelemetry is installed
-     */
-    private function openTelemetryIsInstalled(): bool
-    {
-        return class_exists(OtlpHttpTransportFactory::class);
     }
 }

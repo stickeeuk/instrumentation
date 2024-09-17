@@ -14,18 +14,21 @@ beforeEach(function (): void {
     $this->mockTransport = $this->createMock(TransportInterface::class);
     $this->mockTransport->method('contentType')
         ->willReturn('application/json');
-
+dump('BINDING TRANSPORT');
     app()->bind(OtlpHttpTransportFactory::class, function () {
+        dump('CREATING TRANSPORT');
         return new class ($this->mockTransport) {
             private TransportInterface $mockTransport;
 
             public function __construct(TransportInterface $mockTransport)
             {
+                dump('CONSTRUCTING TRANSPORT');
                 $this->mockTransport = $mockTransport;
             }
 
             public function create(): TransportInterface
             {
+                dump('xxxxxxxxxxxxxxxxx');
                 return $this->mockTransport;
             }
         };
