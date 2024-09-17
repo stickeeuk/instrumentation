@@ -2,12 +2,13 @@
 
 namespace Stickee\Instrumentation\Exporters\Spans;
 
+use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\Trace\SpanKind;
-use PlunkettScott\LaravelOpenTelemetry\Otel;
 use Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 use Stickee\Instrumentation\Spans\OpenTelemetrySpan;
 use Stickee\Instrumentation\Spans\SpanInterface;
+use Throwable;
 
 /**
  * Create OpenTelemetry spans
@@ -29,7 +30,35 @@ class OpenTelemetry implements SpansExporterInterface
      */
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
-        return Otel::span($name, $callable, $kind, $attributes);
+        // if (! config('otel.enabled')) {
+        //     if (is_null($callable)) {
+        //         return null;
+        //     }
+
+        //     return $callable(CurrentSpan::get());
+        // }
+
+        // TODO make static or get existing tracer
+        $tracer = Globals::tracerProvider()->getTracer('instrumentation');
+        $span = $tracer->spanBuilder($name)
+            ->setSpanKind($kind)
+            ->setAttributes($attributes)
+            ->startSpan();
+        $spanScope = $span->activate();
+
+        try {
+            return $callable($span);
+        } catch (Throwable $e) {
+            $span->recordException($e, [
+                'exception.line' => $e->getLine(),
+                'exception.file' => $e->getFile(),
+                'exception.code' => $e->getCode(),
+            ]);
+            throw $e;
+        } finally {
+            $spanScope->detach();
+            $span->end();
+        }
     }
 
     /**
@@ -43,7 +72,9 @@ class OpenTelemetry implements SpansExporterInterface
      */
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
-        $span = Otel::tracer()->spanBuilder($name)
+        // TODO make static or get existing tracer
+        $tracer = Globals::tracerProvider()->getTracer('instrumentation');
+        $span = $tracer->spanBuilder($name)
             ->setSpanKind($kind)
             ->setAttributes($attributes)
             ->startSpan();

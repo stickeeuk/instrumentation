@@ -7,7 +7,7 @@ use InfluxDB2\Client;
 use InfluxDB2\Model\WritePrecision;
 use InfluxDB2\Point;
 use InfluxDB2\WriteType;
-use PlunkettScott\LaravelOpenTelemetry\CurrentSpan;
+use OpenTelemetry\API\Trace\Span;
 use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 
@@ -99,13 +99,10 @@ class InfluxDb implements EventsExporterInterface
      */
     public function gauge(string $name, array $tags, float $value): void
     {
-        // TODO make this generic for other span types
-        if (class_exists(CurrentSpan::class)) {
-            $context = CurrentSpan::get()->getContext();
+        $context = Span::getCurrent()->getContext();
 
-            $tags['trace_id'] = $context->getTraceId();
-            $tags['span_id'] = $context->getSpanId();
-        }
+        $tags['trace_id'] = $context->getTraceId();
+        $tags['span_id'] = $context->getSpanId();
 
         // Tags must be strings, so remove nulls and convert the rest
         $tags = array_filter($tags, static fn ($value) => $value !== null);
