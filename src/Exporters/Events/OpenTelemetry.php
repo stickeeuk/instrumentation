@@ -2,11 +2,13 @@
 
 namespace Stickee\Instrumentation\Exporters\Events;
 
+use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\Logs\LogRecord;
 use OpenTelemetry\SDK\Logs\EventLogger;
 use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
 use OpenTelemetry\SDK\Metrics\Meter;
 use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
+use OpenTelemetry\SDK\Trace\Span;
 use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 
@@ -52,6 +54,9 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function event(string $name, array $tags = [], float $value = 1): void
     {
+        // TODO use this as well? Instead?
+        // Span::getCurrent()->addEvent($name, $tags);
+
         $log = (new LogRecord($value))
             ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND) // Can we do this at the processor level?
             ->setAttributes($tags);

@@ -55,10 +55,11 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     {
         $this->config = $this->app->make(Config::class);
 
+        // TODO not needed?
         // Handler for sending `Log::...` calls to the OpenTelemetry collector
-        $this->app->bindIf(Handler::class, function () {
-            return new Handler(Globals::loggerProvider(), 'info', true);
-        });
+        // $this->app->bindIf(Handler::class, function () {
+        //     return new Handler(Globals::loggerProvider(), 'info', true);
+        // });
 
         $this->app->bind(TracerProviderInterface::class, fn () => Globals::tracerProvider());
         $this->app->bind(MeterProviderInterface::class, fn () => Globals::meterProvider());
@@ -123,36 +124,36 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {
-        dump(app(OtlpHttpTransportFactory::class));
         return (app(OtlpHttpTransportFactory::class))
             ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
     }
+
+    // TODO fix this
+    private static $currentScope = null;
 
     /**
      * Bootstrap any application services
      */
     public function boot(): void
     {
-        static $booted = false;
-
-        if (!$booted) {
-            dump('booting OpenTelemetryServiceProvider');
-            // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
-            // is not available, the logs will still be sent to stderr instead of throwing an exception
-            LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
-
-            $loggerProvider = $this->getLoggerProvider();
-
-            $configurator = Configurator::create()
-                ->withTracerProvider($this->getTracerProvider())
-                ->withMeterProvider($this->getMeterProvider())
-                ->withLoggerProvider($loggerProvider)
-                ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
-
-            $scope = $configurator->activate();
-
-            register_shutdown_function(fn () => $scope->detach());
-            // $booted = true;
+        if (self::$currentScope) {
+            self::$currentScope->detach();
+        } else {
+            register_shutdown_function(fn () => self::$currentScope->detach());
         }
+
+        // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
+        // is not available, the logs will still be sent to stderr instead of throwing an exception
+        LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
+
+        $loggerProvider = $this->getLoggerProvider();
+
+        $configurator = Configurator::create()
+            ->withTracerProvider($this->getTracerProvider())
+            ->withMeterProvider($this->getMeterProvider())
+            ->withLoggerProvider($loggerProvider)
+            ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
+
+        self::$currentScope = $configurator->activate();
     }
 }
