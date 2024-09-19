@@ -47,11 +47,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     private Config $config;
 
     /**
-     * The current scope
-     */
-    private static ?ScopeInterface $currentScope = null;
-
-    /**
      * Register the service provider
      */
     public function register(): void
@@ -69,6 +64,8 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        static $firstBoot = true;
+
         // DB::connection('mysql')->beforeExecuting(function (string &$query) {
         //     $uuid = Str::uuid()->toString();
         //     $query = '/* ' . $uuid . ' */ ' . $query;
@@ -86,25 +83,22 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         $loggerProvider = $this->getLoggerProvider();
 
+        // In tests the application is booted multiple times but we don't need to create a new Configurator scope
+        if (!$firstBoot) {
+            return;
+        }
+
+        $firstBoot = false;
+
         $configurator = Configurator::create()
             ->withTracerProvider($this->getTracerProvider())
             ->withMeterProvider($this->getMeterProvider())
             ->withLoggerProvider($loggerProvider)
             ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
 
-        // In tests the application is booted multiple times, so we need to detach the current scope
-        // and only detach the current one on shutdown
-        $firstBoot = !self::$currentScope;
+        $scope = $configurator->activate();
 
-        if (!$firstBoot) {
-            self::$currentScope->detach();
-        }
-
-        self::$currentScope = $configurator->activate();
-
-        if ($firstBoot) {
-            register_shutdown_function(fn () => self::$currentScope->detach());
-        }
+        register_shutdown_function(fn () => $scope->detach());
     }
 
     /**
