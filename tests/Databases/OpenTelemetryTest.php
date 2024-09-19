@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Log;
+use OpenTelemetry\API\Instrumentation\Configurator;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Logs\EventLoggerProvider;
@@ -22,11 +23,17 @@ beforeEach(function (): void {
         ->addLogRecordProcessor($this->processor)
         ->build();
 
+    $configurator = Configurator::create()
+        ->withLoggerProvider($loggerProvider);
+
+    $this->scope = $configurator->activate();
+
     $this->exporter = app(OpenTelemetry::class, ['eventLoggerProvider' => new EventLoggerProvider($loggerProvider)]);
 });
 
 afterEach(function (): void {
     $this->processor->shutdown();
+    $this->scope->detach();
 });
 
 it('can record an event', function (): void {
@@ -48,7 +55,6 @@ it('can record a log', function (): void {
         ->method('send')
         ->with($this->stringContains($eventName));
 
-    // $this->exporter->event($eventName, []);
     Log::info($eventName);
 
     $this->exporter->flush();
