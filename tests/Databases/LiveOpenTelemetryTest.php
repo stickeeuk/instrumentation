@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use OpenTelemetry\API\Trace\SpanKind;
@@ -50,5 +52,20 @@ it('instruments requests', function (): void {
     $response = $this->get('/instrumentation-test');
 
     $response->assertOk();
+    // TODO add proper assertion
+});
+
+it('records a histogram for RED metrics', function (): void {
+    $request = Request::create('/test');
+    $middleware = new \Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware();
+
+    $middleware->handle($request, function (): Response {
+        return new Response('ok', 200);
+    });
+
+    $middleware->handle($request, function (): Response {
+        return new Response('not ok', 500);
+    });
+
     // TODO add proper assertion
 });
