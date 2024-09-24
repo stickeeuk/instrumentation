@@ -9,7 +9,6 @@ use OpenTelemetry\API\Common\Time\Clock;
 use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\Instrumentation\Configurator;
 use OpenTelemetry\API\LoggerHolder;
-use OpenTelemetry\Context\ScopeInterface;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
@@ -65,6 +64,10 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     public function boot(): void
     {
         static $firstBoot = true;
+
+        if (!$this->config->enabled()) {
+            return;
+        }
 
         // DB::connection('mysql')->beforeExecuting(function (string &$query) {
         //     $uuid = Str::uuid()->toString();

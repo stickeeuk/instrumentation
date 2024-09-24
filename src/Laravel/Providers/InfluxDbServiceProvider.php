@@ -2,9 +2,7 @@
 
 namespace Stickee\Instrumentation\Laravel\Providers;
 
-use Exception;
 use Illuminate\Support\ServiceProvider;
-use InfluxDB2\Client;
 use Stickee\Instrumentation\Exporters\Events\InfluxDb;
 use Stickee\Instrumentation\Laravel\Config;
 
@@ -27,14 +25,6 @@ class InfluxDbServiceProvider extends ServiceProvider
     {
         $this->config = $this->app->make(Config::class);
 
-        if (!class_exists(Client::class)) {
-            $this->app->bind(InfluxDb::class, function () {
-                throw new Exception('InfluxDB client library not installed, please run: composer require influxdata/influxdb-client-php');
-            });
-
-            return;
-        }
-
         $this->app->when(InfluxDb::class)
             ->needs('$url')
             ->give(fn () => $this->config->influxDb('url'));
@@ -54,12 +44,5 @@ class InfluxDbServiceProvider extends ServiceProvider
         $this->app->when(InfluxDb::class)
             ->needs('$verifySsl')
             ->give(fn () => $this->config->influxDb('verify_ssl'));
-    }
-
-    /**
-     * Bootstrap any application services
-     */
-    public function boot(): void
-    {
     }
 }

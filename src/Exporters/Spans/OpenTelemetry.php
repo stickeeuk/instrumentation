@@ -38,14 +38,6 @@ class OpenTelemetry implements SpansExporterInterface
      */
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
-        // if (! config('otel.enabled')) {
-        //     if (is_null($callable)) {
-        //         return null;
-        //     }
-
-        //     return $callable(CurrentSpan::get());
-        // }
-
         $span = $this->tracer->spanBuilder($name)
             ->setSpanKind($kind)
             ->setAttributes($attributes)

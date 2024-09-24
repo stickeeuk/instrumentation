@@ -64,6 +64,10 @@ class InstrumentationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (!$this->config->enabled()) {
+            return;
+        }
+
         // Flush events when a command finishes
         Event::listen(CommandFinished::class, function () {
             app('instrument')->flush();
