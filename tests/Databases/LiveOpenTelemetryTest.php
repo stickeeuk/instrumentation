@@ -23,18 +23,17 @@ it('can record an event', function (): void {
 });
 
 it('auto instruments controller methods', function (): void {
-    Route::get('/instrumentation-test', function (): void {
-        Instrument::span('STICKEE TEST SPAN', function (): void {
-            Instrument::event('STICKEE TEST EVENT');
+    Route::get('/instrumentation-test/{test}', function (string $test): void {
+        Instrument::span('STICKEE TEST SPAN', function () use ($test): void {
+            Instrument::event('STICKEE TEST EVENT: ' . $test);
         });
     });
 
-    $response = $this->get('/instrumentation-test');
+    $response = $this->get('/instrumentation-test/test');
 
     $response->assertOk();
     // TODO add proper assertion
 });
-
 
 it('auto instruments logs', function (): void {
     Instrument::span('STICKEE TEST LOG SPAN', function (): void {
@@ -42,5 +41,14 @@ it('auto instruments logs', function (): void {
         Instrument::event('STICKEE TEST EVENT');
     }, SpanKind::KIND_INTERNAL, ['test' => 123]);
 
+    // TODO add proper assertion
+});
+
+it('instruments requests', function (): void {
+    Route::get('/instrumentation-test', function (): void {});
+
+    $response = $this->get('/instrumentation-test');
+
+    $response->assertOk();
     // TODO add proper assertion
 });

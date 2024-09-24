@@ -21,6 +21,7 @@ class OpenTelemetry implements EventsExporterInterface
      * @var array $counters
      */
     private $counters = [];
+    private $histograms = [];
 
     public function __construct(private readonly CachedInstruments $instrumentation)
     {
@@ -78,6 +79,30 @@ class OpenTelemetry implements EventsExporterInterface
     public function gauge(string $name, array $tags, float $value): void
     {
         $this->event($name, $tags, $value);
+    }
+
+    /**
+     * Record a value on a histogram
+     *
+     * @param string $name The name of the histogram, e.g. "http.server.duration"
+     * @param string|null $unit The unit of the histogram, e.g. "ms"
+     * @param string|null $description A description of the histogram
+     * @param float $value The value of the histogram
+     * @param array $buckets An optional set of buckets, e.g. [0.25, 0.5, 1, 5]
+     */
+    public function histogram(string $name, ?string $unit, ?string $description, float $value, ?array $buckets = null): void
+    {
+        if (!isset($this->histograms[$name])) {
+            $advisory = [];
+
+            if ($buckets !== null) {
+                $advisory['ExplicitBucketBoundaries'] = $buckets;
+            }
+
+            $this->histograms[$name] = $this->instrumentation->meter()->createHistogram($name, $unit, $description, $advisory);
+        }
+
+        $this->histograms[$name]->record($value);
     }
 
     /**

@@ -31,20 +31,15 @@ exporters:
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
 
-  otlp:
-    endpoint: tempo:4317
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
     tls:
       insecure: true
-#   prometheus:
-#   endpoint: 'prometheus:9000'
-#   namespace: pet-insurance
-#   const_labels:
-#     label1: value1
-#     "another label": spaced value
-#   send_timestamps: true
-#   metric_expiration: 60m
-#   resource_to_telemetry_conversion:
-#     enabled: true
+
+  otlphttp/prometheus:
+    endpoint: http://prometheus:9090/api/v1/otlp
+    tls:
+      insecure: true
 
 processors:
   batch:
@@ -101,12 +96,12 @@ service:
         - logging
         - influxdb
 
-    # metrics:
-    #   receivers:
-    #   - prometheus
-    #   exporters:
-    #   - logging
-    #   - prometheus
+    metrics:
+      receivers:
+      - otlp
+      exporters:
+      - logging
+      - otlphttp/prometheus
 
     traces:
       receivers:
@@ -115,4 +110,4 @@ service:
         - batch
       exporters:
         - logging
-        - otlp
+        - otlphttp/tempo

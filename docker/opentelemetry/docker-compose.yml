@@ -32,7 +32,7 @@ services:
       - ./grafana/dashboards/:/var/lib/grafana/dashboards
     depends_on:
       - loki
-      # - prometheus
+      - prometheus
       - tempo
     networks:
       - opentelemetry-network
@@ -47,21 +47,25 @@ services:
     networks:
       - opentelemetry-network
 
-  # prometheus:
-  #   image: prom/prometheus
-  #   ports:
-  #   - '9000'
-  #   - '9090:9090'
-  #   volumes:
-  #   - ./prometheus:/etc/prometheus
-  #   # - prom_data:/prometheus
-  #   command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yaml
-  #   restart: unless-stopped
-  #   networks:
-  #   - opentelemetry-network
+  prometheus:
+    image: prom/prometheus
+    ports:
+    - '9090:9090'
+    volumes:
+    - ./prometheus:/etc/prometheus
+    # - prom_data:/prometheus
+    command: [
+      '--web.enable-lifecycle',
+      '--config.file=/etc/prometheus/prometheus.yaml',
+      '--enable-feature=otlp-write-receiver',
+      '--enable-feature=native-histograms'
+    ]
+    restart: unless-stopped
+    networks:
+    - opentelemetry-network
 
   collector:
-    image: otel/opentelemetry-collector-contrib:0.81.0
+    image: otel/opentelemetry-collector-contrib:0.110.0-amd64
     command: ['--config=/etc/otel/config.yaml']
     volumes:
       - './collector:/etc/otel'
@@ -75,6 +79,7 @@ services:
       - opentelemetry-network
 
   tempo:
+    # TODO don't use latest
     image: grafana/tempo:latest
     command: ['--config.file=/etc/config.yaml']
     volumes:

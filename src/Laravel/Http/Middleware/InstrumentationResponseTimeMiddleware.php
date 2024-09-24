@@ -17,16 +17,21 @@ class InstrumentationResponseTimeMiddleware
 
         $response = $next($request);
 
-        if ($response->exception ?? null) {
-            Instrument::event('exception', ['exception' => get_class($response->exception)]);
-        }
+        // if ($response->exception ?? null) {
+        //     Instrument::event('exception', ['exception' => get_class($response->exception)]);
+        // }
 
         $tags = [
-            'status' => $response->getStatusCode(),
-            'success' => (bool)$response->isSuccessful()
+            'http.reponse.status_code' => $response->getStatusCode(),
+            'http.route' => $request->route()->uri,
+            'success' => (bool)$response->isSuccessful(),
         ];
 
-        Instrument::event('response_time', $tags, microtime(true) - $startTime);
+        // Instrument::event('response_time', $tags, microtime(true) - $startTime);
+
+        $buckets = [0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 100];
+
+        Instrument::histogram('http.server.request.duration', 's', 'Request duration', microtime(true) - $startTime, $buckets, $tags);
 
         return $response;
     }
