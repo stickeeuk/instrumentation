@@ -85,19 +85,32 @@ it('records a histogram for RED metrics', function (): void {
      */
 });
 
-it ('records data for a minute', function (): void {
+it ('records data for a while', function (): void {
 
-    for ($s = 0; $s < 60; $s++) {
+    $minutes = 5;
+
+    for ($seconds = 0; $seconds < 60 * $minutes; $seconds++) {
         for ($i = 0; $i < 100; $i++) {
-
             $routes = [
-                '/homepage',
-                '/about',
-                '/api/examples/1',
-                '/register',
+                '/homepage' => 100,
+                '/api/examples/1' => 95,
+                '/about' => 50,
+                '/register' => 10,
             ];
 
-            $request = Request::create($routes[rand(0, count($routes) - 1)]);
+            $totalWeight = array_sum(array_values($routes));
+            $selection = rand(1, $totalWeight);
+            $count = 0;
+
+            foreach ($routes as $route => $chance) {
+                $chosen = $route;
+                $count += $chance;
+                if ($count >= $selection) {
+                    break;
+                }
+            }
+
+            $request = Request::create($chosen);
 
             if (rand(0, 100) < 95) {
                 $response = new Response('ok', 200);
