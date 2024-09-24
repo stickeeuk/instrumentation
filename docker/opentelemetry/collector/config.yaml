@@ -99,6 +99,8 @@ service:
     metrics:
       receivers:
       - otlp
+      processors:
+        - batch
       exporters:
       - logging
       - otlphttp/prometheus
