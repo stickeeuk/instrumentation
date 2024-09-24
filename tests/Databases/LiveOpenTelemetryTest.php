@@ -84,3 +84,36 @@ it('records a histogram for RED metrics', function (): void {
      * `sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count[5m]))` - the rate of change of the number of requests by status code
      */
 });
+
+it ('records data for a minute', function (): void {
+
+    for ($s = 0; $s < 60; $s++) {
+        for ($i = 0; $i < 100; $i++) {
+
+            $routes = [
+                '/homepage',
+                '/about',
+                '/api/examples/1',
+                '/register',
+            ];
+
+            $request = Request::create($routes[rand(0, count($routes) - 1)]);
+
+            if (rand(0, 100) < 95) {
+                $response = new Response('ok', 200);
+            } else {
+                $response = new Response('not ok', 500);
+            }
+
+            $middleware = new \Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware();
+            $middleware->handle($request, function () use ($response): Response {
+                return $response;
+            });
+            app('instrument')->flush();
+        }
+
+        sleep(1);
+    }
+
+    // TODO look at Grafana
+});
