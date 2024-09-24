@@ -2,7 +2,9 @@
 
 namespace Stickee\Instrumentation\Laravel\Providers;
 
+use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
@@ -26,6 +28,7 @@ use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
 use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
+use OpenTelemetry\SDK\Trace\Span;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
@@ -79,6 +82,14 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
         // is not available, the logs will still be sent to stderr instead of throwing an exception
         LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
+
+        // Send logs as span events as well as log events
+        $this->app['events']->listen(MessageLogged::class, function (MessageLogged $log): void {
+            Span::getCurrent()->addEvent(Str::limit($log->message, 127), [
+                'context' => json_encode(array_filter($log->context)),
+                'level' => $log->level,
+            ]);
+        });
 
         $loggerProvider = $this->getLoggerProvider();
 
