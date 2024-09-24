@@ -24,11 +24,12 @@ beforeEach(function (): void {
         ->build();
 
     $configurator = Configurator::create()
-        ->withLoggerProvider($loggerProvider);
+        ->withLoggerProvider($loggerProvider)
+        ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
 
     $this->scope = $configurator->activate();
 
-    $this->exporter = app(OpenTelemetry::class, ['eventLoggerProvider' => new EventLoggerProvider($loggerProvider)]);
+    $this->exporter = app(OpenTelemetry::class);
 });
 
 afterEach(function (): void {
@@ -44,7 +45,6 @@ it('can record an event', function (): void {
         ->with($this->stringContains($eventName));
 
     $this->exporter->event($eventName, []);
-
     $this->exporter->flush();
 });
 
@@ -56,6 +56,5 @@ it('can record a log', function (): void {
         ->with($this->stringContains($eventName));
 
     Log::info($eventName);
-
     $this->exporter->flush();
 });

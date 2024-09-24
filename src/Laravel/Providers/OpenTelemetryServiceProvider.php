@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
-use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\Instrumentation\Configurator;
 use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
@@ -16,7 +15,6 @@ use OpenTelemetry\Contrib\Otlp\SpanExporter;
 use OpenTelemetry\SDK\Common\Attribute\Attributes;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Logs\EventLoggerProvider;
-use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
 use OpenTelemetry\SDK\Logs\LoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
@@ -34,6 +32,7 @@ use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
+use Stickee\Instrumentation\Utils\CachedInstruments;
 
 /**
  * Open Telemetry service provider
@@ -52,10 +51,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     {
         $this->config = $this->app->make(Config::class);
 
-        $this->app->bind(TracerProviderInterface::class, fn () => Globals::tracerProvider());
-        $this->app->bind(MeterProviderInterface::class, fn () => Globals::meterProvider());
-        $this->app->bind(LoggerProviderInterface::class, fn () => Globals::loggerProvider());
-        $this->app->bind(EventLoggerProviderInterface::class, fn () => Globals::eventLoggerProvider());
+        $this->app->singleton(CachedInstruments::class, fn () => new CachedInstruments('uk.co.stickee.instrumentation'));
     }
 
     /**

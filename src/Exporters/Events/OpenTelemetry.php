@@ -2,15 +2,10 @@
 
 namespace Stickee\Instrumentation\Exporters\Events;
 
-use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\Logs\LogRecord;
-use OpenTelemetry\SDK\Logs\EventLogger;
-use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
-use OpenTelemetry\SDK\Metrics\Meter;
-use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
-use OpenTelemetry\SDK\Trace\Span;
 use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
+use Stickee\Instrumentation\Utils\CachedInstruments;
 
 /**
  * This class records metrics to OpenTelemetry
@@ -26,15 +21,8 @@ class OpenTelemetry implements EventsExporterInterface
      */
     private $counters = [];
 
-    private readonly EventLogger $eventLogger;
-    private readonly Meter $meter;
-
-    public function __construct(
-        private readonly EventLoggerProviderInterface $eventLoggerProvider,
-        private readonly MeterProviderInterface $meterProvider,
-    ) {
-        $this->eventLogger = $eventLoggerProvider->getEventLogger('instrumentation');
-        $this->meter = $meterProvider->getMeter('instrumentation');
+    public function __construct(private readonly CachedInstruments $instrumentation)
+    {
     }
 
     /**
@@ -61,7 +49,7 @@ class OpenTelemetry implements EventsExporterInterface
             ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND) // Can we do this at the processor level?
             ->setAttributes($tags);
 
-        $this->eventLogger->emit($name, $log);
+        $this->instrumentation->eventLogger()->emit($name, $log);
     }
 
     /**
@@ -74,7 +62,7 @@ class OpenTelemetry implements EventsExporterInterface
     public function count(string $name, array $tags = [], float $increase = 1): void
     {
         if (!isset($this->counters[$name])) {
-            $this->counters[$name] = $this->meter->createCounter($name);
+            $this->counters[$name] = $this->instrumentation->meter()->createCounter($name);
         }
 
         $this->counters[$name]->add($increase, $tags);
@@ -97,7 +85,6 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function flush(): void
     {
-        $this->meterProvider->forceFlush();
-        $this->eventLoggerProvider->forceFlush();
+        $this->instrumentation->flush();
     }
 }

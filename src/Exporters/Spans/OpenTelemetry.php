@@ -3,12 +3,11 @@
 namespace Stickee\Instrumentation\Exporters\Spans;
 
 use OpenTelemetry\API\Trace\SpanKind;
-use OpenTelemetry\SDK\Trace\Tracer;
-use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 use Stickee\Instrumentation\Spans\OpenTelemetrySpan;
 use Stickee\Instrumentation\Spans\SpanInterface;
+use Stickee\Instrumentation\Utils\CachedInstruments;
 use Throwable;
 
 /**
@@ -18,11 +17,8 @@ class OpenTelemetry implements SpansExporterInterface
 {
     use HandlesErrors;
 
-    private Tracer $tracer;
-
-    public function __construct(TracerProviderInterface $tracerProvider)
+    public function __construct(private readonly CachedInstruments $instrumentation)
     {
-        $this->tracer = $tracerProvider->getTracer('instrumentation');
     }
 
     /**
@@ -38,7 +34,9 @@ class OpenTelemetry implements SpansExporterInterface
      */
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
-        $span = $this->tracer->spanBuilder($name)
+        $span = $this->instrumentation
+            ->tracer()
+            ->spanBuilder($name)
             ->setSpanKind($kind)
             ->setAttributes($attributes)
             ->startSpan();
@@ -70,7 +68,9 @@ class OpenTelemetry implements SpansExporterInterface
      */
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
-        $span = $this->tracer->spanBuilder($name)
+        $span = $this->instrumentation
+            ->tracer()
+            ->spanBuilder($name)
             ->setSpanKind($kind)
             ->setAttributes($attributes)
             ->startSpan();
