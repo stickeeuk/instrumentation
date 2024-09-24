@@ -18,7 +18,6 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 3,
     "links": [],
     "liveNow": false,
     "panels": [
@@ -35,6 +34,7 @@
               "seriesBy": "last"
             },
             "custom": {
+              "axisBorderShow": false,
               "axisCenteredZero": false,
               "axisColorMode": "text",
               "axisLabel": "",
@@ -48,6 +48,7 @@
                 "tooltip": false,
                 "viz": false
               },
+              "insertNulls": false,
               "lineInterpolation": "linear",
               "lineWidth": 1,
               "pointSize": 5,
@@ -77,7 +78,38 @@
             },
             "unit": "reqps"
           },
-          "overrides": []
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "200"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "500"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
         },
         "gridPos": {
           "h": 8,
@@ -109,7 +141,7 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "sum(rate(app_response_time_seconds_count[$__rate_interval])) * 15",
+            "expr": "rate(http_server_request_duration_seconds_count[$__rate_interval])",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
@@ -127,16 +159,18 @@
         "fieldConfig": {
           "defaults": {
             "color": {
-              "mode": "continuous-reds",
+              "fixedColor": "red",
+              "mode": "fixed",
               "seriesBy": "max"
             },
             "custom": {
+              "axisBorderShow": false,
               "axisCenteredZero": false,
               "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
-              "drawStyle": "bars",
+              "drawStyle": "line",
               "fillOpacity": 0,
               "gradientMode": "none",
               "hideFrom": {
@@ -144,8 +178,9 @@
                 "tooltip": false,
                 "viz": false
               },
+              "insertNulls": false,
               "lineInterpolation": "linear",
-              "lineWidth": 1,
+              "lineWidth": 2,
               "pointSize": 5,
               "scaleDistribution": {
                 "type": "linear"
@@ -171,7 +206,7 @@
                 }
               ]
             },
-            "unit": "cps"
+            "unit": "reqps"
           },
           "overrides": []
         },
@@ -201,7 +236,7 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "rate(app_response_time_seconds_count{status_code=\"500\"}[$__rate_interval]) * 15",
+            "expr": "rate(http_server_request_duration_seconds_count{http_response_status_code=\"500\"}[$__rate_interval])",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
@@ -222,8 +257,10 @@
               "mode": "thresholds"
             },
             "custom": {
+              "axisBorderShow": false,
               "axisCenteredZero": false,
               "axisColorMode": "text",
+              "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
               "drawStyle": "line",
@@ -234,6 +271,7 @@
                 "tooltip": false,
                 "viz": false
               },
+              "insertNulls": false,
               "lineInterpolation": "linear",
               "lineStyle": {
                 "fill": "solid"
@@ -302,32 +340,35 @@
               "type": "prometheus",
               "uid": "prometheus"
             },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(app_response_time_seconds_bucket{}[$__rate_interval])) by (le))",
+            "disableTextWrap": false,
+            "editorMode": "builder",
+            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+            "fullMetaSearch": false,
+            "includeNullMetadata": false,
             "legendFormat": "__auto",
             "range": true,
-            "refId": "A"
+            "refId": "A",
+            "useBackend": false
           }
         ],
         "title": "Duration",
         "type": "timeseries"
       }
     ],
-    "refresh": "10s",
-    "schemaVersion": 38,
-    "style": "dark",
+    "refresh": "5s",
+    "schemaVersion": 39,
     "tags": [],
     "templating": {
       "list": []
     },
     "time": {
-      "from": "now-30m",
+      "from": "now-5m",
       "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "RED",
     "uid": "a4f04e2e-5b19-443f-bd86-1695127746f8",
-    "version": 2,
+    "version": 1,
     "weekStart": ""
   }
