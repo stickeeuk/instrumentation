@@ -2,37 +2,40 @@
 
 declare(strict_types=1);
 
-use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
+use Illuminate\Support\Facades\Log;
+use OpenTelemetry\API\Instrumentation\Configurator;
+use OpenTelemetry\Contrib\Otlp\LogsExporter;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
+use OpenTelemetry\SDK\Logs\EventLoggerProvider;
+use OpenTelemetry\SDK\Logs\LoggerProvider;
+use OpenTelemetry\SDK\Logs\Processor\SimpleLogRecordProcessor;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 
 beforeEach(function (): void {
-    if (!class_exists(OtlpHttpTransportFactory::class)) {
-        return;
-    }
-
     $this->mockTransport = $this->createMock(TransportInterface::class);
     $this->mockTransport->method('contentType')
         ->willReturn('application/json');
 
-    app()->bind(OtlpHttpTransportFactory::class, function () {
-        return new class ($this->mockTransport) {
-            private TransportInterface $mockTransport;
+    $exporter = new LogsExporter($this->mockTransport);
+    $this->processor = new SimpleLogRecordProcessor($exporter);
 
-            public function __construct(TransportInterface $mockTransport)
-            {
-                $this->mockTransport = $mockTransport;
-            }
+    $loggerProvider = LoggerProvider::builder()
+        ->addLogRecordProcessor($this->processor)
+        ->build();
 
-            public function create(): TransportInterface
-            {
-                return $this->mockTransport;
-            }
-        };
-    });
+    $configurator = Configurator::create()
+        ->withLoggerProvider($loggerProvider)
+        ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
+
+    $this->scope = $configurator->activate();
 
     $this->exporter = app(OpenTelemetry::class);
-})->skip(!class_exists(OtlpHttpTransportFactory::class), 'Skipped: OpenTelemetry composer packages not installed');
+});
+
+afterEach(function (): void {
+    $this->processor->shutdown();
+    $this->scope->detach();
+});
 
 it('can record an event', function (): void {
     $eventName = 'STICKEE TEST EVENT';
@@ -42,6 +45,16 @@ it('can record an event', function (): void {
         ->with($this->stringContains($eventName));
 
     $this->exporter->event($eventName, []);
+    $this->exporter->flush();
+});
 
+it('can record a log', function (): void {
+    $eventName = 'STICKEE TEST LOG';
+
+    $this->mockTransport->expects($this->once())
+        ->method('send')
+        ->with($this->stringContains($eventName));
+
+    Log::info($eventName);
     $this->exporter->flush();
 });

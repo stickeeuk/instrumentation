@@ -14,6 +14,7 @@ class Instrument extends Facade
      */
     protected static function getFacadeAccessor()
     {
+        // Bound to \Stickee\Instrumentation\Exporters\Exporter
         return 'instrument';
     }
 }
