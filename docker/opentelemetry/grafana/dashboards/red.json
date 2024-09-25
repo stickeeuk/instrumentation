@@ -112,8 +112,8 @@
           ]
         },
         "gridPos": {
-          "h": 8,
-          "w": 24,
+          "h": 7,
+          "w": 7,
           "x": 0,
           "y": 0
         },
@@ -141,13 +141,13 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "rate(http_server_request_duration_seconds_count[$__rate_interval])",
+            "expr": "sum(rate(http_server_request_duration_seconds_count[$__rate_interval]))",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
           }
         ],
-        "title": "Rate",
+        "title": "Requests",
         "type": "timeseries"
       },
       {
@@ -206,15 +206,15 @@
                 }
               ]
             },
-            "unit": "reqps"
+            "unit": "percent"
           },
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
-          "w": 24,
-          "x": 0,
-          "y": 8
+          "h": 7,
+          "w": 8,
+          "x": 7,
+          "y": 0
         },
         "id": 2,
         "options": {
@@ -236,13 +236,13 @@
               "uid": "prometheus"
             },
             "editorMode": "code",
-            "expr": "rate(http_server_request_duration_seconds_count{http_response_status_code=\"500\"}[$__rate_interval])",
+            "expr": "sum (rate(http_server_request_duration_seconds_count{http_response_status_code!~\"2..\"}[$__rate_interval])) / sum (rate(http_server_request_duration_seconds_count[$__rate_interval])) * 100",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
           }
         ],
-        "title": "Error",
+        "title": "Error %",
         "type": "timeseries"
       },
       {
@@ -314,10 +314,10 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
-          "w": 24,
-          "x": 0,
-          "y": 16
+          "h": 7,
+          "w": 9,
+          "x": 15,
+          "y": 0
         },
         "id": 3,
         "options": {
@@ -341,8 +341,8 @@
               "uid": "prometheus"
             },
             "disableTextWrap": false,
-            "editorMode": "builder",
-            "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket[$__rate_interval])) by (le))",
             "fullMetaSearch": false,
             "includeNullMetadata": false,
             "legendFormat": "__auto",
@@ -353,6 +353,244 @@
         ],
         "title": "Duration",
         "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "the number of requests our service is serving per second per route",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "shades",
+              "seriesBy": "last"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "noValue": "0",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "blue",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "reqps"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "200"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "500"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 7,
+          "x": 0,
+          "y": 7
+        },
+        "id": 6,
+        "options": {
+          "legend": {
+            "calcs": [
+              "mean",
+              "max"
+            ],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true,
+            "width": 1
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum by (http_route) (rate(http_server_request_duration_seconds_count[$__rate_interval]))",
+            "legendFormat": "{{http_route}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Requests by route",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "the number of failed requests per second",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "red",
+              "mode": "continuous-YlRd",
+              "seriesBy": "max"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "noValue": "0",
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 8,
+          "x": 7,
+          "y": 7
+        },
+        "id": 7,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum by (http_route) (rate(http_server_request_duration_seconds_count{http_response_status_code!~\"2..\"}[$__rate_interval]))",
+            "legendFormat": "__auto",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Errors per route",
+        "type": "timeseries"
+      },
+      {
+        "gridPos": {
+          "h": 7,
+          "w": 9,
+          "x": 15,
+          "y": 7
+        },
+        "id": 5,
+        "libraryPanel": {
+          "name": "Slowest HTTP routes (P95)",
+          "uid": "fdyyj6xker4zke"
+        },
+        "title": "Slowest HTTP routes (P95)"
       }
     ],
     "refresh": "5s",
@@ -369,6 +607,6 @@
     "timezone": "",
     "title": "RED",
     "uid": "a4f04e2e-5b19-443f-bd86-1695127746f8",
-    "version": 1,
+    "version": 4,
     "weekStart": ""
   }
