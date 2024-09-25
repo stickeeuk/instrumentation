@@ -24,11 +24,12 @@ class InstrumentationResponseTimeMiddleware
         Instrument::histogram(
             'http.server.request.duration',
             's',
-            'Request duration',
-            [ 0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 100 ],
+            'Duration of HTTP server requests.',
+            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
             microtime(true) - $startTime,
             [
                 'http.response.status_code' => $response->getStatusCode(),
+                'http.request.method' => $request->method(),
                 'http.route' => $request->path(),
             ]
         );
