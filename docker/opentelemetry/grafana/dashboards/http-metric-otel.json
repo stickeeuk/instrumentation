@@ -20,7 +20,6 @@
     "fiscalYearStartMonth": 0,
     "gnetId": 21245,
     "graphTooltip": 0,
-    "id": 3,
     "links": [],
     "panels": [
       {
@@ -793,7 +792,7 @@
                 }
               ]
             },
-            "unit": "ms"
+            "unit": "s"
           },
           "overrides": []
         },
@@ -1167,6 +1166,6 @@
     "timezone": "browser",
     "title": "HTTP Metric OTel",
     "uid": "ddlna2zs1zwg0c",
-    "version": 4,
+    "version": 1,
     "weekStart": ""
   }
