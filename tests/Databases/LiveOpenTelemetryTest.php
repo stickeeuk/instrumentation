@@ -92,36 +92,68 @@ it ('records data for a while', function (): void {
     for ($seconds = 0; $seconds < 60 * $minutes; $seconds++) {
         for ($i = 0; $i < 100; $i++) {
             $routes = [
-                '/homepage' => 100,
-                '/api/examples/1' => 95,
-                '/about' => 50,
-                '/register' => 10,
+                '/homepage' => [
+                    'weight' => 100,
+                    'time' => rand(0, 1),
+                ],
+                '/api/examples/1' => [
+                    'weight' => 95,
+                    'time' => rand(1, 2),
+                ],
+                '/about' => [
+                    'weight' => 50,
+                    'time' => rand(0, 1),
+                ],
+                '/register' => [
+                    'weight' => 10,
+                    'time' => rand(1, 2),
+                ],
             ];
 
-            $totalWeight = array_sum(array_values($routes));
+            $totalWeight = array_reduce($routes, function ($carry, $route) {
+                return $carry + $route['weight'];
+            }, 0);
             $selection = rand(1, $totalWeight);
             $count = 0;
+            $chosen = [
+                'route' => null,
+                'time' => null,
+            ];
 
-            foreach ($routes as $route => $chance) {
-                $chosen = $route;
-                $count += $chance;
+            foreach ($routes as $route => $data) {
+                $chosen['route'] = $route;
+                $chosen['time'] = $data['time'];
+                $count += $data['weight'];
                 if ($count >= $selection) {
                     break;
                 }
             }
 
-            $request = Request::create($chosen);
+            $request = Request::create($chosen['route']);
 
-            if (rand(0, 100) < 95) {
+            $outcome = rand(0, 100);
+
+            if ($outcome <= 80) {
                 $response = new Response('ok', 200);
+            } elseif ($outcome <= 90) {
+                $response = new Response('kinda not ok', 400);
             } else {
-                $response = new Response('not ok', 500);
+                $response = new Response('definitely not ok', 500);
             }
 
-            $middleware = new \Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware();
-            $middleware->handle($request, function () use ($response): Response {
-                return $response;
-            });
+            Instrument::histogram(
+                'http.server.request.duration',
+                's',
+                'Duration of HTTP server requests.',
+                \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
+                $chosen['time'],
+                [
+                    'http.response.status_code' => $response->getStatusCode(),
+                    'http.request.method' => $request->method(),
+                    'http.route' => $request->path(),
+                ]
+            );
+
             app('instrument')->flush();
         }
 
