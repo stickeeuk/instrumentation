@@ -22,9 +22,9 @@ class InstrumentationResponseTimeMiddleware
         // }
 
         Instrument::histogram(
-            'http.server.request.duration',
-            's',
-            'Duration of HTTP server requests.',
+            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
+            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
+            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_DESCRIPTION,
             \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
             microtime(true) - $startTime,
             [

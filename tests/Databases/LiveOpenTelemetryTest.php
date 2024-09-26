@@ -87,26 +87,42 @@ it('records a histogram for RED metrics', function (): void {
 
 it ('records data for a while', function (): void {
 
-    $minutes = 5;
+    $transport = (app(\OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory::class))
+        ->create('http://localhost:4318/v1/metrics', 'application/json', [], null, 1, 100, 1);
+    $exporter = new \OpenTelemetry\Contrib\Otlp\MetricExporter($transport, \OpenTelemetry\SDK\Metrics\Data\Temporality::CUMULATIVE);
 
-    for ($seconds = 0; $seconds < 60 * $minutes; $seconds++) {
-        for ($i = 0; $i < 100; $i++) {
+    $minutes = 15;
+    $users = 100;
+
+    $start = Carbon::now()->subMinutes($minutes);
+    $startTimestamp = $start->getTimestampMs() * 1_000_000;
+
+    $results = [
+        '200' => 0,
+        '400' => 0,
+        '500' => 0,
+    ];
+
+    for ($second = 0; $second < $minutes * 60; $second++) {
+        $metrics = [];
+
+        for ($i = 0; $i < $users; $i++) {
             $routes = [
-                '/homepage' => [
+                '/' => [
                     'weight' => 100,
-                    'time' => rand(0, 1),
+                    'time' => rand(500, 1000) / 1000,
                 ],
                 '/api/examples/1' => [
                     'weight' => 95,
-                    'time' => rand(1, 2),
+                    'time' => rand(1000, 2000) / 1000,
                 ],
                 '/about' => [
                     'weight' => 50,
-                    'time' => rand(0, 1),
+                    'time' => rand(750, 1000) / 1000,
                 ],
                 '/register' => [
                     'weight' => 10,
-                    'time' => rand(1, 2),
+                    'time' => rand(1000, 2000) / 1000,
                 ],
             ];
 
@@ -129,36 +145,64 @@ it ('records data for a while', function (): void {
                 }
             }
 
-            $request = Request::create($chosen['route']);
+            $chance = rand(0, 100);
 
-            $outcome = rand(0, 100);
-
-            if ($outcome <= 80) {
-                $response = new Response('ok', 200);
-            } elseif ($outcome <= 90) {
-                $response = new Response('kinda not ok', 400);
-            } else {
-                $response = new Response('definitely not ok', 500);
+            if ($chosen['route'] === '/') {
+                $chance = 0;
             }
 
-            Instrument::histogram(
-                'http.server.request.duration',
-                's',
-                'Duration of HTTP server requests.',
-                \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
-                $chosen['time'],
-                [
-                    'http.response.status_code' => $response->getStatusCode(),
-                    'http.request.method' => $request->method(),
-                    'http.route' => $request->path(),
-                ]
+            if ($chance <= 90) {
+                $response = new Response('ok', 200);
+                $results['200']++;
+            } elseif ($chance <= 98) {
+                $response = new Response('kinda not ok', 400);
+                $results['400']++;
+            } else {
+                $response = new Response('definitely not ok', 500);
+                $results['500']++;
+            }
+
+            $request = Request::create($chosen['route']);
+            $timestamp = $start->clone()->addSeconds($second)->getTimestampMs() * 1_000_000;
+
+            $metrics[] = new \OpenTelemetry\SDK\Metrics\Data\Metric(
+                new \OpenTelemetry\SDK\Common\Instrumentation\InstrumentationScope(
+                    'test',
+                    null,
+                    null,
+                    \OpenTelemetry\SDK\Common\Attribute\Attributes::create([]),
+                ),
+                \OpenTelemetry\SDK\Resource\ResourceInfoFactory::emptyResource(),
+                \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
+                \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
+                \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_DESCRIPTION,
+                new \OpenTelemetry\SDK\Metrics\Data\Histogram([
+                    new \OpenTelemetry\SDK\Metrics\Data\HistogramDataPoint(
+                        count: $i + 1, // Each request increments the count by 1
+                        sum: (float) $chosen['time'], // Sum is the request duration
+                        min: 0,
+                        max: 100,
+                        bucketCounts: array_map(function ($bound) use ($chosen) {
+                            return $chosen['time'] <= $bound ? 1 : 0;
+                        }, \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS),
+                        explicitBounds: \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
+                        attributes: \OpenTelemetry\SDK\Common\Attribute\Attributes::create([
+                            'http.response.status_code' => $response->getStatusCode(),
+                            'http.request.method' => $request->method(),
+                            'http.route' => $request->path(),
+                        ]),
+                        startTimestamp: $startTimestamp,
+                        timestamp: $timestamp,
+                        exemplars: []
+                    ),
+                ], \OpenTelemetry\SDK\Metrics\Data\Temporality::CUMULATIVE)
             );
-
-            app('instrument')->flush();
         }
-
-        sleep(1);
+        $exporter->export($metrics);
+        $metrics = [];
     }
+
+    dump($results);
 
     // TODO look at Grafana
 });
