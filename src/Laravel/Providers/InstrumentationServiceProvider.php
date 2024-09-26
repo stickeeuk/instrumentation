@@ -15,6 +15,7 @@ use Illuminate\Support\ServiceProvider;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Laravel\Config;
+use Stickee\Instrumentation\Laravel\Facades\Instrument;
 use Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware;
 use Stickee\Instrumentation\Queue\Connectors\BeanstalkdConnector;
 use Stickee\Instrumentation\Queue\Connectors\DatabaseConnector;
@@ -87,10 +88,14 @@ class InstrumentationServiceProvider extends ServiceProvider
             return;
         }
 
-        // Schedule::call(function () {
-        //     Instrument::gauge('queue_length', [], Queue::availableSize());
-        //     app('instrument')->flush();
-        // })->everyFifteenSeconds();
+        Schedule::call(function () {
+            foreach ($this->config->queueNames() as $queueName) {
+                Instrument::gauge('queue_length', ['queue' => $queueName], Queue::size($queueName));
+                Instrument::gauge('queue_available_length', ['queue' => $queueName], Queue::availableSize($queueName));
+            }
+
+            app('instrument')->flush();
+        })->everyFifteenSeconds();
 
         // Flush events when a command finishes
         Event::listen(CommandFinished::class, function () {
