@@ -8,7 +8,7 @@ use Stickee\Instrumentation\Exporters\Events\LaravelDump;
 uses(PHPMock::class);
 
 beforeEach(function (): void {
-    $this->database = new LaravelDump();
+    $this->exporter = new LaravelDump();
     $this->message = $this->faker()->sentence();
 
     $this->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'dump')
@@ -18,13 +18,13 @@ beforeEach(function (): void {
 });
 
 it('will write to the symfony dump method on an event', function (array $tags): void {
-    $this->database->event($this->message, $tags);
+    $this->exporter->event($this->message, $tags);
 })->with('writable values');
 
 it('will write to the symfony dump method on a counter', function (array $tags): void {
-    $this->database->counter($this->message, $tags);
+    $this->exporter->counter($this->message, $tags);
 })->with('writable values');
 
 it('will write to the symfony dump method on a gauge', function (array $tags): void {
-    $this->database->gauge($this->message, $tags, 1.0);
+    $this->exporter->gauge($this->message, $tags, 1.0);
 })->with('writable values');

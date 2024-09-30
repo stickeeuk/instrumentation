@@ -1,6 +1,6 @@
 <?php
 /**
- * The null database
+ * The null exporter for events
  */
 
 namespace Stickee\Instrumentation\Exporters\Events;

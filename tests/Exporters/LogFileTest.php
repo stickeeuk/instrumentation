@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
 use phpmock\phpunit\PHPMock;
-use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exceptions\WriteException;
+use Stickee\Instrumentation\Exporters\Events\LogFile;
 
 const LOG_EVENT = 'Event';
 
@@ -15,7 +15,7 @@ beforeEach(function (): void {
     $this->logFile = base_path('test.log');
     Config::set('instrumentation.log_file.filename', $this->logFile);
 
-    $this->database = app(LogFile::class);
+    $this->exporter = app(LogFile::class);
 
     if (file_exists($this->logFile)) {
         rename($this->logFile, $this->logFile . '.backup');
@@ -32,7 +32,7 @@ it('will handle any exception thrown whilst attempting to write to the log file'
     // Without an overridden handler, we will expect this exception thrown, not \Exception.
     $this->expectException(WriteException::class);
 
-    // For this test, we'll create another log database class.
+    // For this test, we'll create another log exporter class.
     $log = new LogFile($this->logFile);
     $log->event(LOG_EVENT, $tags);
 })->with('writable values');
@@ -41,7 +41,7 @@ it('will handle any exception thrown whilst attempting to write to the log file'
 it('can write a file to a local log file', function (array $tags): void {
     $this::assertFileDoesNotExist($this->logFile);
 
-    $this->database->event(LOG_EVENT, $tags);
+    $this->exporter->event(LOG_EVENT, $tags);
 
     $this::assertFileExists($this->logFile);
 

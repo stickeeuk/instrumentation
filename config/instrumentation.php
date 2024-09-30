@@ -15,7 +15,7 @@ return [
      | Events exporter class
      |--------------------------------------------------------------------------
      |
-     | The instrumentation database class name
+     | The instrumentation events exporter class name
      */
     'events_exporter' => env('INSTRUMENTATION_EVENTS_EXPORTER', 'Stickee\\Instrumentation\\Exporters\\Events\\NullEvents'),
 
@@ -24,7 +24,7 @@ return [
      | Spans exporter class
      |--------------------------------------------------------------------------
      |
-     | The instrumentation database class name
+     | The instrumentation spans exporter class name
      */
     'spans_exporter' => env('INSTRUMENTATION_SPANS_EXPORTER', 'Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans'),
 

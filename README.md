@@ -69,7 +69,7 @@ $tags = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundatio
 
 In the event of an error an exception will be thrown. If you want to catch all
 instrumentation exceptions and pass them through your own error handler, you can
-call `setErrorHandler` on the database with a callback that accepts an
+call `setErrorHandler` on the exporter with a callback that accepts an
 `\Exception` as a parameter.
 
 ```php
@@ -201,9 +201,9 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
  - Install the InfluxDB PHP client: `composer require influxdata/influxdb-client-php`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_INFLUXDB_*`
 
-### Using a Custom Database
+### Using a Custom Exporter
 
-If you wish to use a custom database class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Events\DatabaseInterface` and make sure it is constructable by the service container.
+If you wish to use a custom exporter class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` and make sure it is constructable by the service container.
 
 ## Developing
 

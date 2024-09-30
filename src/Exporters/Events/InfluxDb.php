@@ -118,6 +118,22 @@ class InfluxDb implements EventsExporterInterface
     }
 
     /**
+     * Record a value on a histogram
+     *
+     * @param string $name The name of the histogram, e.g. "http.server.duration"
+     * @param string|null $unit The unit of the histogram, e.g. "ms"
+     * @param string|null $description A description of the histogram
+     * @param array $buckets An optional set of buckets, e.g. [0.25, 0.5, 1, 5]
+     * @param float|int $value The non-negative value of the histogram
+     * @param iterable<non-empty-string, string|bool|float|int|array|null> $attributes Attributes of the data point
+     */
+    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets = null, float|int $value, iterable $attributes = []): void
+    {
+        // TODO
+        throw new Exception('Not implemented');
+    }
+
+    /**
      * Flush any queued writes
      */
     public function flush(): void
