@@ -35,6 +35,18 @@ interface EventsExporterInterface extends HandlesErrorsInterface
     public function gauge(string $name, array $tags, float $value): void;
 
     /**
+     * Record a value on a histogram
+     *
+     * @param string $name The name of the histogram, e.g. "http.server.duration"
+     * @param string|null $unit The unit of the histogram, e.g. "ms"
+     * @param string|null $description A description of the histogram
+     * @param array $buckets An optional set of buckets, e.g. [0.25, 0.5, 1, 5]
+     * @param float|int $value The value of the histogram
+     * @param iterable<non-empty-string, string|bool|float|int|array|null> $attributes Attributes of the data point
+     */
+    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets = null, float|int $value, array $attributes = []): void;
+
+    /**
      * Flush any queued writes
      */
     public function flush(): void;

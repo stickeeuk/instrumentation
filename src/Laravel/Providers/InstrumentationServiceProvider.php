@@ -84,10 +84,6 @@ class InstrumentationServiceProvider extends ServiceProvider
             app('instrument')->flush();
         });
 
-        if ($this->app->runningUnitTests()) {
-            return;
-        }
-
         if ($this->config->responseTimeMiddlewareEnabled()) {
             $this->registerResponseTimeMiddleware();
         }

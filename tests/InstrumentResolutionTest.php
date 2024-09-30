@@ -8,7 +8,6 @@ use Stickee\Instrumentation\Exporters\Events\NullEvents;
 use Stickee\Instrumentation\Exporters\Spans\NullSpans;
 use Stickee\Instrumentation\Tests\Fixtures\BadEventsExporter;
 use Stickee\Instrumentation\Tests\Fixtures\BrokenEventsExporter;
-use Stickee\Instrumentation\Tests\Fixtures\GoodEventsExporter;
 
 it('will throw an exception if the events exporter is not set', function (): void {
     Config::set('instrumentation.events_exporter', NullEvents::class);
@@ -37,10 +36,6 @@ it('will throw an exception if the given database class is not a database interf
 })->throws(Exception::class);
 
 it('will set the default error handler to a laravel log', function (): void {
-    if (version_compare(app()->version(), '9.0.0', '<')) {
-        $this::markTestSkipped('Test incompatible with Laravel 8.');
-    }
-
     Config::set('instrumentation.events_exporter', BrokenEventsExporter::class);
 
     /** @var \Stickee\Instrumentation\Tests\Fixtures\BrokenEventsExporter $instrument */
