@@ -21,8 +21,8 @@ it('will write to the symfony dump method on an event', function (array $tags): 
     $this->database->event($this->message, $tags);
 })->with('writable values');
 
-it('will write to the symfony dump method on a count', function (array $tags): void {
-    $this->database->count($this->message, $tags);
+it('will write to the symfony dump method on a counter', function (array $tags): void {
+    $this->database->counter($this->message, $tags);
 })->with('writable values');
 
 it('will write to the symfony dump method on a gauge', function (array $tags): void {

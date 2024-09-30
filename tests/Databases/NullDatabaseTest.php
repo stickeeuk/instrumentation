@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Log;
 use Stickee\Instrumentation\Exporters\Events\NullEvents;
 
 beforeEach(function (): void {
@@ -21,9 +20,9 @@ it('does nothing when receiving an event', function (): void {
     }
 });
 
-it('does nothing when receiving a count', function (): void {
+it('does nothing when receiving a counter', function (): void {
     try {
-        $this->database->count(
+        $this->database->counter(
             $this->faker()->sentence(),
             [],
             $this->faker()->randomFloat(2),

@@ -65,9 +65,9 @@ trait WritesStrings
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $tags = [], float $increase = 1): void
     {
-        $message = date('Y-m-d H:i:s') . ' COUNT: ' . $name . ' += ' . $increase
+        $message = date('Y-m-d H:i:s') . ' COUNTER: ' . $name . ' += ' . $increase
             . $this->getTagsString($tags);
 
         $this->write($message);

@@ -85,7 +85,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $tags = [], float $increase = 1): void
     {
         $this->gauge($name, $tags, $increase);
     }

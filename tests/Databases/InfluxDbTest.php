@@ -49,7 +49,7 @@ describe('InfluxDb', function (): void {
             ->once()
             ->withAnyArgs();
 
-        $this->database->count(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
+        $this->database->counter(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
         $this->database->flush();
     });
 
