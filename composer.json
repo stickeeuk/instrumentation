@@ -29,11 +29,6 @@
         "pestphp/pest-plugin-laravel": "^2.0",
         "php-mock/php-mock-phpunit": "^2.6"
     },
-    "suggest": {
-        "influxdata/influxdb-client-php": "Send metrics to InfluxDB",
-        "open-telemetry/exporter-otlp:^1.1.": "Send metrics using OpenTelemetry",
-        "open-telemetry/opentelemetry-logger-monolog:^1.0": "Send logs using OpenTelemetry"
-    },
     "extra": {
         "laravel": {
             "providers": [
