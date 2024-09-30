@@ -53,11 +53,11 @@ Instrument::event('some_event');
 
 There are 3 event type methods defined in the `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` interface.
 
-| Event                                                                    | Arguments                                                                                                 | Description                         |
-|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
-| `$exporter->event(string $name, array $tags = [], float value = 1)`      | `$name` The event name<br>`$tags` An array of tags                                                        | Record a single event               |
-| `$exporter->count(string $event, array $tags = [], float $increase = 1)` | `$name` The counter name<br>`$tags` An array of tags<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
-| `$exporter->gauge(string $event, array $tags = [], float $value)`        | `$name` The gauge name<br>`$tags` An array of tags<br>`$value` The value to record                        | Record the current value of a gauge |
+| Event                                                                      | Arguments                                                                                                 | Description                         |
+|----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
+| `$exporter->event(string $name, array $tags = [], float value = 1)`        | `$name` The event name<br>`$tags` An array of tags                                                        | Record a single event               |
+| `$exporter->counter(string $event, array $tags = [], float $increase = 1)` | `$name` The counter name<br>`$tags` An array of tags<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
+| `$exporter->gauge(string $event, array $tags = [], float $value)`          | `$name` The gauge name<br>`$tags` An array of tags<br>`$value` The value to record                        | Record the current value of a gauge |
 
 Tags should be an associative array of `tag_name` => `tag_value`, e.g.
 
@@ -69,7 +69,7 @@ $tags = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundatio
 
 In the event of an error an exception will be thrown. If you want to catch all
 instrumentation exceptions and pass them through your own error handler, you can
-call `setErrorHandler` on the database with a callback that accepts an
+call `setErrorHandler` on the exporter with a callback that accepts an
 `\Exception` as a parameter.
 
 ```php
@@ -201,9 +201,9 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
  - Install the InfluxDB PHP client: `composer require influxdata/influxdb-client-php`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_INFLUXDB_*`
 
-### Using a Custom Database
+### Using a Custom Exporter
 
-If you wish to use a custom database class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Events\DatabaseInterface` and make sure it is constructable by the service container.
+If you wish to use a custom exporter class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` and make sure it is constructable by the service container.
 
 ## Developing
 

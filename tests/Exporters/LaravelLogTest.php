@@ -12,11 +12,11 @@ it('can write to the laravel log for an event', function (string $event, array $
     $log->event($event, $tags);
 })->with('valid rfc 5424 events', 'writable values');
 
-it('can write to the laravel log for a count', function (string $event, array $tags): void {
+it('can write to the laravel log for a counter', function (string $event, array $tags): void {
     Log::shouldReceive($event)->once()->andReturnNull();
 
     $log = new LaravelLog($event);
-    $log->count($event, $tags);
+    $log->counter($event, $tags);
 })->with('valid rfc 5424 events', 'writable values');
 
 it('can write to the laravel log for a gauge', function (string $event, array $tags): void {

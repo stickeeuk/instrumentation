@@ -85,7 +85,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $tags = [], float $increase = 1): void
     {
         $this->gauge($name, $tags, $increase);
     }
@@ -115,6 +115,22 @@ class InfluxDb implements EventsExporterInterface
         }, $tags);
 
         $this->events[] = new Point($name, $tags, ['value' => $value]);
+    }
+
+    /**
+     * Record a value on a histogram
+     *
+     * @param string $name The name of the histogram, e.g. "http.server.duration"
+     * @param string|null $unit The unit of the histogram, e.g. "ms"
+     * @param string|null $description A description of the histogram
+     * @param array $buckets An optional set of buckets, e.g. [0.25, 0.5, 1, 5]
+     * @param float|int $value The non-negative value of the histogram
+     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     */
+    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets = null, float|int $value, array $tags = []): void
+    {
+        // TODO
+        throw new Exception('Not implemented');
     }
 
     /**

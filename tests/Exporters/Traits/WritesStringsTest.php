@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Stickee\Instrumentation\Exporters\Events\Traits\WritesStrings;
 
 beforeEach(function (): void {
-    $this->database = new class () {
+    $this->exporter = new class () {
         use WritesStrings;
 
         /** @inheritDoc */
@@ -16,12 +16,8 @@ beforeEach(function (): void {
     };
 });
 
-it('can call the flush, which in turn does nothing for databases that write strings', function (): void {
-    try {
-        $this->database->flush();
-    } catch (Throwable $throwable) {
-        $this::fail('Failed to do nothing!');
-    }
+it('can call the flush, which in turn does nothing for exporters that write strings', function (): void {
+    $this->exporter->flush();
 
     expect(true)->toBeTrue();
 });

@@ -2,7 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" bootstrap="vendor/autoload.php" backupGlobals="false" colors="true" processIsolation="false" stopOnFailure="false" cacheDirectory=".phpunit.cache" backupStaticProperties="false">
   <testsuites>
     <testsuite name="Test Suite">
-      <directory>tests</directory>
+      <directory>tests/Exporters</directory>
+    </testsuite>
+    <testsuite name="With OpenTelemetry Collector Running Suite">
+      <directory>tests/WithOpenTelemetryRunning</directory>
     </testsuite>
   </testsuites>
   <php>

@@ -9,7 +9,7 @@ use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 uses(PHPMock::class);
 
 beforeEach(function () {
-    $this->database = new class () {
+    $this->exporter = new class () {
         use HandlesErrors;
 
         /**
@@ -36,20 +36,20 @@ beforeEach(function () {
 
 it('can set an error handler and view its contents', function (): void {
     $method = 'var_dump';
-    $this->database->setErrorHandler($method);
+    $this->exporter->setErrorHandler($method);
 
-    expect($this->database->getErrorHandler())->toEqual($method);
+    expect($this->exporter->getErrorHandler())->toEqual($method);
 });
 
 it('can still retrieve the error handler even if it is not set', function (): void {
-   $handler = $this->database->getErrorHandler();
+   $handler = $this->exporter->getErrorHandler();
 
    expect($handler)->toBeNull();
 });
 
 it('can call a custom error handler', function (): void {
     $method = 'var_dump';
-    $this->database->setErrorHandler($method);
+    $this->exporter->setErrorHandler($method);
 
     $this
         ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Traits\\', 'call_user_func')
@@ -57,9 +57,9 @@ it('can call a custom error handler', function (): void {
         ->with('var_dump', new Exception())
         ->willReturn(null);
 
-    $this->database->invokeErrorHandler();
+    $this->exporter->invokeErrorHandler();
 });
 
 it('will throw an exception if no custom error handler is set', function (): void {
-    $this->database->invokeErrorHandler();
+    $this->exporter->invokeErrorHandler();
 })->throws(WriteException::class);

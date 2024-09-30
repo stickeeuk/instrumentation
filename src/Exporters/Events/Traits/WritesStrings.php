@@ -65,7 +65,7 @@ trait WritesStrings
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $tags = [], float $increase = 1): void
     {
         $message = date('Y-m-d H:i:s') . ' COUNTER: ' . $name . ' += ' . $increase
             . $this->getTagsString($tags);
@@ -96,9 +96,9 @@ trait WritesStrings
      * @param string|null $description A description of the histogram
      * @param array $buckets An optional set of buckets, e.g. [0.25, 0.5, 1, 5]
      * @param float|int $value The non-negative value of the histogram
-     * @param iterable<non-empty-string, string|bool|float|int|array|null> $attributes Attributes of the data point
+    * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
      */
-    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets = null, float|int $value, iterable $attributes = []): void
+    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets = null, float|int $value, array $tags = []): void
     {
         $message = date('Y-m-d H:i:s') . ' HISTOGRAM: ' . $name . ' = ' . $value . $unit
             . $this->getTagsString($tags);

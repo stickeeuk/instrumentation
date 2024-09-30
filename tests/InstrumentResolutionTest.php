@@ -23,13 +23,13 @@ it('will throw an exception if the spans exporter is not set', function (): void
     app('instrument');
 })->throws(Exception::class);
 
-it('will throw an exception if the given database class does not exist', function (): void {
+it('will throw an exception if the given exporter class does not exist', function (): void {
     Config::set('instrumentation.events_exporter', '\App\NonExisting\Class');
 
     app('instrument');
 })->throws(Exception::class);
 
-it('will throw an exception if the given database class is not a database interface implementation', function (): void {
+it('will throw an exception if the given exporter class is not a exporter interface implementation', function (): void {
     Config::set('instrumentation.events_exporter', BadEventsExporter::class);
 
     app('instrument');

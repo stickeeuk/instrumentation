@@ -32,7 +32,7 @@ describe('InfluxDb', function (): void {
 
         Config::set('instrumentation.dsn', 'https+influxdb://username:password@localhost:8086/databasename');
 
-        $this->database = app(InfluxDb::class);
+        $this->exporter = app(InfluxDb::class);
     })->skip(!class_exists(Client::class), 'Skipped: InfluxDB composer packages not installed');
 
     it('can record an event', function (): void {
@@ -40,8 +40,8 @@ describe('InfluxDb', function (): void {
             ->once()
             ->withAnyArgs();
 
-        $this->database->event(INFLUX_EVENT, INFLUX_TAGS);
-        $this->database->flush();
+        $this->exporter->event(INFLUX_EVENT, INFLUX_TAGS);
+        $this->exporter->flush();
     });
 
     it('can record an increase in a counter', function (): void {
@@ -49,8 +49,8 @@ describe('InfluxDb', function (): void {
             ->once()
             ->withAnyArgs();
 
-        $this->database->count(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
-        $this->database->flush();
+        $this->exporter->counter(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
+        $this->exporter->flush();
     });
 
     it('can record the current value of a gauge', function (): void {
@@ -58,8 +58,8 @@ describe('InfluxDb', function (): void {
             ->once()
             ->withAnyArgs();
 
-        $this->database->gauge(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
-        $this->database->flush();
+        $this->exporter->gauge(INFLUX_EVENT, INFLUX_TAGS, INFLUX_AMOUNT);
+        $this->exporter->flush();
     });
 
 
@@ -69,11 +69,11 @@ describe('InfluxDb', function (): void {
             ->withAnyArgs();
 
         // Add a value to the events array to prevent early returning:
-        $this->database->gauge('Event', [], 1.0);
-        $this->database->flush();
+        $this->exporter->gauge('Event', [], 1.0);
+        $this->exporter->flush();
 
         // Now the events array is empty, calling flush again will not call the above mocked methods:
-        $this->database->flush();
+        $this->exporter->flush();
     });
 
     it('will call flush on destruction', function (): void {
@@ -81,9 +81,9 @@ describe('InfluxDb', function (): void {
             ->once()
             ->withAnyArgs();
 
-        $this->database->gauge('Event', [], 1.0);
+        $this->exporter->gauge('Event', [], 1.0);
 
-        unset($this->database);
+        unset($this->exporter);
     });
 });
 
