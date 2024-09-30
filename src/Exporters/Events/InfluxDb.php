@@ -129,8 +129,13 @@ class InfluxDb implements EventsExporterInterface
      */
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
     {
-        // TODO
-        throw new Exception('Not implemented');
+        foreach ($buckets as $bucket) {
+            if ($value <= $bucket) {
+                $tags['bucket_' . $bucket] = '1';
+            }
+        }
+
+        $this->gauge($name, $tags, $value);
     }
 
     /**

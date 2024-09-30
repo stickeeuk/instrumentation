@@ -4,8 +4,9 @@ namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
 use Illuminate\Console\Events\CommandFinished;
-use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -98,19 +99,13 @@ class InstrumentationServiceProvider extends ServiceProvider
         })->everyFifteenSeconds();
 
         // Flush events when a command finishes
-        Event::listen(CommandFinished::class, function () {
-            app('instrument')->flush();
-        });
+        Event::listen(CommandFinished::class, fn () => app('instrument')->flush());
 
         // Flush events when a queue job completes
-        Queue::after(function () {
-            app('instrument')->flush();
-        });
+        Queue::after(fn () => app('instrument')->flush());
 
         // Flush events when a queue job fails
-        Queue::failing(function () {
-            app('instrument')->flush();
-        });
+        Queue::failing(fn () => app('instrument')->flush());
 
         if ($this->config->responseTimeMiddlewareEnabled()) {
             $this->registerResponseTimeMiddleware();
@@ -130,14 +125,13 @@ class InstrumentationServiceProvider extends ServiceProvider
      */
     private function registerResponseTimeMiddleware(): void
     {
-        // We attach to the HttpKernel, so we need it to be available.
-        if (!$this->app->bound(Kernel::class)) {
-            return;
+        if ($this->app->bound(KernelInterface::class)) {
+            /** @var Illuminate\Foundation\Http\Kernel $httpKernel */
+            $httpKernel = $this->app->make(KernelInterface::class);
+
+            if ($httpKernel instanceof Kernel) {
+                $httpKernel->prependMiddleware(InstrumentationResponseTimeMiddleware::class);
+            }
         }
-
-        /** @var \use Illuminate\Contracts\Http\Kernel $httpKernel */
-        $httpKernel = $this->app->make(Kernel::class);
-
-        $httpKernel->prependMiddleware(InstrumentationResponseTimeMiddleware::class);
     }
 }
