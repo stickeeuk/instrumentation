@@ -85,7 +85,7 @@ it('records a histogram for RED metrics', function (): void {
  * `rate(http_server_request_duration_seconds_count[5m])` - the rate of change of the number of requests
  * `sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count[5m]))` - the rate of change of the number of requests by status code
  */
-it ('records data for a while', function (): void {
+it('records data for a while', function (): void {
 
     $transport = (app(\OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory::class))
         ->create('http://localhost:4318/v1/metrics', 'application/json', [], null, 1, 100, 1);
