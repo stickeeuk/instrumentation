@@ -68,23 +68,22 @@ it('records a histogram for RED metrics', function (): void {
     });
 
     // TODO add proper assertion
-
-    /**
-     * RED metrics:
-     *
-     * `http_server_request_duration_seconds_count` - the number of requests
-     * `http_server_request_duration_seconds_count{http_response_status_code="500"}` - the number of errors
-     * `http_server_request_duration_seconds_sum` - duration
-     *
-     * `http_server_request_duration_seconds_bucket{le="0.1"}` - number of requests that took less than 0.1s
-     *
-     * These will all reset to 0 after PHP shuts down. We will measure them by their rate of change:
-     *
-     * `rate(http_server_request_duration_seconds_count[5m])` - the rate of change of the number of requests
-     * `sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count[5m]))` - the rate of change of the number of requests by status code
-     */
 });
 
+/**
+ * RED metrics:
+ *
+ * `http_server_request_duration_seconds_count` - the number of requests
+ * `http_server_request_duration_seconds_count{http_response_status_code="500"}` - the number of errors
+ * `http_server_request_duration_seconds_sum` - duration
+ *
+ * `http_server_request_duration_seconds_bucket{le="0.1"}` - number of requests that took less than 0.1s
+ *
+ * These will all reset to 0 after PHP shuts down. We will measure them by their rate of change:
+ *
+ * `rate(http_server_request_duration_seconds_count[5m])` - the rate of change of the number of requests
+ * `sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count[5m]))` - the rate of change of the number of requests by status code
+ */
 it ('records data for a while', function (): void {
 
     $transport = (app(\OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory::class))
@@ -201,8 +200,6 @@ it ('records data for a while', function (): void {
         $exporter->export($metrics);
         $metrics = [];
     }
-
-    dump($results);
 
     // TODO look at Grafana
 });

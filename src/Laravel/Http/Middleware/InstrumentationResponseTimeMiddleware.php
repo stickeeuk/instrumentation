@@ -5,6 +5,7 @@ namespace Stickee\Instrumentation\Laravel\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
+use Stickee\Instrumentation\Utils\SemConv;
 
 class InstrumentationResponseTimeMiddleware
 {
@@ -22,10 +23,10 @@ class InstrumentationResponseTimeMiddleware
         // }
 
         Instrument::histogram(
-            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
-            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
-            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_DESCRIPTION,
-            \Stickee\Instrumentation\Utils\SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_DESCRIPTION,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
             microtime(true) - $startTime,
             [
                 'http.response.status_code' => $response->getStatusCode(),
