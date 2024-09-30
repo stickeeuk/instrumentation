@@ -164,4 +164,14 @@ class Config
 
         return $value;
     }
+
+    /**
+     * Get the queue names
+     *
+     * @return array
+     */
+    public function queueNames(): array
+    {
+        return config('instrumentation.queue_names', []);
+    }
 }

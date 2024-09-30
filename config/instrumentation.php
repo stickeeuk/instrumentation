@@ -82,4 +82,13 @@ return [
      | 0 = never sample, 1 = always sample
      */
     'trace_sample_rate' => env('INSTRUMENTATION_TRACE_SAMPLE_RATE', 1),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Queue Names
+     |--------------------------------------------------------------------------
+     |
+     | An array of queue names to monitor
+     */
+    'queue_names' => array_map('trim', explode(',', env('INSTRUMENTATION_QUEUE_NAMES', 'default'))),
 ];
