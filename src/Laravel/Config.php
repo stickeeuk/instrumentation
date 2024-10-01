@@ -174,4 +174,14 @@ class Config
     {
         return config('instrumentation.queue_names', []);
     }
+
+    /**
+     * Get the long request trace threshold
+     *
+     * @return float
+     */
+    public function longRequestTraceThreshold(): float
+    {
+        return (float)config('instrumentation.long_request_trace_threshold', 1);
+    }
 }
