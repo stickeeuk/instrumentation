@@ -210,6 +210,8 @@ it('records counters for job events', function (): void {
     config()->set('queue.default', 'sync');
 
     \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
+    \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
+    \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
 
     try {
         \Stickee\Instrumentation\Tests\Fixtures\Jobs\FailingJob::dispatch();

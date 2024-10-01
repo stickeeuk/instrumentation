@@ -8,6 +8,7 @@ use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\QueueManager;
@@ -102,6 +103,24 @@ class InstrumentationServiceProvider extends ServiceProvider
             app('instrument')->flush();
         })->everyFifteenSeconds();
 
+        Queue::createPayloadUsing(fn ($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
+
+        Queue::before(function (JobProcessing $event) {
+            if (isset($event->job->payload()['created_at'])) {
+                Instrument::histogram(
+                    'job_start_duration',
+                    's',
+                    'Time between job being dispatched and starting processing.',
+                    [1, 2, 5, 10, 30, 60, 120, 600],
+                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
+                    [
+                        SemConv::JOB_NAME => $event->job->resolveName(),
+                        SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    ]
+                );
+            }
+        });
+
         Event::listen(JobQueued::class, function ($event) {
             Instrument::counter('jobs_queued', [
                 SemConv::JOB_NAME => $event->job->resolveName(),
@@ -114,6 +133,19 @@ class InstrumentationServiceProvider extends ServiceProvider
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
             ]);
+            if (isset($event->job->payload()['created_at'])) {
+                Instrument::histogram(
+                    'job_duration',
+                    's',
+                    'Time taken to process a job.',
+                    [0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 60],
+                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
+                    [
+                        SemConv::JOB_NAME => $event->job->resolveName(),
+                        SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    ]
+                );
+            }
         });
 
         Event::listen(JobFailed::class, function ($event) {
