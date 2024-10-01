@@ -7,6 +7,9 @@ use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +27,7 @@ use Stickee\Instrumentation\Queue\Connectors\NullConnector;
 use Stickee\Instrumentation\Queue\Connectors\RedisConnector;
 use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
+use Stickee\Instrumentation\Utils\SemConv;
 
 /**
  * Instrumentation service provider
@@ -98,6 +102,31 @@ class InstrumentationServiceProvider extends ServiceProvider
             app('instrument')->flush();
         })->everyFifteenSeconds();
 
+        Event::listen(JobQueued::class, function ($event) {
+            Instrument::counter('jobs_queued', [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+            ]);
+        });
+
+        Event::listen(JobProcessed::class, function ($event) {
+            Instrument::counter('jobs_processed', [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+            ]);
+        });
+
+        Event::listen(JobFailed::class, function ($event) {
+            Instrument::counter('jobs_failed', [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+            ]);
+        });
+
+        if ($this->config->responseTimeMiddlewareEnabled()) {
+            $this->registerResponseTimeMiddleware();
+        }
+
         // Flush events when a command finishes
         Event::listen(CommandFinished::class, fn () => app('instrument')->flush());
 
@@ -106,10 +135,6 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         // Flush events when a queue job fails
         Queue::failing(fn () => app('instrument')->flush());
-
-        if ($this->config->responseTimeMiddlewareEnabled()) {
-            $this->registerResponseTimeMiddleware();
-        }
 
         if (!$this->app->runningInConsole()) {
             return;
