@@ -26,7 +26,6 @@ use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
-use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
@@ -34,9 +33,12 @@ use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
+use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
+use Stickee\Instrumentation\Utils\DataScrubbingSpanProcessor;
 use Stickee\Instrumentation\Utils\RecordSampler;
 use Stickee\Instrumentation\Utils\SlowSpanProcessor;
 
@@ -58,6 +60,8 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $this->config = $this->app->make(Config::class);
 
         $this->app->singleton(CachedInstruments::class, fn () => new CachedInstruments('uk.co.stickee.instrumentation'));
+
+        $this->app->bind(DataScrubberInterface::class, DefaultDataScrubber::class);
     }
 
     /**
@@ -140,6 +144,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         return TracerProvider::builder()
             ->setSampler($sampler)
             ->setResource($resourceInfo->merge($resourceInfo, ResourceInfoFactory::defaultResource()))
+            ->addSpanProcessor(app(DataScrubbingSpanProcessor::class))
             ->addSpanProcessor($processor)
             ->build();
     }
