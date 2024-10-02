@@ -7,7 +7,6 @@ namespace Stickee\Instrumentation\Utils;
 use Closure;
 use function sprintf;
 use OpenTelemetry\API\Behavior\LogsMessagesTrait;
-use OpenTelemetry\API\Common\Time\Clock;
 use OpenTelemetry\API\Common\Time\ClockInterface;
 use OpenTelemetry\Context\Context;
 use OpenTelemetry\Context\ContextInterface;
