@@ -211,7 +211,6 @@ it('records counters for job events', function (): void {
 
     \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
     \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
-    \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
 
     try {
         \Stickee\Instrumentation\Tests\Fixtures\Jobs\FailingJob::dispatch();

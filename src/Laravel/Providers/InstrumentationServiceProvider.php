@@ -105,7 +105,17 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         Queue::createPayloadUsing(fn ($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
 
-        Queue::before(function (JobProcessing $event) {
+        Event::listen(JobQueued::class, function ($event) {
+            Instrument::counter('jobs_queued', [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+            ]);
+        });
+
+        $startTime = null;
+
+        Queue::before(function (JobProcessing $event) use (&$startTime) {
+            $startTime = now();
             if (isset($event->job->payload()['created_at'])) {
                 Instrument::histogram(
                     'job_start_duration',
@@ -121,38 +131,44 @@ class InstrumentationServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(JobQueued::class, function ($event) {
-            Instrument::counter('jobs_queued', [
-                SemConv::JOB_NAME => $event->job->resolveName(),
-                SemConv::JOB_QUEUE => $event->job->getQueue(),
-            ]);
-        });
-
-        Event::listen(JobProcessed::class, function ($event) {
+        Event::listen(JobProcessed::class, function ($event) use ($startTime) {
             Instrument::counter('jobs_processed', [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
+                'status' => 'success'
             ]);
-            if (isset($event->job->payload()['created_at'])) {
-                Instrument::histogram(
-                    'job_duration',
-                    's',
-                    'Time taken to process a job.',
-                    [0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 60],
-                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
-                    [
-                        SemConv::JOB_NAME => $event->job->resolveName(),
-                        SemConv::JOB_QUEUE => $event->job->getQueue(),
-                    ]
-                );
-            }
+            Instrument::histogram(
+                'job_duration',
+                's',
+                'Time taken to process a job.',
+                [0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 60],
+                now()->diffInSeconds(date: $startTime, absolute: true),
+                [
+                    SemConv::JOB_NAME => $event->job->resolveName(),
+                    SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    'status' => 'success',
+                ]
+            );
         });
 
-        Event::listen(JobFailed::class, function ($event) {
-            Instrument::counter('jobs_failed', [
+        Event::listen(JobFailed::class, function ($event) use ($startTime) {
+            Instrument::counter('jobs_processed', [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
+                'status' => 'failed'
             ]);
+            Instrument::histogram(
+                'job_duration',
+                's',
+                'Time taken to process a job.',
+                [0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 60],
+                now()->diffInSeconds(date: $startTime, absolute: true),
+                [
+                    SemConv::JOB_NAME => $event->job->resolveName(),
+                    SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    'status' => 'failed',
+                ]
+            );
         });
 
         if ($this->config->responseTimeMiddlewareEnabled()) {
