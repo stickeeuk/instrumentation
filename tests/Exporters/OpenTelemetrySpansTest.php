@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Log;
 use OpenTelemetry\API\Instrumentation\Configurator;
 use OpenTelemetry\API\Trace\SpanKind;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
@@ -9,6 +10,7 @@ use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
 use Stickee\Instrumentation\Exporters\Exporter;
@@ -20,13 +22,14 @@ beforeEach(function (): void {
     $this->mockTransport->method('contentType')
         ->willReturn('application/json');
 
+    $scrubber = new DefaultDataScrubber();
     $sampler = new AlwaysOnSampler();
     $exporter = new SpanExporter($this->mockTransport);
     $this->processor = new SimpleSpanProcessor($exporter);
 
     $tracerProvider = TracerProvider::builder()
         ->setSampler($sampler)
-        ->addSpanProcessor(new DataScrubbingSpanProcessor(new DefaultDataScrubber()))
+        ->addSpanProcessor(new DataScrubbingSpanProcessor($scrubber))
         ->addSpanProcessor($this->processor)
         ->build();
 
@@ -35,17 +38,15 @@ beforeEach(function (): void {
 
     $this->scope = $configurator->activate();
 
-    $this->exporter = new Exporter(app(OpenTelemetryEvents::class), app(OpenTelmetrySpans::class));
+    $this->exporter = new Exporter(app(OpenTelemetryEvents::class), app(OpenTelmetrySpans::class), $scrubber);
 });
 
-it('can scrub sensitive data', function (): void {
+it('can scrub sensitive data from spans', function (): void {
     $this->mockTransport->expects($this->once())
         ->method('send')
         ->with($this->logicalNot($this->stringContains('test@example.com')));
 
-    $this->exporter->span('STICKEE TEST SPAN', function (): void {
-        $this->exporter->event('STICKEE TEST EVENT');
-    }, SpanKind::KIND_INTERNAL, ['email' => 'test@example.com']);
+    $this->exporter->span('STICKEE TEST SPAN', function (): void {}, SpanKind::KIND_INTERNAL, ['email' => 'test@example.com']);
 
     $this->processor->shutdown();
     $this->scope->detach();

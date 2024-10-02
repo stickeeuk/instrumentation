@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\ServiceProvider;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Laravel\Config;
@@ -56,7 +57,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             $eventsExporter = $app->make($this->config->eventsExporterClass());
             $spansExporter = $app->make($this->config->spansExporterClass());
 
-            return new Exporter($eventsExporter, $spansExporter);
+            return new Exporter($eventsExporter, $spansExporter, $app->make(DataScrubberInterface::class));
         });
 
         $this->app->singleton('instrument', function(Application $app) {

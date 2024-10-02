@@ -3,6 +3,7 @@
 namespace Stickee\Instrumentation\Exporters;
 
 use OpenTelemetry\API\Trace\SpanKind;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface;
 use Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface;
 use Stickee\Instrumentation\Spans\SpanInterface;
@@ -17,8 +18,18 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function __construct(
         private readonly EventsExporterInterface $eventsExporter,
-        private readonly SpansExporterInterface $spansExporter
+        private readonly SpansExporterInterface $spansExporter,
+        private readonly DataScrubberInterface $dataScrubber
     ) {
+    }
+
+    private function scrub(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->dataScrubber->scrub($key, $value);
+        }
+
+        return $data;
     }
 
     /**
@@ -41,6 +52,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function event(string $name, array $tags = [], float $value = 1): void
     {
+        $tags = $this->scrub($tags);
+
         $this->eventsExporter->event($name, $tags, $value);
     }
 
@@ -53,6 +66,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function counter(string $name, array $tags = [], float $increase = 1): void
     {
+        $tags = $this->scrub($tags);
+
         $this->eventsExporter->counter($name, $tags, $increase);
     }
 
@@ -65,6 +80,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function gauge(string $name, array $tags, float $value): void
     {
+        $tags = $this->scrub($tags);
+
         $this->eventsExporter->gauge($name, $tags, $value);
     }
 
@@ -80,6 +97,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
     {
+        $tags = $this->scrub($tags);
+
         $this->eventsExporter->histogram($name, $unit, $description, $buckets, $value, $tags);
     }
 
@@ -105,6 +124,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
+        $attributes = $this->scrub($attributes);
+
         return $this->spansExporter->span($name, $callable, $kind, $attributes);
     }
 
@@ -119,6 +140,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      */
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
+        $attributes = $this->scrub($attributes);
+
         return $this->spansExporter->startSpan($name, $kind, $attributes);
     }
 }
