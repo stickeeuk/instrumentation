@@ -18,7 +18,7 @@ class SemConv
 
     const HTTP_SERVER_REQUEST_DURATION_BUCKETS = [ 0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 100 ];
 
-    // jobs
+    // job
 
     const JOB_NAME = 'job.name';
 
@@ -27,6 +27,12 @@ class SemConv
     const JOB_STATUS_PROCESSED = 'processed';
 
     const JOB_STATUS_FAILED = 'failed';
+
+    // job queues
+
+    const JOB_QUEUE_LENGTH_NAME = 'job.queue.length';
+
+    const JOB_QUEUE_AVAILABLE_LENGTH_NAME = 'job.queue.available.length';
 
     // jobs queued
 
