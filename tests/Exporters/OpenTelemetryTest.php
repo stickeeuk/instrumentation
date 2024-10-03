@@ -48,6 +48,10 @@ beforeEach(function (): void {
     $this->exporter = new Exporter(app(OpenTelemetryEvents::class), app(OpenTelmetrySpans::class), new DefaultDataScrubber());
 });
 
+afterEach(function (): void {
+    $this->scope->detach();
+});
+
 it('can record an event', function (): void {
     $eventName = 'STICKEE TEST EVENT';
 
@@ -59,7 +63,6 @@ it('can record an event', function (): void {
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();
-    $this->scope->detach();
 });
 
 it('can record a log', function (): void {
@@ -73,7 +76,6 @@ it('can record a log', function (): void {
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();
-    $this->scope->detach();
 });
 
 it('can scrub sensitive data from events', function (): void {
@@ -87,7 +89,6 @@ it('can scrub sensitive data from events', function (): void {
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();
-    $this->scope->detach();
 });
 
 it('can scrub sensitive data from counters', function (): void {
@@ -103,7 +104,6 @@ it('can scrub sensitive data from counters', function (): void {
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();
-    $this->scope->detach();
 });
 
 it('can scrub sensitive data from gauges', function (): void {
@@ -119,7 +119,6 @@ it('can scrub sensitive data from gauges', function (): void {
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();
-    $this->scope->detach();
 });
 
 it('can scrub sensitive data from histograms', function (): void {
@@ -135,18 +134,16 @@ it('can scrub sensitive data from histograms', function (): void {
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();
-    $this->scope->detach();
 });
 
-// it('can scrub sensitive data from logs', function (): void {
-//     $this->mockTransport->expects($this->once())
-//         ->method('send')
-//         ->with($this->logicalNot($this->stringContains('test@example.com')))
-//         ->willReturnCallback(fn() => new CompletedFuture(null));
+it('can scrub sensitive data from logs', function (): void {
+    $this->mockTransport->expects($this->once())
+        ->method('send')
+        ->with($this->logicalNot($this->stringContains('test@example.com')))
+        ->willReturnCallback(fn() => new CompletedFuture(null));
 
-//     Log::error('Email: test@example.com', ['email' => 'test@example.com']);
+    Log::error('Email: test@example.com', ['email' => 'test@example.com']);
 
-//     $this->metricReader->shutdown();
-//     $this->logProcessor->shutdown();
-//     $this->scope->detach();
-// });
+    $this->metricReader->shutdown();
+    $this->logProcessor->shutdown();
+});
