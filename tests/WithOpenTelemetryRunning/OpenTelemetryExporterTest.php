@@ -204,3 +204,19 @@ it('records data for a while', function (): void {
 
     // TODO look at Grafana
 });
+
+it('records counters for job events', function (): void {
+
+    config()->set('queue.default', 'sync');
+
+    \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
+    \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
+
+    try {
+        \Stickee\Instrumentation\Tests\Fixtures\Jobs\FailingJob::dispatch();
+    } catch (\Exception $e) {
+        // Ignore the exception
+    }
+
+    // TODO assert that the counters are correct
+});

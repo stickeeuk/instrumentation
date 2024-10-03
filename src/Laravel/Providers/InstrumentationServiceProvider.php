@@ -8,6 +8,10 @@ use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +32,7 @@ use Stickee\Instrumentation\Queue\Connectors\NullConnector;
 use Stickee\Instrumentation\Queue\Connectors\RedisConnector;
 use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
+use Stickee\Instrumentation\Utils\SemConv;
 
 /**
  * Instrumentation service provider
@@ -122,6 +127,78 @@ class InstrumentationServiceProvider extends ServiceProvider
             app('instrument')->flush();
         })->everyFifteenSeconds();
 
+        Queue::createPayloadUsing(fn ($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
+
+        Event::listen(JobQueued::class, function ($event) {
+            Instrument::counter(SemConv::JOBS_QUEUED_NAME, [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+            ]);
+        });
+
+        $startTime = null;
+
+        Queue::before(function (JobProcessing $event) use (&$startTime) {
+            $startTime = now();
+            if (isset($event->job->payload()['created_at'])) {
+                Instrument::histogram(
+                    SemConv::JOB_START_DURATION_NAME,
+                    SemConv::JOB_START_DURATION_UNIT,
+                    SemConv::JOB_START_DURATION_DESCRIPTION,
+                    SemConv::JOB_START_DURATION_BUCKETS,
+                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
+                    [
+                        SemConv::JOB_NAME => $event->job->resolveName(),
+                        SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    ]
+                );
+            }
+        });
+
+        Event::listen(JobProcessed::class, function ($event) use ($startTime) {
+            Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+                SemConv::STATUS => SemConv::JOB_STATUS_PROCESSED,
+            ]);
+            Instrument::histogram(
+                SemConv::JOB_DURATION_NAME,
+                SemConv::JOB_DURATION_UNIT,
+                SemConv::JOB_DURATION_DESCRIPTION,
+                SemConv::JOB_DURATION_BUCKETS,
+                now()->diffInSeconds(date: $startTime, absolute: true),
+                [
+                    SemConv::JOB_NAME => $event->job->resolveName(),
+                    SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    SemConv::STATUS => SemConv::JOB_STATUS_PROCESSED,
+                ]
+            );
+        });
+
+        Event::listen(JobFailed::class, function ($event) use ($startTime) {
+            Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
+                SemConv::JOB_NAME => $event->job->resolveName(),
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+                SemConv::STATUS => SemConv::JOB_STATUS_FAILED,
+            ]);
+            Instrument::histogram(
+                SemConv::JOB_DURATION_NAME,
+                SemConv::JOB_DURATION_UNIT,
+                SemConv::JOB_DURATION_DESCRIPTION,
+                SemConv::JOB_DURATION_BUCKETS,
+                now()->diffInSeconds(date: $startTime, absolute: true),
+                [
+                    SemConv::JOB_NAME => $event->job->resolveName(),
+                    SemConv::JOB_QUEUE => $event->job->getQueue(),
+                    SemConv::STATUS => SemConv::JOB_STATUS_FAILED,
+                ]
+            );
+        });
+
+        if ($this->config->responseTimeMiddlewareEnabled()) {
+            $this->registerResponseTimeMiddleware();
+        }
+
         // Flush events when a command finishes
         Event::listen(CommandFinished::class, fn () => app('instrument')->flush());
 
@@ -130,10 +207,6 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         // Flush events when a queue job fails
         Queue::failing(fn () => app('instrument')->flush());
-
-        if ($this->config->responseTimeMiddlewareEnabled()) {
-            $this->registerResponseTimeMiddleware();
-        }
 
         if (!$this->app->runningInConsole()) {
             return;
