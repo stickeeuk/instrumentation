@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Stickee\Instrumentation\DataScrubbers;
 
-class DefaultDataScrubber implements DataScrubberInterface
+class NullDataScrubber implements DataScrubberInterface
 {
-    public function scrub($key, $value)
+    /**
+     * Scrub data
+     *
+     * @param mixed $key The key
+     * @param mixed $value The value
+     */
+    public function scrub(mixed $key, mixed $value): mixed
     {
         return $value;
     }

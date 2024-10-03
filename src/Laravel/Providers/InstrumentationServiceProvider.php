@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\ServiceProvider;
 use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\LogWatcher;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
+use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Laravel\Config;
@@ -82,6 +83,8 @@ class InstrumentationServiceProvider extends ServiceProvider
 
             return $manager;
         });
+
+        $this->app->bind(DataScrubberInterface::class, DefaultDataScrubber::class);
 
         // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
         hook(

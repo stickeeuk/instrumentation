@@ -15,6 +15,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      *
      * @param \Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface $eventsExporter The events exporter
      * @param \Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface $spansExporter The spans exporter
+     * @param \Stickee\Instrumentation\DataScrubbers\DataScrubberInterface $dataScrubber The data scrubber
      */
     public function __construct(
         private readonly EventsExporterInterface $eventsExporter,
@@ -23,6 +24,11 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
     ) {
     }
 
+    /**
+     * Scrub data
+     *
+     * @param array $data The data to scrub
+     */
     private function scrub(array $data): array
     {
         foreach ($data as $key => $value) {

@@ -33,8 +33,6 @@ use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
-use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
-use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
@@ -60,8 +58,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $this->config = $this->app->make(Config::class);
 
         $this->app->singleton(CachedInstruments::class, fn () => new CachedInstruments('uk.co.stickee.instrumentation'));
-
-        $this->app->bind(DataScrubberInterface::class, DefaultDataScrubber::class);
     }
 
     /**

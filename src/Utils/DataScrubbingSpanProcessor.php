@@ -13,10 +13,21 @@ use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 
 class DataScrubbingSpanProcessor implements SpanProcessorInterface
 {
+    /**
+     * Constructor
+     *
+     * @param DataScrubberInterface $scrubber The data scrubber
+     */
     public function __construct(private readonly DataScrubberInterface $scrubber)
     {
     }
 
+    /**
+     * Start a span
+     *
+     * @param ReadWriteSpanInterface $span The span
+     * @param ContextInterface $parentContext The parent context
+     */
     public function onStart(ReadWriteSpanInterface $span, ContextInterface $parentContext): void
     {
         $attributes = $span->toSpanData()->getAttributes();
@@ -30,16 +41,31 @@ class DataScrubbingSpanProcessor implements SpanProcessorInterface
         }
     }
 
+    /**
+     * End a span
+     *
+     * @param ReadableSpanInterface $span The span
+     */
     public function onEnd(ReadableSpanInterface $span): void
     {
         // Do nothing.
     }
 
+    /**
+     * Force flush
+     *
+     * @param CancellationInterface|null $cancellation The cancellation token
+     */
     public function forceFlush(?CancellationInterface $cancellation = null): bool
     {
         return true;
     }
 
+    /**
+     * Shutdown
+     *
+     * @param CancellationInterface|null $cancellation The cancellation token
+     */
     public function shutdown(?CancellationInterface $cancellation = null): bool
     {
         return true;
