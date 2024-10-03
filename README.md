@@ -205,6 +205,24 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 If you wish to use a custom exporter class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` and make sure it is constructable by the service container.
 
+### Scrubbing Data
+
+By default, data is scrubbed by the `Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber` class.
+To change this behaviour, bind your implementation to the `Stickee\Instrumentation\DataScrubbers\DataScrubberInterface` interface.
+The package ships with `NullDataScrubber` to disable scrubbing, and `CallbackDataScrubber` to allow you to register a callback instead of creating a new class.
+
+```php
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
+use Stickee\Instrumentation\DataScrubbers\NullDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\CallbackDataScrubber;
+
+// Disable scrubbing
+app()->bind(DataScrubberInterface::class, NullDataScrubber::class);
+
+// Custom scrubbing
+app()->bind(DataScrubberInterface::class, new CallbackDataScrubber(fn (mixed $key, mixed $value) => preg_replace('/\d/', 'x', $value));
+```
+
 ## Developing
 
 The easiest way to make changes is to make the project you're importing the module in to load the module from your filesystem instead of the Composer repository, like this:

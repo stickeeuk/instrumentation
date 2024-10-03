@@ -3,6 +3,7 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
+use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\ServiceProvider;
+use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\LogWatcher;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
+use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Laravel\Config;
@@ -56,7 +60,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             $eventsExporter = $app->make($this->config->eventsExporterClass());
             $spansExporter = $app->make($this->config->spansExporterClass());
 
-            return new Exporter($eventsExporter, $spansExporter);
+            return new Exporter($eventsExporter, $spansExporter, $app->make(DataScrubberInterface::class));
         });
 
         $this->app->singleton('instrument', function(Application $app) {
@@ -68,6 +72,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             return $exporter;
         });
 
+        // Extend the queue connectors to add availableCount()
         $this->app->extend('queue', function (QueueManager $manager) {
             $manager->addConnector('beanstalkd', fn (): BeanstalkdConnector => new BeanstalkdConnector());
             $manager->addConnector('database', fn (): DatabaseConnector => new DatabaseConnector($this->app['db']));
@@ -78,6 +83,25 @@ class InstrumentationServiceProvider extends ServiceProvider
 
             return $manager;
         });
+
+        $this->app->bind(DataScrubberInterface::class, DefaultDataScrubber::class);
+
+        // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
+        hook(
+            LogWatcher::class,
+            'recordLog',
+            pre: function (LogWatcher $watcher, array $params, string $class, string $function, ?string $filename, ?int $lineno): array {
+                $scrubber = app(DataScrubberInterface::class);
+                $message = $params[0];
+                $message->message = $scrubber->scrub('', $message->message);
+
+                foreach ($message->context as $key => $value) {
+                    $message->context[$key] = $scrubber->scrub($key, $value);
+                }
+
+                return $params;
+            },
+        );
     }
 
     /**

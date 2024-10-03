@@ -21,8 +21,26 @@ class OpenTelemetry implements EventsExporterInterface
      * @var array $counters
      */
     private $counters = [];
+
+    /**
+     * Gauge instruments
+     *
+     * @var array $gauges
+     */
+    private $gauges = [];
+
+    /**
+     * Histogram instruments
+     *
+     * @var array $histograms
+     */
     private $histograms = [];
 
+    /**
+     * Constructor
+     *
+     * @param \Stickee\Instrumentation\Utils\CachedInstruments $instrumentation The instrumentation
+     */
     public function __construct(private readonly CachedInstruments $instrumentation)
     {
     }
@@ -78,7 +96,11 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function gauge(string $name, array $tags, float $value): void
     {
-        $this->event($name, $tags, $value);
+        if (!isset($this->gauges[$name])) {
+            $this->gauges[$name] = $this->instrumentation->meter()->createGauge($name);
+        }
+
+        $this->gauges[$name]->record($value, $tags);
     }
 
     /**
