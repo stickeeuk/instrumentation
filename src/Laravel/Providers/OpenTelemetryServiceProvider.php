@@ -30,12 +30,15 @@ use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
+use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
+use Stickee\Instrumentation\Utils\RecordSampler;
+use Stickee\Instrumentation\Utils\SlowSpanProcessor;
 
 /**
  * Open Telemetry service provider
@@ -116,8 +119,9 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getTracerProvider(): TracerProviderInterface
     {
-        $sampler = $this->config->traceSampleRate() == 1
-            ? new AlwaysOnSampler()
+        $traceLongRequests = $this->config->longRequestTraceThreshold() && ($this->config->traceSampleRate() < 1);
+        $sampler = $traceLongRequests
+            ? new RecordSampler(new TraceIdRatioBasedSampler($this->config->traceSampleRate()))
             : new TraceIdRatioBasedSampler($this->config->traceSampleRate());
 
         $resourceInfo = ResourceInfo::create(Attributes::create([
@@ -126,7 +130,10 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         ]));
 
         $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
-        $processor = BatchSpanProcessor::builder($exporter)->build();
+        $batchProcessor = BatchSpanProcessor::builder($exporter)->build();
+        $processor = $traceLongRequests
+            ? new MultiSpanProcessor($batchProcessor, new SlowSpanProcessor($exporter, Clock::getDefault(), $this->config->longRequestTraceThreshold()))
+            : $batchProcessor;
 
         register_shutdown_function(fn () => $processor->shutdown());
 
