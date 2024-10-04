@@ -132,7 +132,14 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
         $batchProcessor = BatchSpanProcessor::builder($exporter)->build();
         $processor = $traceLongRequests
-            ? new MultiSpanProcessor($batchProcessor, new SlowSpanProcessor($exporter, Clock::getDefault(), $this->config->longRequestTraceThreshold()))
+            ? new MultiSpanProcessor(
+                $batchProcessor,
+                new SlowSpanProcessor(
+                    $exporter,
+                    Clock::getDefault(),
+                    $this->config->longRequestTraceThreshold()
+                )
+            )
             : $batchProcessor;
 
         register_shutdown_function(fn () => $processor->shutdown());
