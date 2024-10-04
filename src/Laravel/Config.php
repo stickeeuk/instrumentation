@@ -15,8 +15,6 @@ class Config
 {
     /**
      * If instrumentation is enabled
-     *
-     * @return bool
      */
     public function enabled(): bool
     {
@@ -25,8 +23,6 @@ class Config
 
     /**
      * Get the events exporter class
-     *
-     * @return string
      */
     public function eventsExporterClass(): string
     {
@@ -51,8 +47,6 @@ class Config
 
     /**
      * Get the spans exporter class
-     *
-     * @return string
      */
     public function spansExporterClass(): string
     {
@@ -77,8 +71,6 @@ class Config
 
     /**
      * Get the trace sample rate, between 0 and 1
-     *
-     * @return float
      */
     public function traceSampleRate(): float
     {
@@ -93,8 +85,6 @@ class Config
 
     /**
      * If SSL connections should verify the certificate
-     *
-     * @return bool
      */
     public function verifySsl(): bool
     {
@@ -103,8 +93,6 @@ class Config
 
     /**
      * If the response time middleware is enabled
-     *
-     * @return bool
      */
     public function responseTimeMiddlewareEnabled(): bool
     {
@@ -115,8 +103,6 @@ class Config
      * Configuration for InfluxDb
      *
      * @param string $key The configuration variable
-     *
-     * @return mixed
      */
     public function influxDb(string $key): mixed
     {
@@ -133,8 +119,6 @@ class Config
      * Configuration for OpenTelemetry
      *
      * @param string $key The configuration variable
-     *
-     * @return mixed
      */
     public function openTelemetry(string $key): mixed
     {
@@ -151,8 +135,6 @@ class Config
      * Configuration for the log file
      *
      * @param string $key The configuration variable
-     *
-     * @return mixed
      */
     public function logFile(string $key): mixed
     {
@@ -167,8 +149,6 @@ class Config
 
     /**
      * Get the queue names
-     *
-     * @return array
      */
     public function queueNames(): array
     {
@@ -177,8 +157,6 @@ class Config
 
     /**
      * Get the long request trace threshold
-     *
-     * @return float
      */
     public function longRequestTraceThreshold(): float
     {

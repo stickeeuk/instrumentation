@@ -180,8 +180,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      *
      * @param string $path The path to append to the DSN
      * @param string $contentType The content type
-     *
-     * @return \OpenTelemetry\SDK\Common\Export\TransportInterface
      */
     private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {

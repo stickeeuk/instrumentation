@@ -17,8 +17,6 @@ class LogFile implements EventsExporterInterface
 
     /**
      * The log file name
-     *
-     * @var string
      */
     private $filename;
 

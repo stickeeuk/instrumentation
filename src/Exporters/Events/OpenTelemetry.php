@@ -17,22 +17,16 @@ class OpenTelemetry implements EventsExporterInterface
 
     /**
      * Counter instruments
-     *
-     * @var array
      */
     private $counters = [];
 
     /**
      * Gauge instruments
-     *
-     * @var array
      */
     private $gauges = [];
 
     /**
      * Histogram instruments
-     *
-     * @var array
      */
     private $histograms = [];
 

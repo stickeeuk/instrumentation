@@ -37,8 +37,6 @@ class NullSpans implements SpansExporterInterface
      * @param string $name The name of the span
      * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
-     *
-     * @return \Stickee\Instrumentation\Spans\SpanInterface
      */
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {

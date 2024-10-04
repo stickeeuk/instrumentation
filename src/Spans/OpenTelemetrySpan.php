@@ -10,8 +10,6 @@ class OpenTelemetrySpan implements SpanInterface
 {
     /**
      * If the span has been ended
-     *
-     * @var bool
      */
     private bool $ended = false;
 
@@ -24,8 +22,6 @@ class OpenTelemetrySpan implements SpanInterface
 
     /**
      * The OpenTelemetry scope
-     *
-     * @var \OpenTelemetry\Context\ScopeInterface
      */
     private ScopeInterface $scope;
 

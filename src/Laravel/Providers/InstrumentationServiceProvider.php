@@ -42,8 +42,6 @@ class InstrumentationServiceProvider extends ServiceProvider
 {
     /**
      * The config
-     *
-     * @var \Stickee\Instrumentation\Laravel\Config
      */
     private Config $config;
 
