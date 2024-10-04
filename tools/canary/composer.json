@@ -1,0 +1,5 @@
+{
+    "require": {
+        "stickee/canary": "^3.1"
+    }
+}
