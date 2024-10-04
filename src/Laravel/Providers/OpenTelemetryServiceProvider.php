@@ -186,6 +186,14 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {
         return (app(OtlpHttpTransportFactory::class))
-            ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
+            ->create(
+                endpoint: $this->config->openTelemetry('dsn') . $path,
+                contentType: $contentType,
+                headers: [],
+                compression: null,
+                timeout: 1,
+                retryDelay: 100,
+                maxRetries: 1
+            );
     }
 }
