@@ -65,7 +65,7 @@ class OpenTelemetry implements EventsExporterInterface
         Span::getCurrent()->addEvent($name, $tags);
 
         $log = (new LogRecord($value))
-            ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND)
+            ->setTimestamp((int) microtime(true) * LogRecord::NANOS_PER_SECOND)
             ->setAttributes($tags);
 
         $this->instrumentation->eventLogger()->emit($name, $log);
