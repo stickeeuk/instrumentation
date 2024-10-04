@@ -11,9 +11,7 @@ class CallbackDataScrubber implements DataScrubberInterface
      *
      * @param callable(mixed $key, mixed $value): mixed $callback The data scrubbing callback
      */
-    public function __construct(private readonly callable $callback)
-    {
-    }
+    public function __construct(private readonly callable $callback) {}
 
     /**
      * Scrub data

@@ -14,7 +14,7 @@ trait HandlesErrors
      * An error handler function that takes an Exception as an argument
      * Must be callable with `call_user_func()`
      *
-     * @var mixed $errorHandler
+     * @var mixed
      */
     private $errorHandler;
 

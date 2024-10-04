@@ -57,7 +57,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     {
         $this->config = $this->app->make(Config::class);
 
-        $this->app->singleton(CachedInstruments::class, fn () => new CachedInstruments('uk.co.stickee.instrumentation'));
+        $this->app->singleton(CachedInstruments::class, fn() => new CachedInstruments('uk.co.stickee.instrumentation'));
     }
 
     /**
@@ -67,7 +67,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     {
         static $firstBoot = true;
 
-        if (!$this->config->enabled()) {
+        if (! $this->config->enabled()) {
             return;
         }
 
@@ -97,7 +97,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $loggerProvider = $this->getLoggerProvider();
 
         // In tests the application is booted multiple times but we don't need to create a new Configurator scope
-        if (!$firstBoot) {
+        if (! $firstBoot) {
             return;
         }
 
@@ -111,7 +111,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         $scope = $configurator->activate();
 
-        register_shutdown_function(fn () => $scope->detach());
+        register_shutdown_function(fn() => $scope->detach());
     }
 
     /**
@@ -135,7 +135,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             ? new MultiSpanProcessor($batchProcessor, new SlowSpanProcessor($exporter, Clock::getDefault(), $this->config->longRequestTraceThreshold()))
             : $batchProcessor;
 
-        register_shutdown_function(fn () => $processor->shutdown());
+        register_shutdown_function(fn() => $processor->shutdown());
 
         return TracerProvider::builder()
             ->setSampler($sampler)
@@ -153,7 +153,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
         $reader = new ExportingReader($exporter);
 
-        register_shutdown_function(fn () => $reader->shutdown());
+        register_shutdown_function(fn() => $reader->shutdown());
 
         return MeterProvider::builder()
             ->addReader($reader)
@@ -168,7 +168,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
         $processor = new BatchLogRecordProcessor($exporter, Clock::getDefault());
 
-        register_shutdown_function(fn () => $processor->shutdown());
+        register_shutdown_function(fn() => $processor->shutdown());
 
         return LoggerProvider::builder()
             ->addLogRecordProcessor($processor)
@@ -185,7 +185,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
     {
-        return (app(OtlpHttpTransportFactory::class))
+        return app(OtlpHttpTransportFactory::class)
             ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
     }
 }

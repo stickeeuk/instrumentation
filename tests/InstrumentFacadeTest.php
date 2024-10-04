@@ -21,7 +21,7 @@ it('can forward data events onto the underlying exporter', function (string $eve
     $log = "{$event} event";
     $exporter = app('instrument');
 
-    $exporter->$event($log, [], 1.0);
+    $exporter->{$event}($log, [], 1.0);
 
     // Now check the logfile:
     if (! file_exists($this->filename)) {
@@ -36,7 +36,6 @@ it('can forward data events onto the underlying exporter', function (string $eve
     'counter',
     'gauge',
 ]);
-
 
 it('will forward flush onto the underlying exporter', function (): void {
     app('instrument')->flush();

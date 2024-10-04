@@ -18,7 +18,7 @@ class LogFile implements EventsExporterInterface
     /**
      * The log file name
      *
-     * @var string $filename
+     * @var string
      */
     private $filename;
 
@@ -44,7 +44,7 @@ class LogFile implements EventsExporterInterface
     protected function write($message): void
     {
         try {
-            $f = fopen($this->filename, 'a');
+            $f = fopen($this->filename, 'ab');
             fwrite($f, $message . "\n");
             fclose($f);
         } catch (Exception $e) {

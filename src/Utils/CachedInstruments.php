@@ -19,10 +19,13 @@ final class CachedInstruments
 {
     /** @var WeakMap<TracerProviderInterface, TracerInterface> */
     private WeakMap $tracers;
+
     /** @var WeakMap<MeterProviderInterface, MeterInterface> */
     private WeakMap $meters;
+
     /** @var WeakMap<LoggerProviderInterface, LoggerInterface> */
     private WeakMap $loggers;
+
     /** @var WeakMap<EventLoggerProviderInterface, EventLoggerInterface> */
     private WeakMap $eventLoggers;
 
@@ -54,12 +57,14 @@ final class CachedInstruments
 
         return $this->meters[$meterProvider] ??= $meterProvider->getMeter($this->name, $this->version, $this->schemaUrl, $this->attributes);
     }
+
     public function logger(): LoggerInterface
     {
         $loggerProvider = Globals::loggerProvider();
 
         return $this->loggers[$loggerProvider] ??= $loggerProvider->getLogger($this->name, $this->version, $this->schemaUrl, $this->attributes);
     }
+
     public function eventLogger(): EventLoggerInterface
     {
         $eventLoggerProvider = Globals::eventLoggerProvider();
