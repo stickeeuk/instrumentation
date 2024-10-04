@@ -28,6 +28,8 @@ use Stickee\Instrumentation\Queue\Connectors\NullConnector;
 use Stickee\Instrumentation\Queue\Connectors\RedisConnector;
 use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
+use Stickee\Instrumentation\Watchers\MemoryWatcher;
+use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 
 /**
  * Instrumentation service provider
@@ -113,14 +115,19 @@ class InstrumentationServiceProvider extends ServiceProvider
             return;
         }
 
-        Schedule::call(function () {
-            foreach ($this->config->queueNames() as $queueName) {
-                Instrument::gauge('queue_length', ['queue' => $queueName], Queue::size($queueName));
-                Instrument::gauge('queue_available_length', ['queue' => $queueName], Queue::availableSize($queueName));
-            }
+        (new MemoryWatcher())->register($this->app);
+        (new QueryCountWatcher())->register($this->app);
 
-            app('instrument')->flush();
-        })->everyFifteenSeconds();
+        if (!$this->app->runningUnitTests()) {
+            Schedule::call(function () {
+                foreach ($this->config->queueNames() as $queueName) {
+                    Instrument::gauge('queue_length', ['queue' => $queueName], Queue::size($queueName));
+                    Instrument::gauge('queue_available_length', ['queue' => $queueName], Queue::availableSize($queueName));
+                }
+
+                app('instrument')->flush();
+            })->everyFifteenSeconds();
+        }
 
         // Flush events when a command finishes
         Event::listen(CommandFinished::class, fn () => app('instrument')->flush());

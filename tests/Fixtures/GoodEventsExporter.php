@@ -55,6 +55,21 @@ final class GoodEventsExporter implements EventsExporterInterface
     }
 
     /**
+     * Record a value on a histogram
+     *
+     * @param string $name The name of the histogram, e.g. "http.server.duration"
+     * @param string|null $unit The unit of the histogram, e.g. "ms"
+     * @param string|null $description A description of the histogram
+     * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
+     * @param float|int $value The value of the histogram
+     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     */
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
+    {
+        // Do nothing
+    }
+
+    /**
      * Flush any queued writes
      */
     public function flush(): void
