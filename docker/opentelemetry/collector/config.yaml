@@ -32,20 +32,6 @@ exporters:
 processors:
   batch:
 
-  # TODO make this look for KPIs properly instead of just checking body is a number
-  # Use library name or something?
-  filter/kpis-only:
-    logs:
-      log_record:
-        - 'not IsMatch(body, "^\\d+(\\.\\d+)?$")' # Drop all logs that are not a number
-
-  # TODO make this look for KPIs properly instead of just checking body is a number
-  # Use library name or something?
-  filter/remove-kpis:
-    logs:
-      log_record:
-        - 'IsMatch(body, "^\\d+(\\.\\d+)?$")'
-
   # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor
   transform:
     log_statements:
@@ -66,8 +52,6 @@ service:
       receivers:
         - otlp
       processors:
-        # May or may not want this
-        - filter/remove-kpis
         - batch
       exporters:
         - logging
@@ -77,7 +61,6 @@ service:
       receivers:
         - otlp
       processors:
-        - filter/kpis-only
         - transform
         - batch
       exporters:
