@@ -38,7 +38,7 @@ class DefaultDataScrubber implements DataScrubberInterface
         }
 
         foreach (self::DEFAULT_REDACTIONS as $regex => $replacement) {
-            $value = preg_replace($regex, $replacement, $value);
+            $value = preg_replace($regex, $replacement, (string) $value);
         }
 
         return $value;

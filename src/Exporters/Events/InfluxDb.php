@@ -23,7 +23,7 @@ class InfluxDb implements EventsExporterInterface
      *
      * @var \InfluxDB2\Point[]
      */
-    private $events = [];
+    private array $events = [];
 
     /**
      * The connection to the InfluxDB database
@@ -108,8 +108,8 @@ class InfluxDb implements EventsExporterInterface
         $tags['span_id'] = $context->getSpanId();
 
         // Tags must be strings, so remove nulls and convert the rest
-        $tags = array_filter($tags, static fn($value) => $value !== null);
-        $tags = array_map(static function ($value) {
+        $tags = array_filter($tags, static fn($value): bool => $value !== null);
+        $tags = array_map(static function ($value): string {
             if ($value === false) {
                 return '0';
             }

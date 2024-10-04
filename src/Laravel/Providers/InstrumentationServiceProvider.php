@@ -60,9 +60,9 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         $this->app->when(LogFile::class)
             ->needs('$filename')
-            ->give(fn() => $this->config->logFile('filename'));
+            ->give(fn(): mixed => $this->config->logFile('filename'));
 
-        $this->app->bind(Exporter::class, function (Application $app) {
+        $this->app->bind(Exporter::class, function (Application $app): \Stickee\Instrumentation\Exporters\Exporter {
             $eventsExporter = $app->make($this->config->eventsExporterClass());
             $spansExporter = $app->make($this->config->spansExporterClass());
 
@@ -71,7 +71,7 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         $this->app->singleton('instrument', function (Application $app) {
             $exporter = $app->make(Exporter::class);
-            $exporter->setErrorHandler(function (Exception $e) {
+            $exporter->setErrorHandler(function (Exception $e): void {
                 Log::error($e->getMessage());
             });
 
@@ -79,7 +79,7 @@ class InstrumentationServiceProvider extends ServiceProvider
         });
 
         // Extend the queue connectors to add availableCount()
-        $this->app->extend('queue', function (QueueManager $manager) {
+        $this->app->extend('queue', function (QueueManager $manager): \Illuminate\Queue\QueueManager {
             $manager->addConnector('beanstalkd', fn(): BeanstalkdConnector => new BeanstalkdConnector());
             $manager->addConnector('database', fn(): DatabaseConnector => new DatabaseConnector($this->app['db']));
             $manager->addConnector('null', fn(): NullConnector => new NullConnector());
@@ -119,7 +119,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             return;
         }
 
-        Schedule::call(function () {
+        Schedule::call(function (): void {
             foreach ($this->config->queueNames() as $queueName) {
                 Instrument::gauge('queue_length', ['queue' => $queueName], Queue::size($queueName));
                 Instrument::gauge('queue_available_length', ['queue' => $queueName], Queue::availableSize($queueName));
@@ -130,7 +130,7 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         Queue::createPayloadUsing(fn($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
 
-        Event::listen(JobQueued::class, function ($event) {
+        Event::listen(JobQueued::class, function ($event): void {
             Instrument::counter(SemConv::JOBS_QUEUED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -139,7 +139,7 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         $startTime = null;
 
-        Queue::before(function (JobProcessing $event) use (&$startTime) {
+        Queue::before(function (JobProcessing $event) use (&$startTime): void {
             $startTime = now();
 
             if (isset($event->job->payload()['created_at'])) {
@@ -157,7 +157,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(JobProcessed::class, function ($event) use ($startTime) {
+        Event::listen(JobProcessed::class, function ($event) use ($startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -177,7 +177,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             );
         });
 
-        Event::listen(JobFailed::class, function ($event) use ($startTime) {
+        Event::listen(JobFailed::class, function ($event) use ($startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
