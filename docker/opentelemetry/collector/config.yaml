@@ -8,7 +8,6 @@ receivers:
 
 exporters:
   logging:
-    # loglevel: debug
     verbosity: detailed
   influxdb:
     endpoint: http://influxdb:8086
