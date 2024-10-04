@@ -35,6 +35,8 @@ jobs:
                         }
                     }
                 }
+      - name: Install dependencies
+        run: COMPOSER_CACHE_DIR="/tmp/composer-cache" composer install
       - name: Install Canary
         run: composer install --working-dir=tools/canary
       - name: Run Canary Analyse
