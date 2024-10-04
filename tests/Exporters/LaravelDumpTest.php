@@ -17,14 +17,14 @@ beforeEach(function (): void {
         ->willReturn(null);
 });
 
-it('will write to the symfony dump method on an event', function (array $tags): void {
-    $this->exporter->event($this->message, $tags);
+it('will write to the symfony dump method on an event', function (array $attributes): void {
+    $this->exporter->event($this->message, $attributes);
 })->with('writable values');
 
-it('will write to the symfony dump method on a counter', function (array $tags): void {
-    $this->exporter->counter($this->message, $tags);
+it('will write to the symfony dump method on a counter', function (array $attributes): void {
+    $this->exporter->counter($this->message, $attributes);
 })->with('writable values');
 
-it('will write to the symfony dump method on a gauge', function (array $tags): void {
-    $this->exporter->gauge($this->message, $tags, 1.0);
+it('will write to the symfony dump method on a gauge', function (array $attributes): void {
+    $this->exporter->gauge($this->message, $attributes, 1.0);
 })->with('writable values');
