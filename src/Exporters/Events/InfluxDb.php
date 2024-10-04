@@ -71,6 +71,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
+    #[\Override]
     public function event(string $name, array $tags = [], float $value = 1): void
     {
         $this->gauge($name, $tags, $value);
@@ -85,6 +86,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
+    #[\Override]
     public function counter(string $name, array $tags = [], float $increase = 1): void
     {
         $this->gauge($name, $tags, $increase);
@@ -97,6 +99,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
+    #[\Override]
     public function gauge(string $name, array $tags, float $value): void
     {
         $context = Span::getCurrent()->getContext();
@@ -127,6 +130,7 @@ class InfluxDb implements EventsExporterInterface
      * @param float|int $value The value of the histogram
      * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
      */
+    #[\Override]
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
     {
         foreach ($buckets as $bucket) {
@@ -141,6 +145,7 @@ class InfluxDb implements EventsExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         if (! $this->events) {

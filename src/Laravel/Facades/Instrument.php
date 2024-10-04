@@ -23,6 +23,7 @@ class Instrument extends Facade
     /**
      * Get the facade accessor
      */
+    #[\Override]
     protected static function getFacadeAccessor()
     {
         // Bound to \Stickee\Instrumentation\Exporters\Exporter

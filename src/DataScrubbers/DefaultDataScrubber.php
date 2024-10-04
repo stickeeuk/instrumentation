@@ -30,6 +30,7 @@ class DefaultDataScrubber implements DataScrubberInterface
      * @param mixed $key The key
      * @param mixed $value The value
      */
+    #[\Override]
     public function scrub(mixed $key, mixed $value): mixed
     {
         if (! is_string($value)) {

@@ -30,6 +30,7 @@ class OpenTelemetry implements SpansExporterInterface
      *
      * @return mixed The result of the callable
      */
+    #[\Override]
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
         $span = $this->instrumentation
@@ -63,6 +64,7 @@ class OpenTelemetry implements SpansExporterInterface
      * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
      */
+    #[\Override]
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
         $span = $this->instrumentation
@@ -78,6 +80,7 @@ class OpenTelemetry implements SpansExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         // Do nothing

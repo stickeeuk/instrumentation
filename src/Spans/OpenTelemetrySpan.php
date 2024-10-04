@@ -41,6 +41,7 @@ class OpenTelemetrySpan implements SpanInterface
      *
      * @param \Throwable $exception The exception
      */
+    #[\Override]
     public function recordException(Throwable $exception): void
     {
         $this->span->recordException($exception, [
@@ -53,6 +54,7 @@ class OpenTelemetrySpan implements SpanInterface
     /**
      * End the span
      */
+    #[\Override]
     public function end(): void
     {
         $this->scope->detach();

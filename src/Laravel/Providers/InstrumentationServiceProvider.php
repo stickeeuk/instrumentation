@@ -48,6 +48,7 @@ class InstrumentationServiceProvider extends ServiceProvider
     /**
      * Register the service provider
      */
+    #[\Override]
     public function register(): void
     {
         $this->config = $this->app->make(Config::class);
