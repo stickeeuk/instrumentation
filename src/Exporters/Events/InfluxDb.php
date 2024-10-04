@@ -162,8 +162,8 @@ class InfluxDb implements EventsExporterInterface
             $writeApi->close();
 
             $this->events = [];
-        } catch (Exception $e) {
-            $this->handleError($e);
+        } catch (Exception $exception) {
+            $this->handleError($exception);
         }
     }
 }

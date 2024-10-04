@@ -2,7 +2,7 @@
 
 namespace Stickee\Instrumentation\Exporters\Traits;
 
-use Exception;
+use Throwable;
 use Stickee\Instrumentation\Exceptions\WriteException;
 
 /**
@@ -31,9 +31,9 @@ trait HandlesErrors
     /**
      * Handle an exception
      *
-     * @param \Exception $e The exception to handle
+     * @param Throwable $e The exception to handle
      */
-    protected function handleError(Exception $e): void
+    protected function handleError(Throwable $e): void
     {
         if ($this->errorHandler) {
             call_user_func($this->errorHandler, $e);

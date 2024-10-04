@@ -43,14 +43,14 @@ class OpenTelemetry implements SpansExporterInterface
 
         try {
             return $callable($span);
-        } catch (Throwable $e) {
-            $span->recordException($e, [
-                'exception.line' => $e->getLine(),
-                'exception.file' => $e->getFile(),
-                'exception.code' => $e->getCode(),
+        } catch (Throwable $throwable) {
+            $span->recordException($throwable, [
+                'exception.line' => $throwable->getLine(),
+                'exception.file' => $throwable->getFile(),
+                'exception.code' => $throwable->getCode(),
             ]);
 
-            throw $e;
+            throw $throwable;
         } finally {
             $spanScope->detach();
             $span->end();

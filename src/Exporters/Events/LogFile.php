@@ -45,8 +45,8 @@ class LogFile implements EventsExporterInterface
             $f = fopen($this->filename, 'ab');
             fwrite($f, $message . "\n");
             fclose($f);
-        } catch (Exception $e) {
-            $this->handleError($e);
+        } catch (Exception $exception) {
+            $this->handleError($exception);
         }
     }
 }
