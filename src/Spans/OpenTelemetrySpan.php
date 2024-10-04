@@ -14,26 +14,21 @@ class OpenTelemetrySpan implements SpanInterface
     private bool $ended = false;
 
     /**
-     * The OpenTelemetry span
-     *
-     * @var \OpenTelemetry\API\Trace\SpanInterface
-     */
-    private OpenTelemetrySpanInterface $span;
-
-    /**
      * The OpenTelemetry scope
      */
-    private ScopeInterface $scope;
+    private readonly ScopeInterface $scope;
 
     /**
      * Constructor
      *
      * @param \OpenTelemetry\API\Trace\SpanInterface $span The OpenTelemetry span
      */
-    public function __construct(OpenTelemetrySpanInterface $span)
-    {
-        $this->span = $span;
-        $this->scope = $span->activate();
+    public function __construct(/**
+     * The OpenTelemetry span
+     */
+        private readonly OpenTelemetrySpanInterface $span
+    ) {
+        $this->scope = $this->span->activate();
     }
 
     /**
