@@ -139,7 +139,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         return TracerProvider::builder()
             ->setSampler($sampler)
-            ->setResource($resourceInfo->merge($resourceInfo, ResourceInfoFactory::defaultResource()))
+            ->setResource($resourceInfo->merge(ResourceInfoFactory::defaultResource()))
             ->addSpanProcessor(app(DataScrubbingSpanProcessor::class))
             ->addSpanProcessor($processor)
             ->build();
