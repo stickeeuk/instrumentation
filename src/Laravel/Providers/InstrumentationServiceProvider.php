@@ -128,7 +128,7 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         $this->registerFlushEvents();
 
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
@@ -139,7 +139,7 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function instrumentJobs(): void
     {
-        Queue::createPayloadUsing(fn ($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
+        Queue::createPayloadUsing(fn($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
 
         Event::listen(JobQueued::class, function ($event): void {
             Instrument::counter(SemConv::JOBS_QUEUED_NAME, [
@@ -211,19 +211,19 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function instrumentJobQueues(): void
     {
-        Schedule::call(function () {
+        Schedule::call(function (): void {
             foreach ($this->config->queueNames() as $queueName) {
                 Instrument::gauge(
                     SemConv::JOB_QUEUE_LENGTH_NAME,
                     [
-                        SemConv::JOB_QUEUE => $queueName
+                        SemConv::JOB_QUEUE => $queueName,
                     ],
                     Queue::size($queueName)
                 );
                 Instrument::gauge(
                     SemConv::JOB_QUEUE_AVAILABLE_LENGTH_NAME,
                     [
-                        SemConv::JOB_QUEUE => $queueName
+                        SemConv::JOB_QUEUE => $queueName,
                     ],
                     Queue::availableSize($queueName)
                 );
@@ -235,11 +235,11 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function registerFlushEvents(): void
     {
-        Event::listen(CommandFinished::class, fn () => app('instrument')->flush());
+        Event::listen(CommandFinished::class, fn() => app('instrument')->flush());
 
-        Queue::after(fn () => app('instrument')->flush());
+        Queue::after(fn() => app('instrument')->flush());
 
-        Queue::failing(fn () => app('instrument')->flush());
+        Queue::failing(fn() => app('instrument')->flush());
     }
 
     /**

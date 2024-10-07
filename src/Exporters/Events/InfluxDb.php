@@ -108,13 +108,13 @@ class InfluxDb implements EventsExporterInterface
         $attributes['span_id'] = $context->getSpanId();
 
         // attributes must be strings, so remove nulls and convert the rest
-        $attributes = array_filter($attributes, static fn ($value) => $value !== null);
-        $attributes = array_map(static function ($value) {
+        $attributes = array_filter($attributes, static fn($value): bool => $value !== null);
+        $attributes = array_map(static function ($value): string {
             if ($value === false) {
                 return '0';
             }
 
-            return strval($value);
+            return (string) $value;
         }, $attributes);
 
         $this->events[] = new Point($name, $attributes, ['value' => $value]);
@@ -130,6 +130,7 @@ class InfluxDb implements EventsExporterInterface
      * @param float|int $value The value of the histogram
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
+    #[\Override]
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         foreach ($buckets as $bucket) {

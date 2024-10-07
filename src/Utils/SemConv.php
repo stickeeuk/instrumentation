@@ -30,9 +30,9 @@ class SemConv
 
     // job queues
 
-    const JOB_QUEUE_LENGTH_NAME = 'job.queue.length';
+    public const JOB_QUEUE_LENGTH_NAME = 'job.queue.length';
 
-    const JOB_QUEUE_AVAILABLE_LENGTH_NAME = 'job.queue.available.length';
+    public const JOB_QUEUE_AVAILABLE_LENGTH_NAME = 'job.queue.available.length';
 
     // jobs queued
 

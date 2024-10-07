@@ -31,7 +31,7 @@ trait HandlesErrors
     /**
      * Handle an exception
      *
-     * @param Throwable $e The exception to handle
+     * @param \Throwable $e The exception to handle
      */
     protected function handleError(Throwable $e): void
     {
