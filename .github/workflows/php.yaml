@@ -28,10 +28,6 @@ jobs:
                         "repo.stickee.co.uk": {
                             "username": "${{ secrets.STICKEE_REPO_USERNAME }}",
                             "password": "${{ secrets.STICKEE_REPO_PASSWORD }}"
-                      },
-                      "nova.laravel.com": {
-                            "username": "${{ secrets.NOVA_USERNAME }}",
-                            "password": "${{ secrets.NOVA_4_PASSWORD }}"
                         }
                     }
                 }
