@@ -22,7 +22,7 @@ beforeEach(function (): void {
     }
 });
 
-it('will handle any exception thrown whilst attempting to write to the log file', function (array $tags): void {
+it('will handle any exception thrown whilst attempting to write to the log file', function (array $attributes): void {
     $this
         ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'fopen')
         ->expects($this::once())
@@ -34,14 +34,14 @@ it('will handle any exception thrown whilst attempting to write to the log file'
 
     // For this test, we'll create another log exporter class.
     $log = new LogFile($this->logFile);
-    $log->event(LOG_EVENT, $tags);
+    $log->event(LOG_EVENT, $attributes);
 })->with('writable values');
 
 
-it('can write a file to a local log file', function (array $tags): void {
+it('can write a file to a local log file', function (array $attributes): void {
     $this::assertFileDoesNotExist($this->logFile);
 
-    $this->exporter->event(LOG_EVENT, $tags);
+    $this->exporter->event(LOG_EVENT, $attributes);
 
     $this::assertFileExists($this->logFile);
 

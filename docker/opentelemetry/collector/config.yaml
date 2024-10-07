@@ -8,13 +8,7 @@ receivers:
 
 exporters:
   logging:
-    # loglevel: debug
     verbosity: detailed
-  influxdb:
-    endpoint: http://influxdb:8086
-    org: stickee
-    bucket: test
-    token: my-super-secret-auth-token
 
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
@@ -32,57 +26,16 @@ exporters:
 processors:
   batch:
 
-  # TODO make this look for KPIs properly instead of just checking body is a number
-  # Use library name or something?
-  filter/kpis-only:
-    logs:
-      log_record:
-        - 'not IsMatch(body, "^\\d+(\\.\\d+)?$")' # Drop all logs that are not a number
-
-  # TODO make this look for KPIs properly instead of just checking body is a number
-  # Use library name or something?
-  filter/remove-kpis:
-    logs:
-      log_record:
-        - 'IsMatch(body, "^\\d+(\\.\\d+)?$")'
-
-  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor
-  transform:
-    log_statements:
-      - context: resource
-        statements:
-          - keep_keys(attributes, [])
-      # - context: scope
-      #   statements:
-      #     - keep_keys(attributes, ["logs"])
-      #- context: log
-      #  statements:
-      #    - set(attributes["value"], attributes["body"])
-      #    - keep_keys(attributes, ["observed_timestamp", "event.domain", "event.name", "value"])
-
 service:
   pipelines:
     logs:
       receivers:
         - otlp
       processors:
-        # May or may not want this
-        - filter/remove-kpis
         - batch
       exporters:
         - logging
         - loki
-
-    logs/kpis:
-      receivers:
-        - otlp
-      processors:
-        - filter/kpis-only
-        - transform
-        - batch
-      exporters:
-        - logging
-        - influxdb
 
     metrics:
       receivers:
