@@ -37,7 +37,6 @@ it('will handle any exception thrown whilst attempting to write to the log file'
     $log->event(LOG_EVENT, $tags);
 })->with('writable values');
 
-
 it('can write a file to a local log file', function (array $tags): void {
     $this::assertFileDoesNotExist($this->logFile);
 
@@ -51,7 +50,7 @@ it('can write a file to a local log file', function (array $tags): void {
         ->toBeArray()
         ->toHaveCount(1)
         ->and(head($readFile))
-            ->toContain(LOG_EVENT);
+        ->toContain(LOG_EVENT);
 
     unlink($this->logFile);
 

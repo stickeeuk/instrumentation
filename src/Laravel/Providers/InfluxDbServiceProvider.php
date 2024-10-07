@@ -14,7 +14,7 @@ class InfluxDbServiceProvider extends ServiceProvider
     /**
      * The config
      *
-     * @var \Stickee\Instrumentation\Laravel\Config $config
+     * @var \Stickee\Instrumentation\Laravel\Config
      */
     private Config $config;
 
@@ -27,22 +27,22 @@ class InfluxDbServiceProvider extends ServiceProvider
 
         $this->app->when(InfluxDb::class)
             ->needs('$url')
-            ->give(fn () => $this->config->influxDb('url'));
+            ->give(fn() => $this->config->influxDb('url'));
 
         $this->app->when(InfluxDb::class)
             ->needs('$token')
-            ->give(fn () => $this->config->influxDb('token'));
+            ->give(fn() => $this->config->influxDb('token'));
 
         $this->app->when(InfluxDb::class)
             ->needs('$bucket')
-            ->give(fn () => $this->config->influxDb('bucket'));
+            ->give(fn() => $this->config->influxDb('bucket'));
 
         $this->app->when(InfluxDb::class)
             ->needs('$org')
-            ->give(fn () => $this->config->influxDb('org'));
+            ->give(fn() => $this->config->influxDb('org'));
 
         $this->app->when(InfluxDb::class)
             ->needs('$verifySsl')
-            ->give(fn () => $this->config->influxDb('verify_ssl'));
+            ->give(fn() => $this->config->influxDb('verify_ssl'));
     }
 }

@@ -11,21 +11,21 @@ class OpenTelemetrySpan implements SpanInterface
     /**
      * If the span has been ended
      *
-     * @var bool $ended
+     * @var bool
      */
     private bool $ended = false;
 
     /**
      * The OpenTelemetry span
      *
-     * @var \OpenTelemetry\API\Trace\SpanInterface $span
+     * @var \OpenTelemetry\API\Trace\SpanInterface
      */
     private OpenTelemetrySpanInterface $span;
 
     /**
      * The OpenTelemetry scope
      *
-     * @var \OpenTelemetry\Context\ScopeInterface $scope
+     * @var \OpenTelemetry\Context\ScopeInterface
      */
     private ScopeInterface $scope;
 
@@ -70,7 +70,7 @@ class OpenTelemetrySpan implements SpanInterface
      */
     public function __destruct()
     {
-        if (!$this->ended) {
+        if (! $this->ended) {
             $this->end();
         }
     }

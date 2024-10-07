@@ -13,7 +13,7 @@ const INFLUX_AMOUNT = 1.0;
 
 describe('InfluxDb', function (): void {
     beforeEach(function (): void {
-        if (!class_exists(Client::class)) {
+        if (! class_exists(Client::class)) {
             return;
         }
 
@@ -33,7 +33,7 @@ describe('InfluxDb', function (): void {
         Config::set('instrumentation.dsn', 'https+influxdb://username:password@localhost:8086/databasename');
 
         $this->exporter = app(InfluxDb::class);
-    })->skip(!class_exists(Client::class), 'Skipped: InfluxDB composer packages not installed');
+    })->skip(! class_exists(Client::class), 'Skipped: InfluxDB composer packages not installed');
 
     it('can record an event', function (): void {
         $this->writeApiMock->shouldReceive('write')
@@ -62,7 +62,6 @@ describe('InfluxDb', function (): void {
         $this->exporter->flush();
     });
 
-
     it('it only sends events if there are events to send', function (): void {
         $this->writeApiMock->shouldReceive('write')
             ->once()
@@ -90,7 +89,7 @@ describe('InfluxDb', function (): void {
 describe('InfluxDb 2', function (): void {
     beforeEach(function (): void {
         Config::set('instrumentation.dsn', 'https+influxdb://username:password@localhost:8086/databasename');
-    })->skip(!class_exists(Client::class), 'Skipped: InfluxDB composer packages not installed');
+    })->skip(! class_exists(Client::class), 'Skipped: InfluxDB composer packages not installed');
 
     it('will call handle error if an exception is encountered whilst flushing', function (): void {
         $exception = new Exception();

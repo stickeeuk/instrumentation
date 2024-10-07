@@ -32,7 +32,7 @@ class DefaultDataScrubber implements DataScrubberInterface
      */
     public function scrub(mixed $key, mixed $value): mixed
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return $value;
         }
 

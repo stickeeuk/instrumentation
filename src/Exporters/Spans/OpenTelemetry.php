@@ -17,9 +17,7 @@ class OpenTelemetry implements SpansExporterInterface
 {
     use HandlesErrors;
 
-    public function __construct(private readonly CachedInstruments $instrumentation)
-    {
-    }
+    public function __construct(private readonly CachedInstruments $instrumentation) {}
 
     /**
      * Creates a new span wrapping the given callable.
@@ -50,6 +48,7 @@ class OpenTelemetry implements SpansExporterInterface
                 'exception.file' => $e->getFile(),
                 'exception.code' => $e->getCode(),
             ]);
+
             throw $e;
         } finally {
             $spanScope->detach();

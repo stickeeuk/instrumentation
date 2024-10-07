@@ -20,7 +20,7 @@ class Config
      */
     public function enabled(): bool
     {
-        return (bool)config('instrumentation.enabled');
+        return (bool) config('instrumentation.enabled');
     }
 
     /**
@@ -38,11 +38,11 @@ class Config
             throw new Exception('Config variable `instrumentation.events_exporter` not set');
         }
 
-        if (!class_exists($class, true)) {
+        if (! class_exists($class, true)) {
             throw new Exception('Config variable `instrumentation.events_exporter` class not found: ' . $class);
         }
 
-        if (!is_a($class, EventsExporterInterface::class, true)) {
+        if (! is_a($class, EventsExporterInterface::class, true)) {
             throw new Exception('Config variable `instrumentation.events_exporter` does not implement \Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface: ' . $class);
         }
 
@@ -64,11 +64,11 @@ class Config
             throw new Exception('Config variable `instrumentation.spans_exporter` not set');
         }
 
-        if (!class_exists($class, true)) {
+        if (! class_exists($class, true)) {
             throw new Exception('Config variable `instrumentation.spans_exporter` class not found: ' . $class);
         }
 
-        if (!is_a($class, SpansExporterInterface::class, true)) {
+        if (! is_a($class, SpansExporterInterface::class, true)) {
             throw new Exception('Config variable `instrumentation.spans_exporter` does not implement \Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface: ' . $class);
         }
 
@@ -82,7 +82,7 @@ class Config
      */
     public function traceSampleRate(): float
     {
-        $value  = (float)config('instrumentation.trace_sample_rate', 0);
+        $value  = (float) config('instrumentation.trace_sample_rate', 0);
 
         if (($value < 0) || ($value > 1)) {
             throw new Exception('Config variable `instrumentation.trace_sample_rate` must be between 0 and 1');
@@ -98,7 +98,7 @@ class Config
      */
     public function verifySsl(): bool
     {
-        return (bool)config('instrumentation.verify_ssl', true);
+        return (bool) config('instrumentation.verify_ssl', true);
     }
 
     /**
@@ -108,7 +108,7 @@ class Config
      */
     public function responseTimeMiddlewareEnabled(): bool
     {
-        return (bool)config('instrumentation.response_time_middleware_enabled', true);
+        return (bool) config('instrumentation.response_time_middleware_enabled', true);
     }
 
     /**
@@ -182,6 +182,6 @@ class Config
      */
     public function longRequestTraceThreshold(): float
     {
-        return (float)config('instrumentation.long_request_trace_threshold', 1);
+        return (float) config('instrumentation.long_request_trace_threshold', 1);
     }
 }

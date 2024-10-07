@@ -45,7 +45,7 @@ it('will set the default error handler to a laravel log', function (): void {
         ->once()
         ->andReturnNull();
 
-    $instrument->setErrorHandler(fn (Exception $exception) => Log::error($exception));
+    $instrument->setErrorHandler(fn(Exception $exception) => Log::error($exception));
 
     $instrument->event('test_event');
 });

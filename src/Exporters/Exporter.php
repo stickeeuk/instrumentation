@@ -21,8 +21,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
         private readonly EventsExporterInterface $eventsExporter,
         private readonly SpansExporterInterface $spansExporter,
         private readonly DataScrubberInterface $dataScrubber
-    ) {
-    }
+    ) {}
 
     /**
      * Scrub data

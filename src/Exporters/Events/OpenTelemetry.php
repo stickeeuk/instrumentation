@@ -18,21 +18,21 @@ class OpenTelemetry implements EventsExporterInterface
     /**
      * Counter instruments
      *
-     * @var array $counters
+     * @var array
      */
     private $counters = [];
 
     /**
      * Gauge instruments
      *
-     * @var array $gauges
+     * @var array
      */
     private $gauges = [];
 
     /**
      * Histogram instruments
      *
-     * @var array $histograms
+     * @var array
      */
     private $histograms = [];
 
@@ -41,9 +41,7 @@ class OpenTelemetry implements EventsExporterInterface
      *
      * @param \Stickee\Instrumentation\Utils\CachedInstruments $instrumentation The instrumentation
      */
-    public function __construct(private readonly CachedInstruments $instrumentation)
-    {
-    }
+    public function __construct(private readonly CachedInstruments $instrumentation) {}
 
     /**
      * Class destructor
@@ -65,7 +63,7 @@ class OpenTelemetry implements EventsExporterInterface
         Span::getCurrent()->addEvent($name, $tags);
 
         $log = (new LogRecord($value))
-            ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND)
+            ->setTimestamp((int) microtime(true) * LogRecord::NANOS_PER_SECOND)
             ->setAttributes($tags);
 
         $this->instrumentation->eventLogger()->emit($name, $log);
@@ -80,7 +78,7 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function counter(string $name, array $tags = [], float $increase = 1): void
     {
-        if (!isset($this->counters[$name])) {
+        if (! isset($this->counters[$name])) {
             $this->counters[$name] = $this->instrumentation->meter()->createCounter($name);
         }
 
@@ -96,7 +94,7 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function gauge(string $name, array $tags, float $value): void
     {
-        if (!isset($this->gauges[$name])) {
+        if (! isset($this->gauges[$name])) {
             $this->gauges[$name] = $this->instrumentation->meter()->createGauge($name);
         }
 
@@ -115,7 +113,7 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
     {
-        if (!isset($this->histograms[$name])) {
+        if (! isset($this->histograms[$name])) {
             $advisory = [];
 
             if ($buckets !== null) {

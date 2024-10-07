@@ -14,6 +14,7 @@ use OpenTelemetry\SDK\Logs\Processor\SimpleLogRecordProcessor;
 use OpenTelemetry\SDK\Metrics\Data\Temporality;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
+use Stickee\Instrumentation\DataScrubbers\CallbackDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
@@ -96,8 +97,10 @@ it('can scrub sensitive data from counters', function (): void {
         ->method('send')
         ->with($this->logicalAnd(
             $this->logicalNot($this->stringContains('test@example.com')),
-            $this->stringContains(DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
-        )))
+            $this->stringContains(
+                DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
+            )
+        ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
 
     $this->exporter->counter('STICKEE TEST COUNTER', ['email' => 'test@example.com'], 1);
@@ -111,8 +114,10 @@ it('can scrub sensitive data from gauges', function (): void {
         ->method('send')
         ->with($this->logicalAnd(
             $this->logicalNot($this->stringContains('test@example.com')),
-            $this->stringContains(DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
-        )))
+            $this->stringContains(
+                DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
+            )
+        ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
 
     $this->exporter->gauge('STICKEE TEST GAUGE', ['email' => 'test@example.com'], 1);
@@ -126,8 +131,10 @@ it('can scrub sensitive data from histograms', function (): void {
         ->method('send')
         ->with($this->logicalAnd(
             $this->logicalNot($this->stringContains('test@example.com')),
-            $this->stringContains(DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
-        )))
+            $this->stringContains(
+                DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
+            )
+        ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
 
     $this->exporter->histogram('STICKEE TEST HISTOGRAM', '', '', [1], 1, ['email' => 'test@example.com']);
@@ -141,6 +148,23 @@ it('can scrub sensitive data from logs', function (): void {
         ->method('send')
         ->with($this->logicalNot($this->stringContains('test@example.com')))
         ->willReturnCallback(fn() => new CompletedFuture(null));
+
+    Log::error('Email: test@example.com', ['email' => 'test@example.com']);
+
+    $this->metricReader->shutdown();
+    $this->logProcessor->shutdown();
+});
+
+it('can use a scrubber callback', function (): void {
+    $this->mockTransport->expects($this->once())
+        ->method('send')
+        ->with($this->logicalAnd(
+            $this->logicalNot($this->stringContains('test@example.com')),
+            $this->stringContains('SCRUBBED')
+        ))
+        ->willReturnCallback(fn() => new CompletedFuture(null));
+
+    $this->app->bind(DataScrubberInterface::class, fn () => new CallbackDataScrubber(fn($key, $value) => 'SCRUBBED'));
 
     Log::error('Email: test@example.com', ['email' => 'test@example.com']);
 

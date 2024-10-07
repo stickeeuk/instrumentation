@@ -21,14 +21,14 @@ class InfluxDb implements EventsExporterInterface
     /**
      * Events generated and waiting to be recorded
      *
-     * @var \InfluxDB2\Point[] $events
+     * @var \InfluxDB2\Point[]
      */
     private $events = [];
 
     /**
      * The connection to the InfluxDB database
      *
-     * @var \InfluxDB2\Client $client
+     * @var \InfluxDB2\Client
      */
     private $client;
 
@@ -105,13 +105,13 @@ class InfluxDb implements EventsExporterInterface
         $tags['span_id'] = $context->getSpanId();
 
         // Tags must be strings, so remove nulls and convert the rest
-        $tags = array_filter($tags, static fn ($value) => $value !== null);
+        $tags = array_filter($tags, static fn($value) => $value !== null);
         $tags = array_map(static function ($value) {
             if ($value === false) {
                 return '0';
             }
 
-            return strval($value);
+            return (string) $value;
         }, $tags);
 
         $this->events[] = new Point($name, $tags, ['value' => $value]);
@@ -143,12 +143,12 @@ class InfluxDb implements EventsExporterInterface
      */
     public function flush(): void
     {
-        if (!$this->events) {
+        if (! $this->events) {
             return;
         }
 
         try {
-            $writeApi = $this->client->createWriteApi(["writeType" => WriteType::BATCHING, 'batchSize' => 1000]);
+            $writeApi = $this->client->createWriteApi(['writeType' => WriteType::BATCHING, 'batchSize' => 1000]);
 
             foreach ($this->events as $event) {
                 $writeApi->write($event);

@@ -24,7 +24,7 @@ class LaravelLog implements EventsExporterInterface
      */
     public function __construct(private string $level = LogLevel::DEBUG)
     {
-        if (!defined(LogLevel::class . '::' . strtoupper($this->level))) {
+        if (! defined(LogLevel::class . '::' . mb_strtoupper($this->level))) {
             throw new InvalidArgumentException("Invalid log level: {$this->level}");
         }
     }
