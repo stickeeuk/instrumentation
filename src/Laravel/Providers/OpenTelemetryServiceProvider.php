@@ -133,7 +133,14 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
         $batchProcessor = BatchSpanProcessor::builder($exporter)->build();
         $processor = $traceLongRequests
-            ? new MultiSpanProcessor($batchProcessor, new SlowSpanProcessor($exporter, Clock::getDefault(), $this->config->longRequestTraceThreshold()))
+            ? new MultiSpanProcessor(
+                $batchProcessor,
+                new SlowSpanProcessor(
+                    $exporter,
+                    Clock::getDefault(),
+                    $this->config->longRequestTraceThreshold()
+                )
+            )
             : $batchProcessor;
 
         register_shutdown_function(fn() => $processor->shutdown());
@@ -184,7 +191,15 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getOtlpTransport(string $path, string $contentType = 'application/json'): TransportInterface
     {
-        return app(OtlpHttpTransportFactory::class)
-            ->create($this->config->openTelemetry('dsn') . $path, $contentType, [], null, 1, 100, 1);
+        return (app(OtlpHttpTransportFactory::class))
+            ->create(
+                endpoint: $this->config->openTelemetry('dsn') . $path,
+                contentType: $contentType,
+                headers: [],
+                compression: null,
+                timeout: 1,
+                retryDelay: 100,
+                maxRetries: 1
+            );
     }
 }

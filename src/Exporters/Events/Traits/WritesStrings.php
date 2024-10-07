@@ -15,45 +15,45 @@ trait WritesStrings
     abstract protected function write(string $message): void;
 
     /**
-     * Convert the tags array to a string
+     * Convert the attributes array to a string
      *
-     * @param array $tags The tags
+     * @param array $attributes The attributes
      *
-     * @return string The tags string
+     * @return string The attributes string
      */
-    private function getTagsString(array $tags): string
+    private function getAttributesString(array $attributes): string
     {
-        if (empty($tags)) {
+        if (empty($attributes)) {
             return '';
         }
 
-        $tagStrings = [];
+        $attributesStrings = [];
 
-        foreach ($tags as $key => $value) {
+        foreach ($attributes as $key => $value) {
             if ($value === true) {
                 $value = 'true';
             } elseif ($value === false) {
                 $value = 'false';
             }
 
-            $tagStrings[] = $key . ' => ' . $value;
+            $attributesStrings[] = $key . ' => ' . $value;
         }
 
-        return ': [' . implode(', ', $tagStrings) . ']';
+        return ': [' . implode(', ', $attributesStrings) . ']';
     }
 
     /**
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load_time"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
-    public function event(string $name, array $tags = [], float $value = 1): void
+    public function event(string $name, array $attributes = [], float $value = 1): void
     {
         $message = date('Y-m-d H:i:s') . ' EVENT: ' . $name
             . ($value !== null ? ' = ' . $value : '')
-            . $this->getTagsString($tags);
+            . $this->getAttributesString($attributes);
 
         $this->write($message);
     }
@@ -62,13 +62,13 @@ trait WritesStrings
      * Record an increase in a counter
      *
      * @param string $name The counter name, e.g. "page_load"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function counter(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
         $message = date('Y-m-d H:i:s') . ' COUNTER: ' . $name . ' += ' . $increase
-            . $this->getTagsString($tags);
+            . $this->getAttributesString($attributes);
 
         $this->write($message);
     }
@@ -77,13 +77,13 @@ trait WritesStrings
      * Record the current value of a gauge
      *
      * @param string $name The name of the gauge, e.g. "queue_length"
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
-    public function gauge(string $name, array $tags, float $value): void
+    public function gauge(string $name, array $attributes, float $value): void
     {
         $message = date('Y-m-d H:i:s') . ' GAUGE: ' . $name . ' = ' . $value
-            . $this->getTagsString($tags);
+            . $this->getAttributesString($attributes);
 
         $this->write($message);
     }
@@ -96,12 +96,12 @@ trait WritesStrings
      * @param string|null $description A description of the histogram
      * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
      * @param float|int $value The value of the histogram
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         $message = date('Y-m-d H:i:s') . ' HISTOGRAM: ' . $name . ' = ' . $value . $unit
-            . $this->getTagsString($tags);
+            . $this->getAttributesString($attributes);
 
         $this->write($message);
     }

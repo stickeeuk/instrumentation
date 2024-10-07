@@ -55,14 +55,14 @@ There are 3 event type methods defined in the `Stickee\Instrumentation\Exporters
 
 | Event                                                                      | Arguments                                                                                                 | Description                         |
 |----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
-| `$exporter->event(string $name, array $tags = [], float value = 1)`        | `$name` The event name<br>`$tags` An array of tags                                                        | Record a single event               |
-| `$exporter->counter(string $event, array $tags = [], float $increase = 1)` | `$name` The counter name<br>`$tags` An array of tags<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
-| `$exporter->gauge(string $event, array $tags = [], float $value)`          | `$name` The gauge name<br>`$tags` An array of tags<br>`$value` The value to record                        | Record the current value of a gauge |
+| `$exporter->event(string $name, array $attributes = [], float value = 1)`        | `$name` The event name<br>`$attributes` An array of attributes                                                        | Record a single event               |
+| `$exporter->counter(string $event, array $attributes = [], float $increase = 1)` | `$name` The counter name<br>`$attributes` An array of attributes<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
+| `$exporter->gauge(string $event, array $attributes = [], float $value)`          | `$name` The gauge name<br>`$attributes` An array of attributes<br>`$value` The value to record                        | Record the current value of a gauge |
 
 Tags should be an associative array of `tag_name` => `tag_value`, e.g.
 
 ```php
-$tags = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK];
+$attributes = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK];
 ```
 
 ### Errors
@@ -177,8 +177,8 @@ in your `.env` and add any other required variables.
 
 | Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                         | Other Values                                                                                    |
 |---------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
-| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Events\\NullSpans"`     | None                                                                                            |
+| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Spans\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
+| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans"`     | None                                                                                            |
 
 If you wish to, you can copy the package config to your local config with the publish command,
 however this is **unnecessary** in normal usage:

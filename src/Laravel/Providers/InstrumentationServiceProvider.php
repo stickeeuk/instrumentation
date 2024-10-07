@@ -119,16 +119,27 @@ class InstrumentationServiceProvider extends ServiceProvider
             return;
         }
 
-        Schedule::call(function (): void {
-            foreach ($this->config->queueNames() as $queueName) {
-                Instrument::gauge('queue_length', ['queue' => $queueName], Queue::size($queueName));
-                Instrument::gauge('queue_available_length', ['queue' => $queueName], Queue::availableSize($queueName));
-            }
+        $this->instrumentJobs();
+        $this->instrumentJobQueues();
 
-            app('instrument')->flush();
-        })->everyFifteenSeconds();
+        if ($this->config->responseTimeMiddlewareEnabled()) {
+            $this->registerResponseTimeMiddleware();
+        }
 
-        Queue::createPayloadUsing(fn($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
+        $this->registerFlushEvents();
+
+        if (!$this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->publishes([
+            __DIR__ . '/../../../config/instrumentation.php' => config_path('instrumentation.php'),
+        ]);
+    }
+
+    private function instrumentJobs(): void
+    {
+        Queue::createPayloadUsing(fn ($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
 
         Event::listen(JobQueued::class, function ($event): void {
             Instrument::counter(SemConv::JOBS_QUEUED_NAME, [
@@ -196,27 +207,39 @@ class InstrumentationServiceProvider extends ServiceProvider
                 ]
             );
         });
+    }
 
-        if ($this->config->responseTimeMiddlewareEnabled()) {
-            $this->registerResponseTimeMiddleware();
-        }
+    private function instrumentJobQueues(): void
+    {
+        Schedule::call(function () {
+            foreach ($this->config->queueNames() as $queueName) {
+                Instrument::gauge(
+                    SemConv::JOB_QUEUE_LENGTH_NAME,
+                    [
+                        SemConv::JOB_QUEUE => $queueName
+                    ],
+                    Queue::size($queueName)
+                );
+                Instrument::gauge(
+                    SemConv::JOB_QUEUE_AVAILABLE_LENGTH_NAME,
+                    [
+                        SemConv::JOB_QUEUE => $queueName
+                    ],
+                    Queue::availableSize($queueName)
+                );
+            }
 
-        // Flush events when a command finishes
-        Event::listen(CommandFinished::class, fn() => app('instrument')->flush());
+            app('instrument')->flush();
+        })->everyFifteenSeconds();
+    }
 
-        // Flush events when a queue job completes
-        Queue::after(fn() => app('instrument')->flush());
+    private function registerFlushEvents(): void
+    {
+        Event::listen(CommandFinished::class, fn () => app('instrument')->flush());
 
-        // Flush events when a queue job fails
-        Queue::failing(fn() => app('instrument')->flush());
+        Queue::after(fn () => app('instrument')->flush());
 
-        if (! $this->app->runningInConsole()) {
-            return;
-        }
-
-        $this->publishes([
-            __DIR__ . '/../../../config/instrumentation.php' => config_path('instrumentation.php'),
-        ]);
+        Queue::failing(fn () => app('instrument')->flush());
     }
 
     /**

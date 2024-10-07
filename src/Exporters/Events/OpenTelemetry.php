@@ -49,17 +49,17 @@ class OpenTelemetry implements EventsExporterInterface
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load_time"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
     #[\Override]
-    public function event(string $name, array $tags = [], float $value = 1): void
+    public function event(string $name, array $attributes = [], float $value = 1): void
     {
-        Span::getCurrent()->addEvent($name, $tags);
+        Span::getCurrent()->addEvent($name, $attributes);
 
         $log = (new LogRecord($value))
-            ->setTimestamp((int) microtime(true) * LogRecord::NANOS_PER_SECOND)
-            ->setAttributes($tags);
+            ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND)
+            ->setAttributes($attributes);
 
         $this->instrumentation->eventLogger()->emit($name, $log);
     }
@@ -68,34 +68,34 @@ class OpenTelemetry implements EventsExporterInterface
      * Record an increase in a counter
      *
      * @param string $name The counter name, e.g. "page_load"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
     #[\Override]
-    public function counter(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
         if (! isset($this->counters[$name])) {
             $this->counters[$name] = $this->instrumentation->meter()->createCounter($name);
         }
 
-        $this->counters[$name]->add($increase, $tags);
+        $this->counters[$name]->add($increase, $attributes);
     }
 
     /**
      * Record the current value of a gauge
      *
      * @param string $name The name of the gauge, e.g. "queue_length"
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
     #[\Override]
-    public function gauge(string $name, array $tags, float $value): void
+    public function gauge(string $name, array $attributes, float $value): void
     {
         if (! isset($this->gauges[$name])) {
             $this->gauges[$name] = $this->instrumentation->meter()->createGauge($name);
         }
 
-        $this->gauges[$name]->record($value, $tags);
+        $this->gauges[$name]->record($value, $attributes);
     }
 
     /**
@@ -106,9 +106,10 @@ class OpenTelemetry implements EventsExporterInterface
      * @param string|null $description A description of the histogram
      * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
      * @param float|int $value The value of the histogram
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
+    #[\Override]
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         if (! isset($this->histograms[$name])) {
             $advisory = [];
@@ -120,7 +121,7 @@ class OpenTelemetry implements EventsExporterInterface
             $this->histograms[$name] = $this->instrumentation->meter()->createHistogram($name, $unit, $description, $advisory);
         }
 
-        $this->histograms[$name]->record($value, $tags);
+        $this->histograms[$name]->record($value, $attributes);
     }
 
     /**

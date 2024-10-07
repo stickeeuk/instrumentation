@@ -68,13 +68,13 @@ class InfluxDb implements EventsExporterInterface
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load_time"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
     #[\Override]
-    public function event(string $name, array $tags = [], float $value = 1): void
+    public function event(string $name, array $attributes = [], float $value = 1): void
     {
-        $this->gauge($name, $tags, $value);
+        $this->gauge($name, $attributes, $value);
     }
 
     /**
@@ -83,41 +83,41 @@ class InfluxDb implements EventsExporterInterface
      * Use the `CUMULATIVE_SUM()` function in the InfluxDB query
      *
      * @param string $name The counter name, e.g. "page_load"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
     #[\Override]
-    public function counter(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
-        $this->gauge($name, $tags, $increase);
+        $this->gauge($name, $attributes, $increase);
     }
 
     /**
      * Record the current value of a gauge
      *
      * @param string $name The name of the gauge, e.g. "queue_length"
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
     #[\Override]
-    public function gauge(string $name, array $tags, float $value): void
+    public function gauge(string $name, array $attributes, float $value): void
     {
         $context = Span::getCurrent()->getContext();
 
-        $tags['trace_id'] = $context->getTraceId();
-        $tags['span_id'] = $context->getSpanId();
+        $attributes['trace_id'] = $context->getTraceId();
+        $attributes['span_id'] = $context->getSpanId();
 
-        // Tags must be strings, so remove nulls and convert the rest
-        $tags = array_filter($tags, static fn($value): bool => $value !== null);
-        $tags = array_map(static function ($value): string {
+        // attributes must be strings, so remove nulls and convert the rest
+        $attributes = array_filter($attributes, static fn ($value) => $value !== null);
+        $attributes = array_map(static function ($value) {
             if ($value === false) {
                 return '0';
             }
 
-            return (string) $value;
-        }, $tags);
+            return strval($value);
+        }, $attributes);
 
-        $this->events[] = new Point($name, $tags, ['value' => $value]);
+        $this->events[] = new Point($name, $attributes, ['value' => $value]);
     }
 
     /**
@@ -128,18 +128,17 @@ class InfluxDb implements EventsExporterInterface
      * @param string|null $description A description of the histogram
      * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
      * @param float|int $value The value of the histogram
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
-    #[\Override]
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         foreach ($buckets as $bucket) {
             if ($value <= $bucket) {
-                $tags['bucket_' . $bucket] = '1';
+                $attributes['bucket_' . $bucket] = '1';
             }
         }
 
-        $this->gauge($name, $tags, $value);
+        $this->gauge($name, $attributes, $value);
     }
 
     /**

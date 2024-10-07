@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Stickee\Instrumentation\DataScrubbers;
 
+use Closure;
+
 class CallbackDataScrubber implements DataScrubberInterface
 {
     /**
      * Constructor
      *
-     * @param callable(mixed $key, mixed $value): mixed $callback The data scrubbing callback
+     * @param Closure(mixed $key, mixed $value): mixed $callback The data scrubbing callback
      */
-    public function __construct(private readonly callable $callback) {}
+    public function __construct(private readonly Closure $callback) {}
 
     /**
      * Scrub data
