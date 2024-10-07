@@ -52,42 +52,42 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load_time"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
-    public function event(string $name, array $tags = [], float $value = 1): void
+    public function event(string $name, array $attributes = [], float $value = 1): void
     {
-        $tags = $this->scrub($tags);
+        $attributes = $this->scrub($attributes);
 
-        $this->eventsExporter->event($name, $tags, $value);
+        $this->eventsExporter->event($name, $attributes, $value);
     }
 
     /**
      * Record an increase in a counter
      *
      * @param string $name The counter name, e.g. "page_load"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function counter(string $name, array $tags = [], float $increase = 1): void
+    public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
-        $tags = $this->scrub($tags);
+        $attributes = $this->scrub($attributes);
 
-        $this->eventsExporter->counter($name, $tags, $increase);
+        $this->eventsExporter->counter($name, $attributes, $increase);
     }
 
     /**
      * Record the current value of a gauge
      *
      * @param string $name The name of the gauge, e.g. "queue_length"
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
-    public function gauge(string $name, array $tags, float $value): void
+    public function gauge(string $name, array $attributes, float $value): void
     {
-        $tags = $this->scrub($tags);
+        $attributes = $this->scrub($attributes);
 
-        $this->eventsExporter->gauge($name, $tags, $value);
+        $this->eventsExporter->gauge($name, $attributes, $value);
     }
 
     /**
@@ -98,13 +98,13 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param string|null $description A description of the histogram
      * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
      * @param float|int $value The value of the histogram
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
-        $tags = $this->scrub($tags);
+        $attributes = $this->scrub($attributes);
 
-        $this->eventsExporter->histogram($name, $unit, $description, $buckets, $value, $tags);
+        $this->eventsExporter->histogram($name, $unit, $description, $buckets, $value, $attributes);
     }
 
     /**
