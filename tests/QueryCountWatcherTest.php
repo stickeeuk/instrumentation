@@ -11,17 +11,20 @@ use Illuminate\Support\Facades\Schedule;
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
 use Stickee\Instrumentation\Tests\Fixtures\WatcherCommand;
 use Stickee\Instrumentation\Tests\Fixtures\WatcherJob;
+use Stickee\Instrumentation\Utils\SemConv;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 
 it('can count queries in jobs', function (): void {
     $pass = false;
 
-    Instrument::shouldReceive('histogram')
+    Instrument::partialMock()
+        ->allows('counter') // TODO why do we need to ignore the counter registered in ISP?
+        ->shouldReceive('histogram')
         ->atLeast()
         ->once()
         ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
-            if ($name === 'db.queries.total') {
+            if ($name === SemConv::DB_QUERIES_NAME) {
                 $pass = ($value === 2);
             }
         });
@@ -46,7 +49,7 @@ it('can count queries in schedules', function (): void {
         ->atLeast()
         ->once()
         ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
-            if ($name === 'db.queries.total') {
+            if ($name === SemConv::DB_QUERIES_NAME) {
                 $pass = ($value === 2);
             }
         });
@@ -78,7 +81,7 @@ it('can count queries in commands', function (): void {
         ->atLeast()
         ->once()
         ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
-            if ($name === 'db.queries.total') {
+            if ($name === SemConv::DB_QUERIES_NAME) {
                 $pass = ($value === 2);
             }
         });

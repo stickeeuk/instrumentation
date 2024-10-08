@@ -16,7 +16,9 @@ use Symfony\Component\Console\Output\NullOutput;
 it('can watch memory in jobs', function (): void {
     $pass = false;
 
-    Instrument::shouldReceive('histogram')
+    Instrument::partialMock()
+        ->allows('counter') // TODO why do we need to ignore the counter registered in ISP?
+        ->shouldReceive('histogram')
         ->atLeast()
         ->once()
         ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
