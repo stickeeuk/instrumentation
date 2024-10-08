@@ -53,11 +53,12 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     /**
      * Register the service provider
      */
+    #[\Override]
     public function register(): void
     {
         $this->config = $this->app->make(Config::class);
 
-        $this->app->singleton(CachedInstruments::class, fn() => new CachedInstruments('uk.co.stickee.instrumentation'));
+        $this->app->singleton(CachedInstruments::class, fn(): \Stickee\Instrumentation\Utils\CachedInstruments => new CachedInstruments('uk.co.stickee.instrumentation'));
     }
 
     /**
@@ -187,12 +188,10 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      *
      * @param string $path The path to append to the DSN
      * @param string $contentType The content type
-     *
-     * @return \OpenTelemetry\SDK\Common\Export\TransportInterface
      */
-    private function getOtlpTransport(string $path, $contentType = 'application/json'): TransportInterface
+    private function getOtlpTransport(string $path, string $contentType = 'application/json'): TransportInterface
     {
-        return (app(OtlpHttpTransportFactory::class))
+        return app(OtlpHttpTransportFactory::class)
             ->create(
                 endpoint: $this->config->openTelemetry('dsn') . $path,
                 contentType: $contentType,

@@ -52,7 +52,7 @@ trait WritesStrings
     public function event(string $name, array $attributes = [], float $value = 1): void
     {
         $message = date('Y-m-d H:i:s') . ' EVENT: ' . $name
-            . ($value !== null ? ' = ' . $value : '')
+            . ' = ' . $value
             . $this->getAttributesString($attributes);
 
         $this->write($message);

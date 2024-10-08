@@ -10,8 +10,6 @@ parameters:
     excludePaths:
             - %rootDir%/../../../database/*/*.php
     ignoreErrors:
-        - '#Access to an undefined property App\\Nova\\[a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+\.#'
-        - '#PHPDoc tag @param has invalid value#'
     universalObjectCratesClasses:
         - Laravel\Nova\Fields\ActionFields
     banned_code:

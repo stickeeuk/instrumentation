@@ -10,34 +10,25 @@ class OpenTelemetrySpan implements SpanInterface
 {
     /**
      * If the span has been ended
-     *
-     * @var bool
      */
     private bool $ended = false;
 
     /**
-     * The OpenTelemetry span
-     *
-     * @var \OpenTelemetry\API\Trace\SpanInterface
-     */
-    private OpenTelemetrySpanInterface $span;
-
-    /**
      * The OpenTelemetry scope
-     *
-     * @var \OpenTelemetry\Context\ScopeInterface
      */
-    private ScopeInterface $scope;
+    private readonly ScopeInterface $scope;
 
     /**
      * Constructor
      *
      * @param \OpenTelemetry\API\Trace\SpanInterface $span The OpenTelemetry span
      */
-    public function __construct(OpenTelemetrySpanInterface $span)
-    {
-        $this->span = $span;
-        $this->scope = $span->activate();
+    public function __construct(/**
+     * The OpenTelemetry span
+     */
+        private readonly OpenTelemetrySpanInterface $span
+    ) {
+        $this->scope = $this->span->activate();
     }
 
     /**
@@ -45,6 +36,7 @@ class OpenTelemetrySpan implements SpanInterface
      *
      * @param \Throwable $exception The exception
      */
+    #[\Override]
     public function recordException(Throwable $exception): void
     {
         $this->span->recordException($exception, [
@@ -57,6 +49,7 @@ class OpenTelemetrySpan implements SpanInterface
     /**
      * End the span
      */
+    #[\Override]
     public function end(): void
     {
         $this->scope->detach();

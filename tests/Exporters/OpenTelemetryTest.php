@@ -164,7 +164,7 @@ it('can use a scrubber callback', function (): void {
         ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
 
-    $this->app->bind(DataScrubberInterface::class, fn () => new CallbackDataScrubber(fn($key, $value) => 'SCRUBBED'));
+    $this->app->bind(DataScrubberInterface::class, fn() => new CallbackDataScrubber(fn($key, $value) => 'SCRUBBED'));
 
     Log::error('Email: test@example.com', ['email' => 'test@example.com']);
 

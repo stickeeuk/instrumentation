@@ -42,6 +42,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      *
      * @param mixed $errorHandler An error handler function that takes an Exception as an argument - must be callable with `call_user_func()`
      */
+    #[\Override]
     public function setErrorHandler($errorHandler): void
     {
         $this->eventsExporter->setErrorHandler($errorHandler);
@@ -55,6 +56,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
+    #[\Override]
     public function event(string $name, array $attributes = [], float $value = 1): void
     {
         $attributes = $this->scrub($attributes);
@@ -69,6 +71,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
+    #[\Override]
     public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
         $attributes = $this->scrub($attributes);
@@ -83,6 +86,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
+    #[\Override]
     public function gauge(string $name, array $attributes, float $value): void
     {
         $attributes = $this->scrub($attributes);
@@ -100,6 +104,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param float|int $value The value of the histogram
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
+    #[\Override]
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         $attributes = $this->scrub($attributes);
@@ -110,6 +115,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         $this->eventsExporter->flush();
@@ -127,6 +133,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      *
      * @return mixed The result of the callable
      */
+    #[\Override]
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
         $attributes = $this->scrub($attributes);
@@ -140,9 +147,8 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param string $name The name of the span
      * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
-     *
-     * @return \Stickee\Instrumentation\Spans\SpanInterface
      */
+    #[\Override]
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
         $attributes = $this->scrub($attributes);

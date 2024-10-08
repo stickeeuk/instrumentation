@@ -13,14 +13,13 @@ class InfluxDbServiceProvider extends ServiceProvider
 {
     /**
      * The config
-     *
-     * @var \Stickee\Instrumentation\Laravel\Config
      */
     private Config $config;
 
     /**
      * Register the service provider
      */
+    #[\Override]
     public function register(): void
     {
         $this->config = $this->app->make(Config::class);

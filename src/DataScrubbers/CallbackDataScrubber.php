@@ -21,6 +21,7 @@ class CallbackDataScrubber implements DataScrubberInterface
      * @param mixed $key The key
      * @param mixed $value The value
      */
+    #[\Override]
     public function scrub(mixed $key, mixed $value): mixed
     {
         return ($this->callback)($key, $value);
