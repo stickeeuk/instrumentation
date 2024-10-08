@@ -32,6 +32,16 @@ class OpenTelemetrySpan implements SpanInterface
     }
 
     /**
+     * Destructor
+     */
+    public function __destruct()
+    {
+        if (! $this->ended) {
+            $this->end();
+        }
+    }
+
+    /**
      * Record an exception
      *
      * @param \Throwable $exception The exception
@@ -56,15 +66,5 @@ class OpenTelemetrySpan implements SpanInterface
         $this->span->end();
 
         $this->ended = true;
-    }
-
-    /**
-     * Destructor
-     */
-    public function __destruct()
-    {
-        if (! $this->ended) {
-            $this->end();
-        }
     }
 }

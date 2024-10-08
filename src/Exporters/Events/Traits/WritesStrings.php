@@ -8,41 +8,6 @@ namespace Stickee\Instrumentation\Exporters\Events\Traits;
 trait WritesStrings
 {
     /**
-     * Write to the file
-     *
-     * @param string $message The message to write
-     */
-    abstract protected function write(string $message): void;
-
-    /**
-     * Convert the attributes array to a string
-     *
-     * @param array $attributes The attributes
-     *
-     * @return string The attributes string
-     */
-    private function getAttributesString(array $attributes): string
-    {
-        if (empty($attributes)) {
-            return '';
-        }
-
-        $attributesStrings = [];
-
-        foreach ($attributes as $key => $value) {
-            if ($value === true) {
-                $value = 'true';
-            } elseif ($value === false) {
-                $value = 'false';
-            }
-
-            $attributesStrings[] = $key . ' => ' . $value;
-        }
-
-        return ': [' . implode(', ', $attributesStrings) . ']';
-    }
-
-    /**
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load_time"
@@ -112,5 +77,40 @@ trait WritesStrings
     public function flush(): void
     {
         // Do nothing - writes are not queued
+    }
+
+    /**
+     * Write to the file
+     *
+     * @param string $message The message to write
+     */
+    abstract protected function write(string $message): void;
+
+    /**
+     * Convert the attributes array to a string
+     *
+     * @param array $attributes The attributes
+     *
+     * @return string The attributes string
+     */
+    private function getAttributesString(array $attributes): string
+    {
+        if (empty($attributes)) {
+            return '';
+        }
+
+        $attributesStrings = [];
+
+        foreach ($attributes as $key => $value) {
+            if ($value === true) {
+                $value = 'true';
+            } elseif ($value === false) {
+                $value = 'false';
+            }
+
+            $attributesStrings[] = $key . ' => ' . $value;
+        }
+
+        return ': [' . implode(', ', $attributesStrings) . ']';
     }
 }
