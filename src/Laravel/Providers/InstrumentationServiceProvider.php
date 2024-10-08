@@ -225,7 +225,7 @@ class InstrumentationServiceProvider extends ServiceProvider
                     [
                         SemConv::JOB_QUEUE => $queueName,
                     ],
-                    Queue::availableSize($queueName)
+                    Queue::availableSize($queueName) // @phpstan-ignore staticMethod.notFound
                 );
             }
 

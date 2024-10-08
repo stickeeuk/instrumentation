@@ -16,10 +16,10 @@ class RedisQueueWithAvailableSize extends RedisQueue
     {
         $queue = $this->getQueue($queue);
 
-        return $this->getConnection()->eval(
+        return $this->getConnection()->eval( // @phpstan-ignore arguments.count
             LuaScripts::size(),
-            3,
-            $queue,
+            3, // @phpstan-ignore argument.type
+            $queue, // @phpstan-ignore argument.type
             $queue . ':DUMMY',
             $queue . ':DUMMY'
         );
