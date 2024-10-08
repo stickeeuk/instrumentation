@@ -22,6 +22,7 @@ class NullEvents implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
+    #[\Override]
     public function event(string $name, array $attributes = [], float $value = 1): void
     {
         // Do nothing
@@ -34,6 +35,7 @@ class NullEvents implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
+    #[\Override]
     public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
         // Do nothing
@@ -46,6 +48,7 @@ class NullEvents implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
+    #[\Override]
     public function gauge(string $name, array $attributes, float $value): void
     {
         // Do nothing
@@ -61,6 +64,7 @@ class NullEvents implements EventsExporterInterface
      * @param float|int $value The value of the histogram
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
+    #[\Override]
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         // Do nothing
@@ -69,6 +73,7 @@ class NullEvents implements EventsExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         // Do nothing

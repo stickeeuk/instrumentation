@@ -15,18 +15,14 @@ class Config
 {
     /**
      * If instrumentation is enabled
-     *
-     * @return bool
      */
     public function enabled(): bool
     {
-        return (bool)config('instrumentation.enabled');
+        return (bool) config('instrumentation.enabled');
     }
 
     /**
      * Get the events exporter class
-     *
-     * @return string
      */
     public function eventsExporterClass(): string
     {
@@ -38,11 +34,11 @@ class Config
             throw new Exception('Config variable `instrumentation.events_exporter` not set');
         }
 
-        if (!class_exists($class, true)) {
+        if (! class_exists($class, true)) {
             throw new Exception('Config variable `instrumentation.events_exporter` class not found: ' . $class);
         }
 
-        if (!is_a($class, EventsExporterInterface::class, true)) {
+        if (! is_a($class, EventsExporterInterface::class, true)) {
             throw new Exception('Config variable `instrumentation.events_exporter` does not implement \Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface: ' . $class);
         }
 
@@ -51,8 +47,6 @@ class Config
 
     /**
      * Get the spans exporter class
-     *
-     * @return string
      */
     public function spansExporterClass(): string
     {
@@ -64,11 +58,11 @@ class Config
             throw new Exception('Config variable `instrumentation.spans_exporter` not set');
         }
 
-        if (!class_exists($class, true)) {
+        if (! class_exists($class, true)) {
             throw new Exception('Config variable `instrumentation.spans_exporter` class not found: ' . $class);
         }
 
-        if (!is_a($class, SpansExporterInterface::class, true)) {
+        if (! is_a($class, SpansExporterInterface::class, true)) {
             throw new Exception('Config variable `instrumentation.spans_exporter` does not implement \Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface: ' . $class);
         }
 
@@ -77,12 +71,10 @@ class Config
 
     /**
      * Get the trace sample rate, between 0 and 1
-     *
-     * @return float
      */
     public function traceSampleRate(): float
     {
-        $value  = (float)config('instrumentation.trace_sample_rate', 0);
+        $value  = (float) config('instrumentation.trace_sample_rate', 0);
 
         if (($value < 0) || ($value > 1)) {
             throw new Exception('Config variable `instrumentation.trace_sample_rate` must be between 0 and 1');
@@ -93,30 +85,24 @@ class Config
 
     /**
      * If SSL connections should verify the certificate
-     *
-     * @return bool
      */
     public function verifySsl(): bool
     {
-        return (bool)config('instrumentation.verify_ssl', true);
+        return (bool) config('instrumentation.verify_ssl', true);
     }
 
     /**
      * If the response time middleware is enabled
-     *
-     * @return bool
      */
     public function responseTimeMiddlewareEnabled(): bool
     {
-        return (bool)config('instrumentation.response_time_middleware_enabled', true);
+        return (bool) config('instrumentation.response_time_middleware_enabled', true);
     }
 
     /**
      * Configuration for InfluxDb
      *
      * @param string $key The configuration variable
-     *
-     * @return mixed
      */
     public function influxDb(string $key): mixed
     {
@@ -133,8 +119,6 @@ class Config
      * Configuration for OpenTelemetry
      *
      * @param string $key The configuration variable
-     *
-     * @return mixed
      */
     public function openTelemetry(string $key): mixed
     {
@@ -151,8 +135,6 @@ class Config
      * Configuration for the log file
      *
      * @param string $key The configuration variable
-     *
-     * @return mixed
      */
     public function logFile(string $key): mixed
     {
@@ -167,8 +149,6 @@ class Config
 
     /**
      * Get the queue names
-     *
-     * @return array
      */
     public function queueNames(): array
     {
@@ -177,11 +157,9 @@ class Config
 
     /**
      * Get the long request trace threshold
-     *
-     * @return float
      */
     public function longRequestTraceThreshold(): float
     {
-        return (float)config('instrumentation.long_request_trace_threshold', 1);
+        return (float) config('instrumentation.long_request_trace_threshold', 1);
     }
 }

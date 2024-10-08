@@ -21,14 +21,14 @@ class InfluxDb implements EventsExporterInterface
     /**
      * Events generated and waiting to be recorded
      *
-     * @var \InfluxDB2\Point[] $events
+     * @var \InfluxDB2\Point[]
      */
-    private $events = [];
+    private array $events = [];
 
     /**
      * The connection to the InfluxDB database
      *
-     * @var \InfluxDB2\Client $client
+     * @var \InfluxDB2\Client
      */
     private $client;
 
@@ -71,6 +71,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
+    #[\Override]
     public function event(string $name, array $attributes = [], float $value = 1): void
     {
         $this->gauge($name, $attributes, $value);
@@ -85,6 +86,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
+    #[\Override]
     public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
         $this->gauge($name, $attributes, $increase);
@@ -97,6 +99,7 @@ class InfluxDb implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
+    #[\Override]
     public function gauge(string $name, array $attributes, float $value): void
     {
         $context = Span::getCurrent()->getContext();
@@ -105,13 +108,13 @@ class InfluxDb implements EventsExporterInterface
         $attributes['span_id'] = $context->getSpanId();
 
         // attributes must be strings, so remove nulls and convert the rest
-        $attributes = array_filter($attributes, static fn ($value) => $value !== null);
-        $attributes = array_map(static function ($value) {
+        $attributes = array_filter($attributes, static fn($value): bool => $value !== null);
+        $attributes = array_map(static function ($value): string {
             if ($value === false) {
                 return '0';
             }
 
-            return strval($value);
+            return (string) $value;
         }, $attributes);
 
         $this->events[] = new Point($name, $attributes, ['value' => $value]);
@@ -127,6 +130,7 @@ class InfluxDb implements EventsExporterInterface
      * @param float|int $value The value of the histogram
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
+    #[\Override]
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
         foreach ($buckets as $bucket) {
@@ -141,14 +145,15 @@ class InfluxDb implements EventsExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
-        if (!$this->events) {
+        if (! $this->events) {
             return;
         }
 
         try {
-            $writeApi = $this->client->createWriteApi(["writeType" => WriteType::BATCHING, 'batchSize' => 1000]);
+            $writeApi = $this->client->createWriteApi(['writeType' => WriteType::BATCHING, 'batchSize' => 1000]);
 
             foreach ($this->events as $event) {
                 $writeApi->write($event);
@@ -157,8 +162,8 @@ class InfluxDb implements EventsExporterInterface
             $writeApi->close();
 
             $this->events = [];
-        } catch (Exception $e) {
-            $this->handleError($e);
+        } catch (Exception $exception) {
+            $this->handleError($exception);
         }
     }
 }

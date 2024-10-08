@@ -17,9 +17,7 @@ class OpenTelemetry implements SpansExporterInterface
 {
     use HandlesErrors;
 
-    public function __construct(private readonly CachedInstruments $instrumentation)
-    {
-    }
+    public function __construct(private readonly CachedInstruments $instrumentation) {}
 
     /**
      * Creates a new span wrapping the given callable.
@@ -27,11 +25,12 @@ class OpenTelemetry implements SpansExporterInterface
      *
      * @param string $name The name of the span
      * @param callable $callable A callable that will be executed within the span context. The activated Span will be passed as the first argument.
-     * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
+     * @param SpanKind::KIND_* $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
      *
      * @return mixed The result of the callable
      */
+    #[\Override]
     public function span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): mixed
     {
         $span = $this->instrumentation
@@ -44,13 +43,14 @@ class OpenTelemetry implements SpansExporterInterface
 
         try {
             return $callable($span);
-        } catch (Throwable $e) {
-            $span->recordException($e, [
-                'exception.line' => $e->getLine(),
-                'exception.file' => $e->getFile(),
-                'exception.code' => $e->getCode(),
+        } catch (Throwable $throwable) {
+            $span->recordException($throwable, [
+                'exception.line' => $throwable->getLine(),
+                'exception.file' => $throwable->getFile(),
+                'exception.code' => $throwable->getCode(),
             ]);
-            throw $e;
+
+            throw $throwable;
         } finally {
             $spanScope->detach();
             $span->end();
@@ -61,11 +61,10 @@ class OpenTelemetry implements SpansExporterInterface
      * Start a span and scope
      *
      * @param string $name The name of the span
-     * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
+     * @param SpanKind::KIND_* $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
-     *
-     * @return \Stickee\Instrumentation\Spans\SpanInterface
      */
+    #[\Override]
     public function startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = []): SpanInterface
     {
         $span = $this->instrumentation
@@ -81,6 +80,7 @@ class OpenTelemetry implements SpansExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         // Do nothing

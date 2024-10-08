@@ -3,7 +3,6 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
-use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
@@ -34,6 +33,8 @@ use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
 use Stickee\Instrumentation\Utils\SemConv;
 
+use function OpenTelemetry\Instrumentation\hook;
+
 /**
  * Instrumentation service provider
  */
@@ -41,36 +42,36 @@ class InstrumentationServiceProvider extends ServiceProvider
 {
     /**
      * The config
-     *
-     * @var \Stickee\Instrumentation\Laravel\Config $config
      */
     private Config $config;
 
     /**
      * Register the service provider
      */
+    #[\Override]
     public function register(): void
     {
         $this->config = $this->app->make(Config::class);
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../../../config/instrumentation.php', 'instrumentation'
+            __DIR__ . '/../../../config/instrumentation.php',
+            'instrumentation'
         );
 
         $this->app->when(LogFile::class)
             ->needs('$filename')
-            ->give(fn () => $this->config->logFile('filename'));
+            ->give(fn(): mixed => $this->config->logFile('filename'));
 
-        $this->app->bind(Exporter::class, function(Application $app) {
+        $this->app->bind(Exporter::class, function (Application $app): \Stickee\Instrumentation\Exporters\Exporter {
             $eventsExporter = $app->make($this->config->eventsExporterClass());
             $spansExporter = $app->make($this->config->spansExporterClass());
 
             return new Exporter($eventsExporter, $spansExporter, $app->make(DataScrubberInterface::class));
         });
 
-        $this->app->singleton('instrument', function(Application $app) {
+        $this->app->singleton('instrument', function (Application $app) {
             $exporter = $app->make(Exporter::class);
-            $exporter->setErrorHandler(function (Exception $e) {
+            $exporter->setErrorHandler(function (Exception $e): void {
                 Log::error($e->getMessage());
             });
 
@@ -78,13 +79,13 @@ class InstrumentationServiceProvider extends ServiceProvider
         });
 
         // Extend the queue connectors to add availableCount()
-        $this->app->extend('queue', function (QueueManager $manager) {
-            $manager->addConnector('beanstalkd', fn (): BeanstalkdConnector => new BeanstalkdConnector());
-            $manager->addConnector('database', fn (): DatabaseConnector => new DatabaseConnector($this->app['db']));
-            $manager->addConnector('null', fn (): NullConnector => new NullConnector());
-            $manager->addConnector('redis', fn (): RedisConnector => new RedisConnector($this->app['redis']));
-            $manager->addConnector('sqs', fn (): SqsConnector => new SqsConnector());
-            $manager->addConnector('sync', fn (): SyncConnector => new SyncConnector());
+        $this->app->extend('queue', function (QueueManager $manager): \Illuminate\Queue\QueueManager {
+            $manager->addConnector('beanstalkd', fn(): BeanstalkdConnector => new BeanstalkdConnector());
+            $manager->addConnector('database', fn(): DatabaseConnector => new DatabaseConnector($this->app['db']));
+            $manager->addConnector('null', fn(): NullConnector => new NullConnector());
+            $manager->addConnector('redis', fn(): RedisConnector => new RedisConnector($this->app['redis']));
+            $manager->addConnector('sqs', fn(): SqsConnector => new SqsConnector());
+            $manager->addConnector('sync', fn(): SyncConnector => new SyncConnector());
 
             return $manager;
         });
@@ -114,7 +115,7 @@ class InstrumentationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!$this->config->enabled()) {
+        if (! $this->config->enabled()) {
             return;
         }
 
@@ -127,7 +128,7 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         $this->registerFlushEvents();
 
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
@@ -138,9 +139,9 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function instrumentJobs(): void
     {
-        Queue::createPayloadUsing(fn ($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
+        Queue::createPayloadUsing(fn($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
 
-        Event::listen(JobQueued::class, function ($event) {
+        Event::listen(JobQueued::class, function ($event): void {
             Instrument::counter(SemConv::JOBS_QUEUED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -149,8 +150,9 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         $startTime = null;
 
-        Queue::before(function (JobProcessing $event) use (&$startTime) {
+        Queue::before(function (JobProcessing $event) use (&$startTime): void {
             $startTime = now();
+
             if (isset($event->job->payload()['created_at'])) {
                 Instrument::histogram(
                     SemConv::JOB_START_DURATION_NAME,
@@ -166,7 +168,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(JobProcessed::class, function ($event) use ($startTime) {
+        Event::listen(JobProcessed::class, function ($event) use ($startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -186,7 +188,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             );
         });
 
-        Event::listen(JobFailed::class, function ($event) use ($startTime) {
+        Event::listen(JobFailed::class, function ($event) use ($startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -209,21 +211,21 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function instrumentJobQueues(): void
     {
-        Schedule::call(function () {
+        Schedule::call(function (): void {
             foreach ($this->config->queueNames() as $queueName) {
                 Instrument::gauge(
                     SemConv::JOB_QUEUE_LENGTH_NAME,
                     [
-                        SemConv::JOB_QUEUE => $queueName
+                        SemConv::JOB_QUEUE => $queueName,
                     ],
                     Queue::size($queueName)
                 );
                 Instrument::gauge(
                     SemConv::JOB_QUEUE_AVAILABLE_LENGTH_NAME,
                     [
-                        SemConv::JOB_QUEUE => $queueName
+                        SemConv::JOB_QUEUE => $queueName,
                     ],
-                    Queue::availableSize($queueName)
+                    Queue::availableSize($queueName) // @phpstan-ignore staticMethod.notFound
                 );
             }
 
@@ -233,11 +235,11 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function registerFlushEvents(): void
     {
-        Event::listen(CommandFinished::class, fn () => app('instrument')->flush());
+        Event::listen(CommandFinished::class, fn() => app('instrument')->flush());
 
-        Queue::after(fn () => app('instrument')->flush());
+        Queue::after(fn() => app('instrument')->flush());
 
-        Queue::failing(fn () => app('instrument')->flush());
+        Queue::failing(fn() => app('instrument')->flush());
     }
 
     /**
@@ -246,7 +248,7 @@ class InstrumentationServiceProvider extends ServiceProvider
     private function registerResponseTimeMiddleware(): void
     {
         if ($this->app->bound(KernelInterface::class)) {
-            /** @var Illuminate\Foundation\Http\Kernel $httpKernel */
+            /** @var \Illuminate\Foundation\Http\Kernel $httpKernel */
             $httpKernel = $this->app->make(KernelInterface::class);
 
             if ($httpKernel instanceof Kernel) {

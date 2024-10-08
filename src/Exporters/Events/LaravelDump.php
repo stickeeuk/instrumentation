@@ -21,6 +21,7 @@ class LaravelDump implements EventsExporterInterface
      */
     protected function write(string $message): void
     {
+        /** @phpstan-ignore-next-line */
         dump($message);
     }
 }

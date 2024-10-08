@@ -26,7 +26,6 @@ it('can write to the laravel log for a gauge', function (string $event, array $a
     $log->gauge($event, $attributes, 1.0);
 })->with('valid rfc 5424 events', 'writable values');
 
-
 it('will crash if given an invalid event', function (): void {
     $this->expectException(Throwable::class);
 

@@ -49,11 +49,11 @@ it('does nothing when receiving a gauge', function (): void {
 });
 
 it('does nothing when receiving a flush', function (): void {
-   try {
-       $this->exporter->flush();
+    try {
+        $this->exporter->flush();
 
-       expect(true)->toBeTrue();
-   } catch (Throwable $throwable) {
-       $this::fail("Failed to do nothing: {$throwable->getMessage()}");
-   }
+        expect(true)->toBeTrue();
+    } catch (Throwable $throwable) {
+        $this::fail("Failed to do nothing: {$throwable->getMessage()}");
+    }
 });

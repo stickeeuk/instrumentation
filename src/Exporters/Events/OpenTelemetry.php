@@ -17,33 +17,25 @@ class OpenTelemetry implements EventsExporterInterface
 
     /**
      * Counter instruments
-     *
-     * @var array $counters
      */
-    private $counters = [];
+    private array $counters = [];
 
     /**
      * Gauge instruments
-     *
-     * @var array $gauges
      */
-    private $gauges = [];
+    private array $gauges = [];
 
     /**
      * Histogram instruments
-     *
-     * @var array $histograms
      */
-    private $histograms = [];
+    private array $histograms = [];
 
     /**
      * Constructor
      *
      * @param \Stickee\Instrumentation\Utils\CachedInstruments $instrumentation The instrumentation
      */
-    public function __construct(private readonly CachedInstruments $instrumentation)
-    {
-    }
+    public function __construct(private readonly CachedInstruments $instrumentation) {}
 
     /**
      * Class destructor
@@ -60,12 +52,13 @@ class OpenTelemetry implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
+    #[\Override]
     public function event(string $name, array $attributes = [], float $value = 1): void
     {
         Span::getCurrent()->addEvent($name, $attributes);
 
         $log = (new LogRecord($value))
-            ->setTimestamp(microtime(true) * LogRecord::NANOS_PER_SECOND)
+            ->setTimestamp((int) microtime(true) * LogRecord::NANOS_PER_SECOND)
             ->setAttributes($attributes);
 
         $this->instrumentation->eventLogger()->emit($name, $log);
@@ -78,9 +71,10 @@ class OpenTelemetry implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
+    #[\Override]
     public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
-        if (!isset($this->counters[$name])) {
+        if (! isset($this->counters[$name])) {
             $this->counters[$name] = $this->instrumentation->meter()->createCounter($name);
         }
 
@@ -94,9 +88,10 @@ class OpenTelemetry implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
+    #[\Override]
     public function gauge(string $name, array $attributes, float $value): void
     {
-        if (!isset($this->gauges[$name])) {
+        if (! isset($this->gauges[$name])) {
             $this->gauges[$name] = $this->instrumentation->meter()->createGauge($name);
         }
 
@@ -113,9 +108,10 @@ class OpenTelemetry implements EventsExporterInterface
      * @param float|int $value The value of the histogram
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      */
+    #[\Override]
     public function histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = []): void
     {
-        if (!isset($this->histograms[$name])) {
+        if (! isset($this->histograms[$name])) {
             $advisory = [];
 
             if ($buckets !== null) {
@@ -131,6 +127,7 @@ class OpenTelemetry implements EventsExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         $this->instrumentation->flush();

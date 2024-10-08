@@ -4,6 +4,4 @@ namespace Stickee\Instrumentation\Exceptions;
 
 use Exception;
 
-class WriteException extends Exception
-{
-}
+class WriteException extends Exception {}

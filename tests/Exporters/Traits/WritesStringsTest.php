@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Stickee\Instrumentation\Exporters\Events\Traits\WritesStrings;
 
 beforeEach(function (): void {
-    $this->exporter = new class () {
+    $this->exporter = new class {
         use WritesStrings;
 
         /** @inheritDoc */
