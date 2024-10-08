@@ -29,9 +29,9 @@ class QueryCountWatcher extends Watcher
      */
     public function register(Application $app): void
     {
-        DB::listen(fn () => $this->totalQueries++);
+        DB::listen(fn() => $this->totalQueries++);
 
-        $app['events']->listen(JobProcessing::class, fn () => $this->totalQueries = 0);
+        $app['events']->listen(JobProcessing::class, fn() => $this->totalQueries = 0);
         $app['events']->listen(JobProcessed::class, function (JobProcessed $event): void {
             $this->recordQueries([
                 'type' => 'job',
@@ -47,7 +47,7 @@ class QueryCountWatcher extends Watcher
             ]);
         });
 
-        $app['events']->listen(ScheduledTaskStarting::class, fn () => $this->totalQueries = 0);
+        $app['events']->listen(ScheduledTaskStarting::class, fn() => $this->totalQueries = 0);
         $app['events']->listen(ScheduledTaskFinished::class, function (ScheduledTaskFinished $event): void {
             $this->recordQueries([
                 'type' => 'scheduled_task',
@@ -61,7 +61,7 @@ class QueryCountWatcher extends Watcher
             ]);
         });
 
-        $app['events']->listen(CommandStarting::class, fn () => $this->totalQueries = 0);
+        $app['events']->listen(CommandStarting::class, fn() => $this->totalQueries = 0);
         $app['events']->listen(CommandFinished::class, function (CommandFinished $event): void {
             if (in_array($event->command, ['schedule:run', 'queue:work'])) {
                 return;
