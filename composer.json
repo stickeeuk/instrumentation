@@ -24,7 +24,9 @@
         "open-telemetry/sdk": "^1.1@beta"
     },
     "require-dev": {
+        "aws/aws-sdk-php": "^3.323",
         "orchestra/testbench": "^8.0 || ^9.0",
+        "pda/pheanstalk": "^5.0",
         "pestphp/pest": "^2.0",
         "pestphp/pest-plugin-laravel": "^2.0",
         "php-mock/php-mock-phpunit": "^2.6"

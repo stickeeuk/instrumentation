@@ -30,14 +30,15 @@ class DefaultDataScrubber implements DataScrubberInterface
      * @param mixed $key The key
      * @param mixed $value The value
      */
+    #[\Override]
     public function scrub(mixed $key, mixed $value): mixed
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return $value;
         }
 
         foreach (self::DEFAULT_REDACTIONS as $regex => $replacement) {
-            $value = preg_replace($regex, $replacement, $value);
+            $value = preg_replace($regex, $replacement, (string) $value);
         }
 
         return $value;

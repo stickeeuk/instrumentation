@@ -1,0 +1,47 @@
+on:
+  pull_request:
+    paths:
+      - '**.php'
+name: PHP
+
+jobs:
+  php:
+    name: canary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: bcmath, mbstring, opentelemetry
+        env:
+            COMPOSER_AUTH_JSON: |
+                {
+                    "http-basic": {
+                        "repo.stickee.co.uk": {
+                            "username": "${{ secrets.STICKEE_REPO_USERNAME }}",
+                            "password": "${{ secrets.STICKEE_REPO_PASSWORD }}"
+                        }
+                    }
+                }
+      - name: Install dependencies
+        run: COMPOSER_CACHE_DIR="/tmp/composer-cache" composer install
+      - name: Install Canary
+        run: composer install --working-dir=tools/canary
+      - name: Run Canary Analyse
+        run: tools/canary/vendor/bin/canary analyse -- -c phpstan.ci.neon --error-format=github
+      - name: Run Canary Fix
+        run: tools/canary/vendor/bin/canary fix
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: Canary"
+          file_pattern: "**/*.php"
+          disable_globbing: true

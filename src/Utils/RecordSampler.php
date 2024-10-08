@@ -14,9 +14,7 @@ use OpenTelemetry\SDK\Trace\SamplingResult;
  */
 class RecordSampler implements SamplerInterface
 {
-    public function __construct(private readonly SamplerInterface $sampler)
-    {
-    }
+    public function __construct(private readonly SamplerInterface $sampler) {}
 
     /**
      * Returns `SamplingResult` based on probability. Respects the parent `SampleFlag`

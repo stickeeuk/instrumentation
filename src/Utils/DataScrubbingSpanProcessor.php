@@ -16,17 +16,15 @@ class DataScrubbingSpanProcessor implements SpanProcessorInterface
     /**
      * Constructor
      *
-     * @param DataScrubberInterface $scrubber The data scrubber
+     * @param \Stickee\Instrumentation\DataScrubbers\DataScrubberInterface $scrubber The data scrubber
      */
-    public function __construct(private readonly DataScrubberInterface $scrubber)
-    {
-    }
+    public function __construct(private readonly DataScrubberInterface $scrubber) {}
 
     /**
      * Start a span
      *
-     * @param ReadWriteSpanInterface $span The span
-     * @param ContextInterface $parentContext The parent context
+     * @param \OpenTelemetry\SDK\Trace\ReadWriteSpanInterface $span The span
+     * @param \OpenTelemetry\Context\ContextInterface $parentContext The parent context
      */
     public function onStart(ReadWriteSpanInterface $span, ContextInterface $parentContext): void
     {
@@ -44,7 +42,7 @@ class DataScrubbingSpanProcessor implements SpanProcessorInterface
     /**
      * End a span
      *
-     * @param ReadableSpanInterface $span The span
+     * @param \OpenTelemetry\SDK\Trace\ReadableSpanInterface $span The span
      */
     public function onEnd(ReadableSpanInterface $span): void
     {
@@ -54,7 +52,7 @@ class DataScrubbingSpanProcessor implements SpanProcessorInterface
     /**
      * Force flush
      *
-     * @param CancellationInterface|null $cancellation The cancellation token
+     * @param \OpenTelemetry\SDK\Common\Future\CancellationInterface|null $cancellation The cancellation token
      */
     public function forceFlush(?CancellationInterface $cancellation = null): bool
     {
@@ -64,7 +62,7 @@ class DataScrubbingSpanProcessor implements SpanProcessorInterface
     /**
      * Shutdown
      *
-     * @param CancellationInterface|null $cancellation The cancellation token
+     * @param \OpenTelemetry\SDK\Common\Future\CancellationInterface|null $cancellation The cancellation token
      */
     public function shutdown(?CancellationInterface $cancellation = null): bool
     {

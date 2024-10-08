@@ -9,7 +9,7 @@ use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
 uses(PHPMock::class);
 
 beforeEach(function () {
-    $this->exporter = new class () {
+    $this->exporter = new class {
         use HandlesErrors;
 
         /**
@@ -42,9 +42,9 @@ it('can set an error handler and view its contents', function (): void {
 });
 
 it('can still retrieve the error handler even if it is not set', function (): void {
-   $handler = $this->exporter->getErrorHandler();
+    $handler = $this->exporter->getErrorHandler();
 
-   expect($handler)->toBeNull();
+    expect($handler)->toBeNull();
 });
 
 it('can call a custom error handler', function (): void {

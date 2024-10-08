@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Stickee\Instrumentation\Utils;
 
 use Closure;
-use function sprintf;
 use OpenTelemetry\API\Behavior\LogsMessagesTrait;
 use OpenTelemetry\API\Common\Time\ClockInterface;
 use OpenTelemetry\Context\Context;
@@ -18,6 +17,8 @@ use OpenTelemetry\SDK\Trace\SpanProcessorInterface;
 use SplQueue;
 use Throwable;
 
+use function sprintf;
+
 /**
  * This is a copy of OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor with the addition of a time threshold
  */
@@ -26,7 +27,9 @@ class SlowSpanProcessor implements SpanProcessorInterface
     use LogsMessagesTrait;
 
     private ContextInterface $exportContext;
+
     private bool $running = false;
+
     /** @var SplQueue<array{Closure, string, bool, ContextInterface}> */
     private SplQueue $queue;
 
@@ -36,7 +39,6 @@ class SlowSpanProcessor implements SpanProcessorInterface
     private bool $closed = false;
 
     private readonly int $start;
-    private bool $pastThreshold = false;
 
     public function __construct(
         private readonly SpanExporterInterface $exporter,
@@ -49,9 +51,7 @@ class SlowSpanProcessor implements SpanProcessorInterface
         $this->start = $this->clock->now();
     }
 
-    public function onStart(ReadWriteSpanInterface $span, ContextInterface $parentContext): void
-    {
-    }
+    public function onStart(ReadWriteSpanInterface $span, ContextInterface $parentContext): void {}
 
     public function onEnd(ReadableSpanInterface $span): void
     {
@@ -67,13 +67,13 @@ class SlowSpanProcessor implements SpanProcessorInterface
         $spanData = $span->toSpanData();
 
         if ($this->clock->now() - $this->start >= $this->timeThreshold * ClockInterface::NANOS_PER_SECOND) {
-            $this->deferredQueue->enqueue([fn () => $this->exporter->export([$spanData])->await(), 'export', false, $this->exportContext]);
+            $this->deferredQueue->enqueue([fn() => $this->exporter->export([$spanData])->await(), 'export', false, $this->exportContext]);
         } else {
-            while (!$this->deferredQueue->isEmpty()) {
+            while (! $this->deferredQueue->isEmpty()) {
                 call_user_func_array([$this, 'flush'], $this->deferredQueue->dequeue());
             }
 
-            $this->flush(fn () => $this->exporter->export([$spanData])->await(), 'export', false, $this->exportContext);
+            $this->flush(fn() => $this->exporter->export([$spanData])->await(), 'export', false, $this->exportContext);
         }
     }
 
@@ -83,7 +83,7 @@ class SlowSpanProcessor implements SpanProcessorInterface
             return false;
         }
 
-        return $this->flush(fn (): bool => $this->exporter->forceFlush($cancellation), __FUNCTION__, true, Context::getCurrent());
+        return $this->flush(fn(): bool => $this->exporter->forceFlush($cancellation), __FUNCTION__, true, Context::getCurrent());
     }
 
     public function shutdown(?CancellationInterface $cancellation = null): bool
@@ -94,12 +94,12 @@ class SlowSpanProcessor implements SpanProcessorInterface
 
         $this->closed = true;
 
-        return $this->flush(fn (): bool => $this->exporter->shutdown($cancellation), __FUNCTION__, true, Context::getCurrent());
+        return $this->flush(fn(): bool => $this->exporter->shutdown($cancellation), __FUNCTION__, true, Context::getCurrent());
     }
 
     private function flush(Closure $task, string $taskName, bool $propagateResult, ContextInterface $context): bool
     {
-        $this->queue->enqueue([$task, $taskName, $propagateResult && !$this->running, $context]);
+        $this->queue->enqueue([$task, $taskName, $propagateResult && ! $this->running, $context]);
 
         if ($this->running) {
             return false;
@@ -110,12 +110,13 @@ class SlowSpanProcessor implements SpanProcessorInterface
         $this->running = true;
 
         try {
-            while (!$this->queue->isEmpty()) {
+            while (! $this->queue->isEmpty()) {
                 [$task, $taskName, $propagateResult, $context] = $this->queue->dequeue();
                 $scope = $context->activate();
 
                 try {
                     $result = $task();
+
                     if ($propagateResult) {
                         $success = $result;
                     }
@@ -133,7 +134,7 @@ class SlowSpanProcessor implements SpanProcessorInterface
             $this->running = false;
         }
 
-        if ($exception !== null) {
+        if ($exception instanceof \Throwable) {
             throw $exception;
         }
 

@@ -86,7 +86,6 @@ it('records a histogram for RED metrics', function (): void {
  * `sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count[5m]))` - the rate of change of the number of requests by status code
  */
 it('records data for a while', function (): void {
-
     $transport = (app(\OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory::class))
         ->create('http://localhost:4318/v1/metrics', 'application/json', [], null, 1, 100, 1);
     $exporter = new \OpenTelemetry\Contrib\Otlp\MetricExporter($transport, \OpenTelemetry\SDK\Metrics\Data\Temporality::CUMULATIVE);
@@ -110,26 +109,26 @@ it('records data for a while', function (): void {
             $routes = [
                 '/' => [
                     'weight' => 100,
-                    'time' => rand(500, 1000) / 1000,
+                    'time' => mt_rand(500, 1000) / 1000,
                 ],
                 '/api/examples/1' => [
                     'weight' => 95,
-                    'time' => rand(1000, 2000) / 1000,
+                    'time' => mt_rand(1000, 2000) / 1000,
                 ],
                 '/about' => [
                     'weight' => 50,
-                    'time' => rand(750, 1000) / 1000,
+                    'time' => mt_rand(750, 1000) / 1000,
                 ],
                 '/register' => [
                     'weight' => 10,
-                    'time' => rand(1000, 2000) / 1000,
+                    'time' => mt_rand(1000, 2000) / 1000,
                 ],
             ];
 
             $totalWeight = array_reduce($routes, function ($carry, $route) {
                 return $carry + $route['weight'];
             }, 0);
-            $selection = rand(1, $totalWeight);
+            $selection = mt_rand(1, $totalWeight);
             $count = 0;
             $chosen = [
                 'route' => null,
@@ -140,12 +139,13 @@ it('records data for a while', function (): void {
                 $chosen['route'] = $route;
                 $chosen['time'] = $data['time'];
                 $count += $data['weight'];
+
                 if ($count >= $selection) {
                     break;
                 }
             }
 
-            $chance = rand(0, 100);
+            $chance = mt_rand(0, 100);
 
             if ($chosen['route'] === '/') {
                 $chance = 0;
@@ -206,7 +206,6 @@ it('records data for a while', function (): void {
 });
 
 it('records counters for job events', function (): void {
-
     config()->set('queue.default', 'sync');
 
     \Stickee\Instrumentation\Tests\Fixtures\Jobs\BasicJob::dispatch();
