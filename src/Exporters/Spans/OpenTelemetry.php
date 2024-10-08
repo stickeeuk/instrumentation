@@ -25,7 +25,7 @@ class OpenTelemetry implements SpansExporterInterface
      *
      * @param string $name The name of the span
      * @param callable $callable A callable that will be executed within the span context. The activated Span will be passed as the first argument.
-     * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
+     * @param SpanKind::KIND_* $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
      *
      * @return mixed The result of the callable
@@ -61,7 +61,7 @@ class OpenTelemetry implements SpansExporterInterface
      * Start a span and scope
      *
      * @param string $name The name of the span
-     * @param int $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
+     * @param SpanKind::KIND_* $kind The kind of span to create. Defaults to SpanKind::KIND_INTERNAL
      * @param iterable $attributes Attributes to add to the span. Defaults to an empty array, but can be any iterable.
      */
     #[\Override]
