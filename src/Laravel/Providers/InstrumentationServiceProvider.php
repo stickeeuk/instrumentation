@@ -216,20 +216,20 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function instrumentJobQueues(): void
     {
-        if (!$this->app->runningUnitTests()) {
+        if (! $this->app->runningUnitTests()) {
             Schedule::call(function () {
                 foreach ($this->config->queueNames() as $queueName) {
                     Instrument::gauge(
                         SemConv::JOB_QUEUE_LENGTH_NAME,
                         [
-                            SemConv::JOB_QUEUE => $queueName
+                            SemConv::JOB_QUEUE => $queueName,
                         ],
                         Queue::size($queueName)
                     );
                     Instrument::gauge(
                         SemConv::JOB_QUEUE_AVAILABLE_LENGTH_NAME,
                         [
-                            SemConv::JOB_QUEUE => $queueName
+                            SemConv::JOB_QUEUE => $queueName,
                         ],
                         Queue::availableSize($queueName) // @phpstan-ignore staticMethod.notFound
                     );

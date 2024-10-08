@@ -12,9 +12,7 @@ class WatcherJob implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private int $memoryToUse = 0)
-    {
-    }
+    public function __construct(private int $memoryToUse = 0) {}
 
     public function handle(): void
     {

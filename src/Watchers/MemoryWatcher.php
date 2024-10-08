@@ -26,7 +26,7 @@ class MemoryWatcher extends Watcher
      */
     public function register(Application $app): void
     {
-        $app['events']->listen(JobProcessing::class, fn () => memory_reset_peak_usage());
+        $app['events']->listen(JobProcessing::class, fn() => memory_reset_peak_usage());
         $app['events']->listen(JobProcessed::class, function (JobProcessed $event): void {
             $this->recordQueries([
                 'type' => 'job',
@@ -42,7 +42,7 @@ class MemoryWatcher extends Watcher
             ]);
         });
 
-        $app['events']->listen(ScheduledTaskStarting::class, fn () => memory_reset_peak_usage());
+        $app['events']->listen(ScheduledTaskStarting::class, fn() => memory_reset_peak_usage());
         $app['events']->listen(ScheduledTaskFinished::class, function (ScheduledTaskFinished $event): void {
             $this->recordQueries([
                 'type' => 'scheduled_task',
@@ -56,7 +56,7 @@ class MemoryWatcher extends Watcher
             ]);
         });
 
-        $app['events']->listen(CommandStarting::class, fn () => memory_reset_peak_usage());
+        $app['events']->listen(CommandStarting::class, fn() => memory_reset_peak_usage());
         $app['events']->listen(CommandFinished::class, function (CommandFinished $event): void {
             if (in_array($event->command, ['schedule:run', 'queue:work'])) {
                 return;
