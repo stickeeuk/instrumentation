@@ -31,6 +31,8 @@ use Stickee\Instrumentation\Queue\Connectors\NullConnector;
 use Stickee\Instrumentation\Queue\Connectors\RedisConnector;
 use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
+use Stickee\Instrumentation\Watchers\MemoryWatcher;
+use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 use Stickee\Instrumentation\Utils\SemConv;
 
 use function OpenTelemetry\Instrumentation\hook;
@@ -122,6 +124,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         $this->instrumentJobs();
         $this->instrumentJobQueues();
 
+        (new MemoryWatcher())->register($this->app);
+        (new QueryCountWatcher())->register($this->app);
+
         if ($this->config->responseTimeMiddlewareEnabled()) {
             $this->registerResponseTimeMiddleware();
         }
@@ -211,26 +216,28 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function instrumentJobQueues(): void
     {
-        Schedule::call(function (): void {
-            foreach ($this->config->queueNames() as $queueName) {
-                Instrument::gauge(
-                    SemConv::JOB_QUEUE_LENGTH_NAME,
-                    [
-                        SemConv::JOB_QUEUE => $queueName,
-                    ],
-                    Queue::size($queueName)
-                );
-                Instrument::gauge(
-                    SemConv::JOB_QUEUE_AVAILABLE_LENGTH_NAME,
-                    [
-                        SemConv::JOB_QUEUE => $queueName,
-                    ],
-                    Queue::availableSize($queueName) // @phpstan-ignore staticMethod.notFound
-                );
-            }
+        if (! $this->app->runningUnitTests()) {
+            Schedule::call(function () {
+                foreach ($this->config->queueNames() as $queueName) {
+                    Instrument::gauge(
+                        SemConv::JOB_QUEUE_LENGTH_NAME,
+                        [
+                            SemConv::JOB_QUEUE => $queueName,
+                        ],
+                        Queue::size($queueName)
+                    );
+                    Instrument::gauge(
+                        SemConv::JOB_QUEUE_AVAILABLE_LENGTH_NAME,
+                        [
+                            SemConv::JOB_QUEUE => $queueName,
+                        ],
+                        Queue::availableSize($queueName) // @phpstan-ignore staticMethod.notFound
+                    );
+                }
 
-            app('instrument')->flush();
-        })->everyFifteenSeconds();
+                app('instrument')->flush();
+            })->everyFifteenSeconds();
+        }
     }
 
     private function registerFlushEvents(): void
