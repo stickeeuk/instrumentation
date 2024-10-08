@@ -20,23 +20,23 @@ class SemConv
 
     // memory usage
 
-    const PROCESS_MEMORY_USAGE_NAME = 'process.memory.usage';
+    public const PROCESS_MEMORY_USAGE_NAME = 'process.memory.usage';
 
-    const PROCESS_MEMORY_USAGE_UNIT = 'MiB';
+    public const PROCESS_MEMORY_USAGE_UNIT = 'MiB';
 
-    const PROCESS_MEMORY_USAGE_DESCRIPTION = 'Peak memory usage.';
+    public const PROCESS_MEMORY_USAGE_DESCRIPTION = 'Peak memory usage.';
 
-    const PROCESS_MEMORY_USAGE_BUCKETS = [ 8, 16, 32, 64, 128, 256, 512, 1024 ];
+    public const PROCESS_MEMORY_USAGE_BUCKETS = [8, 16, 32, 64, 128, 256, 512, 1024];
 
     // database queries
 
-    const DB_QUERIES_NAME = 'db.queries';
+    public const DB_QUERIES_NAME = 'db.queries';
 
-    const DB_QUERIES_UNIT = '';
+    public const DB_QUERIES_UNIT = '';
 
-    const DB_QUERIES_DESCRIPTION = 'Total database queries.';
+    public const DB_QUERIES_DESCRIPTION = 'Total database queries.';
 
-    const DB_QUERIES_BUCKETS = [ 8, 16, 32, 64, 128, 256, 512, 1024 ];
+    public const DB_QUERIES_BUCKETS = [8, 16, 32, 64, 128, 256, 512, 1024];
 
     // job
 
