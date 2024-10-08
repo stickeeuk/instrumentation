@@ -40,8 +40,6 @@ class SlowSpanProcessor implements SpanProcessorInterface
 
     private readonly int $start;
 
-    private bool $pastThreshold = false;
-
     public function __construct(
         private readonly SpanExporterInterface $exporter,
         private readonly ClockInterface $clock,
