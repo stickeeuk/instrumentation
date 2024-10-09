@@ -23,9 +23,7 @@ class OpenTelemetrySpan implements SpanInterface
      *
      * @param \OpenTelemetry\API\Trace\SpanInterface $span The OpenTelemetry span
      */
-    public function __construct(/**
-     * The OpenTelemetry span
-     */
+    public function __construct(
         private readonly OpenTelemetrySpanInterface $span
     ) {
         $this->scope = $this->span->activate();
