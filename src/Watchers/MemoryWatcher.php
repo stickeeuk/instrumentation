@@ -31,14 +31,14 @@ class MemoryWatcher extends Watcher
             $this->recordQueries([
                 'type' => 'job',
                 'queue' => $event->job->getQueue(),
-                'job' => get_class($event->job),
+                'job' => $event->job::class,
             ]);
         });
         $app['events']->listen(JobExceptionOccurred::class, function (JobExceptionOccurred $event): void {
             $this->recordQueries([
                 'type' => 'job',
                 'queue' => $event->job->getQueue(),
-                'job' => get_class($event->job),
+                'job' => $event->job::class,
             ]);
         });
 
@@ -46,13 +46,13 @@ class MemoryWatcher extends Watcher
         $app['events']->listen(ScheduledTaskFinished::class, function (ScheduledTaskFinished $event): void {
             $this->recordQueries([
                 'type' => 'scheduled_task',
-                'task' => get_class($event->task),
+                'task' => $event->task::class,
             ]);
         });
         $app['events']->listen(ScheduledTaskFailed::class, function (ScheduledTaskFailed $event): void {
             $this->recordQueries([
                 'type' => 'scheduled_task',
-                'task' => get_class($event->task),
+                'task' => $event->task::class,
             ]);
         });
 
