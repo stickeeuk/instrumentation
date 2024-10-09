@@ -72,17 +72,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             return;
         }
 
-        // DB::connection('mysql')->beforeExecuting(function (string &$query) {
-        //     $uuid = Str::uuid()->toString();
-        //     $query = '/* ' . $uuid . ' */ ' . $query;
-        // });
-
-        // $this->app['events']->listen(QueryExecuted::class, function (QueryExecuted $query): void {
-        //     if (preg_match('/\/\* ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[4][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}) \*\//', $query->sql, $matches)) {
-        //         dump($matches[1]);
-        //     }
-        // });
-
         // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
         // is not available, the logs will still be sent to stderr instead of throwing an exception
         LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
