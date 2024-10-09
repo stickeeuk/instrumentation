@@ -12,6 +12,8 @@ use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvent
 use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelemetrySpansExporter;
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
 
+pest()->group('otel-collector');
+
 beforeEach(function (): void {
     config(['instrumentation.events_exporter' => OpenTelemetryEventsExporter::class]);
     config(['instrumentation.spans_exporter' => OpenTelemetrySpansExporter::class]);
