@@ -19,7 +19,7 @@ class DefaultDataScrubber implements DataScrubberInterface
     /**
      * The default redactions
      */
-    public const DEFAULT_REDACTIONS = [
+    public const array DEFAULT_REDACTIONS = [
         self::EMAIL_REGEX => '[REDACTED_EMAIL]',
         self::UK_POSTCODE_REGEX => '[REDACTED_UK_POSTCODE]',
     ];
