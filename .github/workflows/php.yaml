@@ -11,11 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -32,7 +27,7 @@ jobs:
                     }
                 }
       - name: Install dependencies
-        run: COMPOSER_CACHE_DIR="/tmp/composer-cache" composer install
+        run: composer install
       - name: Install Canary
         run: composer install --working-dir=tools/canary
       - name: Run Canary Analyse
