@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-use phpmock\phpunit\PHPMock;
 use Stickee\Instrumentation\Exporters\Events\LaravelDump;
-
-uses(PHPMock::class);
+use phpmock\mockery\PHPMockery;
 
 beforeEach(function (): void {
     $this->exporter = new LaravelDump();
     $this->message = $this->faker()->sentence();
 
-    $this->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'dump')
-        ->expects($this::once())
-        ->withAnyParameters()
-        ->willReturn(null);
+    PHPMockery::mock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'dump')
+        ->withAnyArgs()
+        ->once()
+        ->andReturn(null);
 });
 
 it('will write to the symfony dump method on an event', function (array $attributes): void {
