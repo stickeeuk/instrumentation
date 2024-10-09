@@ -22,46 +22,46 @@ use Stickee\Instrumentation\Utils\SemConv;
  */
 class QueryCountWatcher extends Watcher
 {
-    private $totalQueries = 0;
+    private int $totalQueries = 0;
 
     /**
      * Register the watcher.
      */
     public function register(Application $app): void
     {
-        DB::listen(fn() => $this->totalQueries++);
+        DB::listen(fn(): int => $this->totalQueries++);
 
-        $app['events']->listen(JobProcessing::class, fn() => $this->totalQueries = 0);
+        $app['events']->listen(JobProcessing::class, fn(): int => $this->totalQueries = 0);
         $app['events']->listen(JobProcessed::class, function (JobProcessed $event): void {
             $this->recordQueries([
                 'type' => 'job',
                 'queue' => $event->job->getQueue(),
-                'job' => get_class($event->job),
+                'job' => $event->job::class,
             ]);
         });
         $app['events']->listen(JobExceptionOccurred::class, function (JobExceptionOccurred $event): void {
             $this->recordQueries([
                 'type' => 'job',
                 'queue' => $event->job->getQueue(),
-                'job' => get_class($event->job),
+                'job' => $event->job::class,
             ]);
         });
 
-        $app['events']->listen(ScheduledTaskStarting::class, fn() => $this->totalQueries = 0);
+        $app['events']->listen(ScheduledTaskStarting::class, fn(): int => $this->totalQueries = 0);
         $app['events']->listen(ScheduledTaskFinished::class, function (ScheduledTaskFinished $event): void {
             $this->recordQueries([
                 'type' => 'scheduled_task',
-                'task' => get_class($event->task),
+                'task' => $event->task::class,
             ]);
         });
         $app['events']->listen(ScheduledTaskFailed::class, function (ScheduledTaskFailed $event): void {
             $this->recordQueries([
                 'type' => 'scheduled_task',
-                'task' => get_class($event->task),
+                'task' => $event->task::class,
             ]);
         });
 
-        $app['events']->listen(CommandStarting::class, fn() => $this->totalQueries = 0);
+        $app['events']->listen(CommandStarting::class, fn(): int => $this->totalQueries = 0);
         $app['events']->listen(CommandFinished::class, function (CommandFinished $event): void {
             if (in_array($event->command, ['schedule:run', 'queue:work'])) {
                 return;

@@ -217,7 +217,7 @@ class InstrumentationServiceProvider extends ServiceProvider
     private function instrumentJobQueues(): void
     {
         if (! $this->app->runningUnitTests()) {
-            Schedule::call(function () {
+            Schedule::call(function (): void {
                 foreach ($this->config->queueNames() as $queueName) {
                     Instrument::gauge(
                         SemConv::JOB_QUEUE_LENGTH_NAME,
