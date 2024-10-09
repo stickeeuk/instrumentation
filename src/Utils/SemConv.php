@@ -8,6 +8,14 @@ class SemConv
 
     public const STATUS = 'status';
 
+    // HTTP
+
+    public const HTTP_REQUEST_METHOD = 'http.request.method';
+
+    public const HTTP_RESPONSE_STATUS_CODE = 'http.response.status_code';
+
+    public const HTTP_ROUTE = 'http.route';
+
     // HTTP server request duration
 
     public const HTTP_SERVER_REQUEST_DURATION_NAME = 'http.server.request.duration';

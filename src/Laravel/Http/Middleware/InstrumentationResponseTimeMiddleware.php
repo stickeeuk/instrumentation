@@ -25,9 +25,9 @@ class InstrumentationResponseTimeMiddleware
             SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
             microtime(true) - $startTime,
             [
-                'http.response.status_code' => $response->getStatusCode(),
-                'http.request.method' => $request->method(),
-                'http.route' => $request->path(),
+                SemConv::HTTP_RESPONSE_STATUS_CODE => $response->getStatusCode(),
+                SemConv::HTTP_REQUEST_METHOD => $request->method(),
+                SemConv::HTTP_ROUTE => $request->path(),
             ]
         );
 
