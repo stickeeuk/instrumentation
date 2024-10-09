@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Stickee\Instrumentation\Exporters\Events\LaravelDump;
 use phpmock\mockery\PHPMockery;
+use Stickee\Instrumentation\Exporters\Events\LaravelDump;
 
 beforeEach(function (): void {
     $this->exporter = new LaravelDump();
