@@ -3,13 +3,11 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
-use phpmock\phpunit\PHPMock;
+use phpmock\mockery\PHPMockery;
 use Stickee\Instrumentation\Exceptions\WriteException;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
 
 const LOG_EVENT = 'Event';
-
-uses(PHPMock::class);
 
 beforeEach(function (): void {
     $this->logFile = base_path('test.log');
@@ -23,11 +21,10 @@ beforeEach(function (): void {
 });
 
 it('will handle any exception thrown whilst attempting to write to the log file', function (array $attributes): void {
-    $this
-        ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'fopen')
-        ->expects($this::once())
-        ->withAnyParameters()
-        ->willThrowException(new Exception('Not enough disk space!'));
+    PHPMockery::mock('\\Stickee\\Instrumentation\\Exporters\\Events\\', 'fopen')
+        ->withAnyArgs()
+        ->once()
+        ->andThrow(new Exception('Not enough disk space!'));
 
     // Without an overridden handler, we will expect this exception thrown, not \Exception.
     $this->expectException(WriteException::class);

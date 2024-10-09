@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-use phpmock\phpunit\PHPMock;
+use phpmock\mockery\PHPMockery;
 use Stickee\Instrumentation\Exceptions\WriteException;
 use Stickee\Instrumentation\Exporters\Traits\HandlesErrors;
-
-uses(PHPMock::class);
 
 beforeEach(function () {
     $this->exporter = new class {
@@ -51,11 +49,10 @@ it('can call a custom error handler', function (): void {
     $method = 'var_dump';
     $this->exporter->setErrorHandler($method);
 
-    $this
-        ->getFunctionMock('\\Stickee\\Instrumentation\\Exporters\\Traits\\', 'call_user_func')
-        ->expects($this::once())
-        ->with('var_dump', new Exception())
-        ->willReturn(null);
+    PHPMockery::mock('Stickee\\Instrumentation\\Exporters\\Traits', 'call_user_func')
+        ->with($method, \Mockery::type(Exception::class))
+        ->once()
+        ->andReturn(null);
 
     $this->exporter->invokeErrorHandler();
 });
