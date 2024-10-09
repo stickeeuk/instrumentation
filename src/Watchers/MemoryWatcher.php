@@ -30,15 +30,15 @@ class MemoryWatcher extends Watcher
         $app['events']->listen(JobProcessed::class, function (JobProcessed $event): void {
             $this->recordQueries([
                 'type' => 'job',
-                'queue' => $event->job->getQueue(),
-                'job' => $event->job::class,
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+                SemConv::JOB_NAME => $event->job::class,
             ]);
         });
         $app['events']->listen(JobExceptionOccurred::class, function (JobExceptionOccurred $event): void {
             $this->recordQueries([
                 'type' => 'job',
-                'queue' => $event->job->getQueue(),
-                'job' => $event->job::class,
+                SemConv::JOB_QUEUE => $event->job->getQueue(),
+                SemConv::JOB_NAME => $event->job::class,
             ]);
         });
 
@@ -71,8 +71,8 @@ class MemoryWatcher extends Watcher
         $app['events']->listen(ResponsePrepared::class, function (ResponsePrepared $event): void {
             $this->recordQueries([
                 'type' => 'request',
-                'http.request.method' => request()->method(),
-                'http.route' => request()->path(),
+                SemConv::HTTP_REQUEST_METHOD => request()->method(),
+                SemConv::HTTP_ROUTE => request()->path(),
             ]);
         });
     }
