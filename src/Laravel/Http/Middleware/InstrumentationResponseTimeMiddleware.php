@@ -18,10 +18,6 @@ class InstrumentationResponseTimeMiddleware
 
         $response = $next($request);
 
-        // if ($response->exception ?? null) {
-        //     Instrument::event('exception', ['exception' => get_class($response->exception)]);
-        // }
-
         Instrument::histogram(
             SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
             SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
