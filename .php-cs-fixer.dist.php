@@ -12,9 +12,7 @@ $finder = PhpCsFixer\Finder::create()
         __DIR__ . '/.php-cs-fixer.dist.php',
     ]);
 
-$overrideRules = [
-    'ordered_class_elements' => ['order' => ['use_trait']],
-];
+$overrideRules = [];
 
 $config = PhpCsFixerConfig\Factory::fromRuleSet(
     new PhpCsFixerConfig\RuleSet\Php83(),

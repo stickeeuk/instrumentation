@@ -24,20 +24,6 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
     ) {}
 
     /**
-     * Scrub data
-     *
-     * @param array $data The data to scrub
-     */
-    private function scrub(array $data): array
-    {
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->dataScrubber->scrub($key, $value);
-        }
-
-        return $data;
-    }
-
-    /**
      * Set the error handler
      *
      * @param mixed $errorHandler An error handler function that takes an Exception as an argument - must be callable with `call_user_func()`
@@ -154,5 +140,19 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
         $attributes = $this->scrub($attributes);
 
         return $this->spansExporter->startSpan($name, $kind, $attributes);
+    }
+
+    /**
+     * Scrub data
+     *
+     * @param array $data The data to scrub
+     */
+    private function scrub(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->dataScrubber->scrub($key, $value);
+        }
+
+        return $data;
     }
 }
