@@ -114,11 +114,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             ? new RecordSampler(new TraceIdRatioBasedSampler($this->config->traceSampleRate()))
             : new TraceIdRatioBasedSampler($this->config->traceSampleRate());
 
-        $resourceInfo = ResourceInfo::create(Attributes::create([
-            ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
-            ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
-        ]));
-
         $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
         $batchProcessor = BatchSpanProcessor::builder($exporter)->build();
         $processor = $traceLongRequests
@@ -136,7 +131,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         return TracerProvider::builder()
             ->setSampler($sampler)
-            ->setResource($resourceInfo->merge(ResourceInfoFactory::defaultResource()))
+            ->setResource($this->getResourceInfo())
             ->addSpanProcessor(app(DataScrubbingSpanProcessor::class))
             ->addSpanProcessor($processor)
             ->build();
@@ -154,6 +149,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         return MeterProvider::builder()
             ->addReader($reader)
+            ->setResource($this->getResourceInfo())
             ->build();
     }
 
@@ -190,5 +186,16 @@ class OpenTelemetryServiceProvider extends ServiceProvider
                 retryDelay: 100,
                 maxRetries: 1
             );
+    }
+
+    /**
+     * Get resource info
+     */
+    private function getResourceInfo(): ResourceInfo
+    {
+        return ResourceInfoFactory::defaultResource()->merge(ResourceInfo::create(Attributes::create([
+            ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
+            ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
+        ])));
     }
 }
