@@ -8,7 +8,6 @@ use Stickee\Instrumentation\Exporters\Events\NullEvents;
 use Stickee\Instrumentation\Exporters\Spans\NullSpans;
 use Stickee\Instrumentation\Tests\Fixtures\BadEventsExporter;
 use Stickee\Instrumentation\Tests\Fixtures\BrokenEventsExporter;
-use Stickee\Instrumentation\Tests\Fixtures\GoodEventsExporter;
 
 it('will throw an exception if the events exporter is not set', function (): void {
     Config::set('instrumentation.events_exporter', NullEvents::class);
@@ -24,23 +23,19 @@ it('will throw an exception if the spans exporter is not set', function (): void
     app('instrument');
 })->throws(Exception::class);
 
-it('will throw an exception if the given database class does not exist', function (): void {
+it('will throw an exception if the given exporter class does not exist', function (): void {
     Config::set('instrumentation.events_exporter', '\App\NonExisting\Class');
 
     app('instrument');
 })->throws(Exception::class);
 
-it('will throw an exception if the given database class is not a database interface implementation', function (): void {
+it('will throw an exception if the given exporter class is not a exporter interface implementation', function (): void {
     Config::set('instrumentation.events_exporter', BadEventsExporter::class);
 
     app('instrument');
 })->throws(Exception::class);
 
 it('will set the default error handler to a laravel log', function (): void {
-    if (version_compare(app()->version(), '9.0.0', '<')) {
-        $this::markTestSkipped('Test incompatible with Laravel 8.');
-    }
-
     Config::set('instrumentation.events_exporter', BrokenEventsExporter::class);
 
     /** @var \Stickee\Instrumentation\Tests\Fixtures\BrokenEventsExporter $instrument */
@@ -50,7 +45,7 @@ it('will set the default error handler to a laravel log', function (): void {
         ->once()
         ->andReturnNull();
 
-    $instrument->setErrorHandler(fn (Exception $exception) => Log::error($exception));
+    $instrument->setErrorHandler(fn(Exception $exception) => Log::error($exception));
 
     $instrument->event('test_event');
 });

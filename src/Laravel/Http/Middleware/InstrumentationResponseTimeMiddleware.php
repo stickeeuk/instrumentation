@@ -4,7 +4,8 @@ namespace Stickee\Instrumentation\Laravel\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Stickee\Instrumentation\Laravel\Facade as Instrument;
+use Stickee\Instrumentation\Laravel\Facades\Instrument;
+use Stickee\Instrumentation\Utils\SemConv;
 
 class InstrumentationResponseTimeMiddleware
 {
@@ -17,16 +18,18 @@ class InstrumentationResponseTimeMiddleware
 
         $response = $next($request);
 
-        if ($response->exception ?? null) {
-            Instrument::event('exception', ['exception' => get_class($response->exception)]);
-        }
-
-        $tags = [
-            'status' => $response->getStatusCode(),
-            'success' => (bool)$response->isSuccessful()
-        ];
-
-        Instrument::event('response_time', $tags, microtime(true) - $startTime);
+        Instrument::histogram(
+            SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_DESCRIPTION,
+            SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
+            microtime(true) - $startTime,
+            [
+                SemConv::HTTP_RESPONSE_STATUS_CODE => $response->getStatusCode(),
+                SemConv::HTTP_REQUEST_METHOD => $request->method(),
+                SemConv::HTTP_ROUTE => $request->path(),
+            ]
+        );
 
         return $response;
     }

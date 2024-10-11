@@ -8,6 +8,9 @@ This a Composer module for recording metrics.
 composer require stickee/instrumentation
 ```
 
+> Installing the [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php)
+> is recommended for performance reasons if using OpenTelemetry.
+
 ## Configuration
 
 ### Basic Usage
@@ -50,23 +53,23 @@ Instrument::event('some_event');
 
 There are 3 event type methods defined in the `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` interface.
 
-| Event                                                                    | Arguments                                                                                                 | Description                         |
-|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
-| `$exporter->event(string $name, array $tags = [], float value = 1)`      | `$name` The event name<br>`$tags` An array of tags                                                        | Record a single event               |
-| `$exporter->count(string $event, array $tags = [], float $increase = 1)` | `$name` The counter name<br>`$tags` An array of tags<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
-| `$exporter->gauge(string $event, array $tags = [], float $value)`        | `$name` The gauge name<br>`$tags` An array of tags<br>`$value` The value to record                        | Record the current value of a gauge |
+| Event                                                                      | Arguments                                                                                                 | Description                         |
+|----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
+| `$exporter->event(string $name, array $attributes = [], float value = 1)`        | `$name` The event name<br>`$attributes` An array of attributes                                                        | Record a single event               |
+| `$exporter->counter(string $event, array $attributes = [], float $increase = 1)` | `$name` The counter name<br>`$attributes` An array of attributes<br>`$increase` The amount to increase the counter by | Record an increase in a counter     |
+| `$exporter->gauge(string $event, array $attributes = [], float $value)`          | `$name` The gauge name<br>`$attributes` An array of attributes<br>`$value` The value to record                        | Record the current value of a gauge |
 
 Tags should be an associative array of `tag_name` => `tag_value`, e.g.
 
 ```php
-$tags = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK];
+$attributes = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK];
 ```
 
 ### Errors
 
 In the event of an error an exception will be thrown. If you want to catch all
 instrumentation exceptions and pass them through your own error handler, you can
-call `setErrorHandler` on the database with a callback that accepts an
+call `setErrorHandler` on the exporter with a callback that accepts an
 `\Exception` as a parameter.
 
 ```php
@@ -108,7 +111,7 @@ This module ships with the following classes:
 
 ### Installation
 
-First install with Composer as normal:
+First install with Composer:
 
 ```bash
 composer require stickee/instrumentation
@@ -121,7 +124,7 @@ If you're using InfluxDb then you can simply install the package (see below), se
 configuration is necessary:
 
 ```php
-use Instrument;
+use Stickee\Instrumentation\Laravel\Facades\Instrument;
 
 Instrument::event('Hello World');
 ```
@@ -131,13 +134,15 @@ Instrument::event('Hello World');
 The module can be manually registered by adding this to the `providers` array in `config/app.php`:
 
 ```php
-Stickee\Instrumentation\Laravel\ServiceProvider::class,
+Stickee\Instrumentation\Laravel\Providers\InfluxDbServiceProvider::class,
+Stickee\Instrumentation\Laravel\Providers\InstrumentationServiceProvider::class,
+Stickee\Instrumentation\Laravel\Providers\OpenTelemetryServiceProvider::class,
 ```
 
-If you want to use the `Instrument` facade, add this to the `facades` array in `config/app.php`:
+If you want to use the `Instrument` facade alias, add this to the `facades` array in `config/app.php`:
 
 ```php
-'Instrument' => Stickee\Instrumentation\Laravel\Facade::class,
+'Instrument' => Stickee\Instrumentation\Laravel\Facades\Instrument::class,
 ```
 
 ### Configuration
@@ -145,8 +150,8 @@ If you want to use the `Instrument` facade, add this to the `facades` array in `
 | Variable                                           | Description                                                                                                    |
 |----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation module. Default: `true`                                                  |
-| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents` |
-| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpan`       |
+| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents`   |
+| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpans`      |
 | `INSTRUMENTATION_INFLUXDB_URL`                     | The URL of the InfluxDB database. Default: `http://localhost:8086`                                             |
 | `INSTRUMENTATION_INFLUXDB_TOKEN`                   | The authorization token for the InfluxDB database. Default: `my-super-secret-auth-token`                       |
 | `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                          |
@@ -172,8 +177,8 @@ in your `.env` and add any other required variables.
 
 | Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                         | Other Values                                                                                    |
 |---------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
-| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Events\\NullSpans"`     | None                                                                                            |
+| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Spans\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
+| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans"`     | None                                                                                            |
 
 If you wish to, you can copy the package config to your local config with the publish command,
 however this is **unnecessary** in normal usage:
@@ -184,19 +189,39 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
 
 ### Using Open Telemetry
 
- - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.0 open-telemetry/opentelemetry-logger-monolog:^1.0 google/protobuf`
- - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
- - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
+ - Install OpenTelemetry packages: `composer require open-telemetry/exporter-otlp:^1.1 open-telemetry/opentelemetry-logger-monolog:^1.0`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_OPENTELEMETRY_*`
+ - For automated tracking of some events, install [laravel-otel](https://github.com/plunkettscott/laravel-otel):
+   - `composer require plunkettscott/laravel-opentelemetry`
+   - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
+   - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
 
 ### Using InfluxDb
 
  - Install the InfluxDB PHP client: `composer require influxdata/influxdb-client-php`
  - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_INFLUXDB_*`
 
-### Using a Custom Database
+### Using a Custom Exporter
 
-If you wish to use a custom database class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Events\DatabaseInterface` and make sure it is constructable by the service container.
+If you wish to use a custom exporter class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` and make sure it is constructable by the service container.
+
+### Scrubbing Data
+
+By default, data is scrubbed by the `Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber` class.
+To change this behaviour, bind your implementation to the `Stickee\Instrumentation\DataScrubbers\DataScrubberInterface` interface.
+The package ships with `NullDataScrubber` to disable scrubbing, and `CallbackDataScrubber` to allow you to register a callback instead of creating a new class.
+
+```php
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
+use Stickee\Instrumentation\DataScrubbers\NullDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\CallbackDataScrubber;
+
+// Disable scrubbing
+app()->bind(DataScrubberInterface::class, NullDataScrubber::class);
+
+// Custom scrubbing
+app()->bind(DataScrubberInterface::class, new CallbackDataScrubber(fn (mixed $key, mixed $value) => preg_replace('/\d/', 'x', $value));
+```
 
 ## Developing
 
