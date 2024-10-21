@@ -67,8 +67,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        static $firstBoot = true;
-
         if (! $this->config->enabled()) {
             return;
         }
@@ -86,13 +84,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         });
 
         $loggerProvider = $this->getLoggerProvider();
-
-        // In tests the application is booted multiple times but we don't need to create a new Configurator scope
-        if (! $firstBoot) {
-            return;
-        }
-
-        $firstBoot = false;
 
         Sdk::builder()
             ->setTracerProvider($this->getTracerProvider())
