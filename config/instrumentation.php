@@ -58,7 +58,7 @@ return [
      | Configuration for OpenTelemetry
      */
     'opentelemetry' => [
-        'dsn' => env('INSTRUMENTATION_OPENTELEMETRY_DSN', 'http://localhost:4318'),
+        'dsn' => env('INSTRUMENTATION_OPENTELEMETRY_DSN', env('OTEL_EXPORTER_OTLP_ENDPOINT') ?: 'http://localhost:4318'),
     ],
 
     /*
