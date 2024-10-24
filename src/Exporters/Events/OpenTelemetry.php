@@ -42,7 +42,7 @@ class OpenTelemetry implements EventsExporterInterface
      */
     public function __destruct()
     {
-        $this->flush();
+        // Do nothing
     }
 
     /**
@@ -130,6 +130,6 @@ class OpenTelemetry implements EventsExporterInterface
     #[\Override]
     public function flush(): void
     {
-        $this->instrumentation->flush();
+        // Do nothing
     }
 }
