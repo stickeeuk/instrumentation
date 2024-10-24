@@ -242,6 +242,11 @@ class InstrumentationServiceProvider extends ServiceProvider
 
     private function registerFlushEvents(): void
     {
+        if ($this->config->spansExporterClass() === \Stickee\Instrumentation\Exporters\Spans\OpenTelemetry::class) {
+            // OpenTelemetry spans are flushed automatically by open-telemetry/opentelemetry-auto-laravel
+            return;
+        }
+
         Event::listen(CommandFinished::class, fn() => app('instrument')->flush());
 
         Queue::after(fn() => app('instrument')->flush());
