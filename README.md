@@ -157,7 +157,7 @@ If you want to use the `Instrument` facade alias, add this to the `facades` arra
 | `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                          |
 | `INSTRUMENTATION_INFLUXDB_ORG`                     | The organisation name for the InfluxDB database. Default: `stickee`                                            |
 | `INSTRUMENTATION_INFLUXDB_VERIFY_SSL`              | Verify the SSL certificate for the InfluxDB database. Default: `false`                                         |
-| `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector. Default: `http://localhost:4318`                                       |
+| `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector. Defaults to the value of `OTEL_EXPORTER_OTLP_ENDPOINT` if set and `http://localhost:4318` if not                       |
 | `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to. Default: `instrumentation.log`                                                       |
 | `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware. Default: `true`                                                |
 | `INSTRUMENTATION_TRACE_SAMPLE_RATE`                | The rate at which to sample traces. Default: `1.0`                                                             |
