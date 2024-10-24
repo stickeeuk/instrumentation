@@ -8,8 +8,8 @@ use Illuminate\Support\Str;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
-use OpenTelemetry\API\Instrumentation\Configurator;
 use OpenTelemetry\API\LoggerHolder;
+use OpenTelemetry\API\Trace\Propagation\TraceContextPropagator;
 use OpenTelemetry\Contrib\Otlp\LogsExporter;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
@@ -28,6 +28,7 @@ use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
+use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
@@ -66,8 +67,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        static $firstBoot = true;
-
         if (! $this->config->enabled()) {
             return;
         }
@@ -86,22 +85,14 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         $loggerProvider = $this->getLoggerProvider();
 
-        // In tests the application is booted multiple times but we don't need to create a new Configurator scope
-        if (! $firstBoot) {
-            return;
-        }
-
-        $firstBoot = false;
-
-        $configurator = Configurator::create()
-            ->withTracerProvider($this->getTracerProvider())
-            ->withMeterProvider($this->getMeterProvider())
-            ->withLoggerProvider($loggerProvider)
-            ->withEventLoggerProvider(new EventLoggerProvider($loggerProvider));
-
-        $scope = $configurator->activate();
-
-        register_shutdown_function(fn() => $scope->detach());
+        Sdk::builder()
+            ->setTracerProvider($this->getTracerProvider())
+            ->setMeterProvider($this->getMeterProvider())
+            ->setLoggerProvider($loggerProvider)
+            ->setEventLoggerProvider(new EventLoggerProvider($loggerProvider))
+            ->setPropagator(TraceContextPropagator::getInstance())
+            ->setAutoShutdown(true)
+            ->buildAndRegisterGlobal();
     }
 
     /**
@@ -127,8 +118,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             )
             : $batchProcessor;
 
-        register_shutdown_function(fn() => $processor->shutdown());
-
         return TracerProvider::builder()
             ->setSampler($sampler)
             ->setResource($this->getResourceInfo())
@@ -145,8 +134,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
         $reader = new ExportingReader($exporter);
 
-        register_shutdown_function(fn() => $reader->shutdown());
-
         return MeterProvider::builder()
             ->addReader($reader)
             ->setResource($this->getResourceInfo())
@@ -160,8 +147,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
     {
         $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
         $processor = new BatchLogRecordProcessor($exporter, Clock::getDefault());
-
-        register_shutdown_function(fn() => $processor->shutdown());
 
         return LoggerProvider::builder()
             ->addLogRecordProcessor($processor)
