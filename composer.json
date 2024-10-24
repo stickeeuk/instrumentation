@@ -20,7 +20,6 @@
         "open-telemetry/exporter-otlp": "^1.1",
         "open-telemetry/opentelemetry-auto-laravel": "^0.0.28",
         "open-telemetry/opentelemetry-auto-psr18": "^1.0",
-        "open-telemetry/opentelemetry-logger-monolog": "^1.0",
         "open-telemetry/sdk": "^1.1@beta"
     },
     "require-dev": {
