@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use OpenTelemetry\API\Common\Time\ClockInterface;
 use OpenTelemetry\API\Trace\SpanKind;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEventsExporter;
 use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelemetrySpansExporter;
@@ -96,7 +97,7 @@ it('records data for a while', function (): void {
     $users = 100;
 
     $start = Carbon::now()->subMinutes($minutes);
-    $startTimestamp = $start->getTimestampMs() * 1_000_000;
+    $startTimestamp = $start->getTimestampMs() * ClockInterface::NANOS_PER_SECOND;
 
     $results = [
         '200' => 0,
@@ -165,7 +166,7 @@ it('records data for a while', function (): void {
             }
 
             $request = Request::create($chosen['route']);
-            $timestamp = $start->clone()->addSeconds($second)->getTimestampMs() * 1_000_000;
+            $timestamp = $start->clone()->addSeconds($second)->getTimestampMs() * ClockInterface::NANOS_PER_SECOND;
 
             $metrics[] = new \OpenTelemetry\SDK\Metrics\Data\Metric(
                 new \OpenTelemetry\SDK\Common\Instrumentation\InstrumentationScope(
