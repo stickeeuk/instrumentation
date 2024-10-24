@@ -71,9 +71,11 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             return;
         }
 
+        // OpenTelemetry\Contrib\Logs\Monolog\Handler must be an instance of Monolog\Handler\HandlerInterface
+
         // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
         // is not available, the logs will still be sent to stderr instead of throwing an exception
-        LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
+        // LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
 
         // Send logs as span events as well as log events
         $this->app['events']->listen(MessageLogged::class, function (MessageLogged $log): void {
