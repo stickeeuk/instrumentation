@@ -1,5 +1,12 @@
 <?php
 
+use Stickee\Instrumentation\Exporters\Events\NullEvents;
+use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
+use Stickee\Instrumentation\Exporters\Spans\NullSpans;
+use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelemetrySpans;
+
+$isProduction = env('APP_ENV', 'production') === 'production';
+
 return [
     /*
      |--------------------------------------------------------------------------
@@ -15,18 +22,18 @@ return [
      | Events exporter class
      |--------------------------------------------------------------------------
      |
-     | The instrumentation database class name
+     | The instrumentation events exporter class name
      */
-    'events_exporter' => env('INSTRUMENTATION_EVENTS_EXPORTER', 'Stickee\\Instrumentation\\Exporters\\Events\\NullEvents'),
+    'events_exporter' => env('INSTRUMENTATION_EVENTS_EXPORTER', $isProduction ? OpenTelemetryEvents::class : NullEvents::class),
 
     /*
      |--------------------------------------------------------------------------
      | Spans exporter class
      |--------------------------------------------------------------------------
      |
-     | The instrumentation database class name
+     | The instrumentation spans exporter class name
      */
-    'spans_exporter' => env('INSTRUMENTATION_SPANS_EXPORTER', 'Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans'),
+    'spans_exporter' => env('INSTRUMENTATION_SPANS_EXPORTER', $isProduction ? OpenTelemetrySpans::class : NullSpans::class),
 
     /*
      |--------------------------------------------------------------------------
@@ -51,7 +58,7 @@ return [
      | Configuration for OpenTelemetry
      */
     'opentelemetry' => [
-        'dsn' => env('INSTRUMENTATION_OPENTELEMETRY_DSN', 'http://localhost:4318'),
+        'dsn' => env('INSTRUMENTATION_OPENTELEMETRY_DSN', env('OTEL_EXPORTER_OTLP_ENDPOINT') ?: 'http://localhost:4318'),
     ],
 
     /*
@@ -82,4 +89,22 @@ return [
      | 0 = never sample, 1 = always sample
      */
     'trace_sample_rate' => env('INSTRUMENTATION_TRACE_SAMPLE_RATE', 1),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Long Request Trace Threshold
+     |--------------------------------------------------------------------------
+     |
+     | The time in seconds after which a trace should always be sampled (0 to disable)
+     */
+    'long_request_trace_threshold' => env('INSTRUMENTATION_LONG_REQUEST_TRACE_THRESHOLD', 1),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Queue Names
+     |--------------------------------------------------------------------------
+     |
+     | An array of queue names to monitor
+     */
+    'queue_names' => array_map('trim', explode(',', env('INSTRUMENTATION_QUEUE_NAMES', 'default'))),
 ];

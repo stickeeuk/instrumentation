@@ -17,11 +17,11 @@ afterEach(function (): void {
     }
 });
 
-it('can forward data events onto the underlying database', function (string $event): void {
+it('can forward data events onto the underlying exporter', function (string $event): void {
     $log = "{$event} event";
-    $shrike = app('instrument');
+    $exporter = app('instrument');
 
-    $shrike->$event($log, [], 1.0);
+    $exporter->{$event}($log, [], 1.0);
 
     // Now check the logfile:
     if (! file_exists($this->filename)) {
@@ -33,17 +33,12 @@ it('can forward data events onto the underlying database', function (string $eve
     expect($data->first())->toContain($log);
 })->with([
     'event',
-    'count',
+    'counter',
     'gauge',
 ]);
 
-
-it('will forward flush onto the underlying database', function (): void {
-    try {
-        app('instrument')->flush();
-    } catch (Throwable $throwable) {
-        $this::fail('Failed to flush underlying database.');
-    }
+it('will forward flush onto the underlying exporter', function (): void {
+    app('instrument')->flush();
 
     expect(true)->toBeTrue();
 });

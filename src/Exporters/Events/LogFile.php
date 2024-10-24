@@ -17,10 +17,8 @@ class LogFile implements EventsExporterInterface
 
     /**
      * The log file name
-     *
-     * @var string $filename
      */
-    private $filename;
+    private string $filename;
 
     /**
      * Constructor
@@ -41,14 +39,14 @@ class LogFile implements EventsExporterInterface
      *
      * @param string $message The message to write
      */
-    protected function write($message): void
+    protected function write(string $message): void
     {
         try {
-            $f = fopen($this->filename, 'a');
+            $f = fopen($this->filename, 'ab');
             fwrite($f, $message . "\n");
             fclose($f);
-        } catch (Exception $e) {
-            $this->handleError($e);
+        } catch (Exception $exception) {
+            $this->handleError($exception);
         }
     }
 }

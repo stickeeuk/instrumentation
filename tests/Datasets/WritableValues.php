@@ -16,7 +16,7 @@ dataset('writable values', [
         [true, false],
     ],
     'array<int, mixed>' => [
-        ['foo', true, null]
+        ['foo', true, null],
     ],
     'array<string, null>' => [
         ['foo' => null, 'bar' => null],
