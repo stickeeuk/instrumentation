@@ -111,7 +111,6 @@ return [
     'queue_names' => array_map('trim', explode(',', env('INSTRUMENTATION_QUEUE_NAMES', 'default'))),
 
     'scrubbing' => [
-
         /*
          |--------------------------------------------------------------------------
          | Scrubbing regexes

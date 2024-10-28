@@ -33,9 +33,7 @@ class ConfigDataScrubber implements DataScrubberInterface
     {
         $config = config()->all();
 
-        unset($config['auth']);
-        unset($config['app']['aliases']);
-        unset($config['instrumentation']['scrubbing']);
+        unset($config['auth'], $config['app']['aliases'], $config['instrumentation']['scrubbing']);
 
         $config = Arr::dot($config);
         $config = array_filter($config, fn($value) => is_string($value) && ($value !== ''));
