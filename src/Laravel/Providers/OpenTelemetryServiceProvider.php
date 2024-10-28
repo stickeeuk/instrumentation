@@ -33,7 +33,6 @@ use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
 use OpenTelemetry\SemConv\ResourceAttributes;
-use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
 use Stickee\Instrumentation\Utils\DataScrubbingSpanProcessor;

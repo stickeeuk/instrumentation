@@ -1,5 +1,7 @@
 <?php
 
+use Stickee\Instrumentation\DataScrubbers\ConfigDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\NullEvents;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
 use Stickee\Instrumentation\Exporters\Spans\NullSpans;
@@ -107,4 +109,28 @@ return [
      | An array of queue names to monitor
      */
     'queue_names' => array_map('trim', explode(',', env('INSTRUMENTATION_QUEUE_NAMES', 'default'))),
+
+    'scrubbing' => [
+        /*
+         |--------------------------------------------------------------------------
+         | Scrubbing regexes
+         |--------------------------------------------------------------------------
+         |
+         | A map of regex => replacement for scrubbing data
+         */
+        'regexes' => env('INSTRUMENTATION_SCRUBBING_REGEXES') === null
+            ? RegexDataScrubber::DEFAULT_REGEX_REPLACEMENTS
+            : array_map('trim', explode(',', env('INSTRUMENTATION_SCRUBBING_REGEXES'))),
+
+        /*
+         |--------------------------------------------------------------------------
+         | Scrubbing config key regexes
+         |--------------------------------------------------------------------------
+         |
+         | An array of regexes. Matching config keys will have their values scrubbed
+         */
+        'config_key_regexes' => env('INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES') === null
+            ? ConfigDataScrubber::DEFAULT_CONFIG_KEY_REGEXES
+            : array_map('trim', explode(',', env('INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES'))),
+    ],
 ];
