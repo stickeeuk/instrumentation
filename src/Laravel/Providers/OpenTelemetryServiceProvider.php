@@ -178,9 +178,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getResourceInfo(): ResourceInfo
     {
-        return ResourceInfoFactory::defaultResource()->merge(ResourceInfo::create(Attributes::create([
-            ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
-            ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
-        ])));
+        return ResourceInfoFactory::defaultResource();
     }
 }
