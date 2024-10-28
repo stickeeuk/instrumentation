@@ -150,6 +150,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         return LoggerProvider::builder()
             ->addLogRecordProcessor($processor)
+            ->setResource($this->getResourceInfo())
             ->build();
     }
 
