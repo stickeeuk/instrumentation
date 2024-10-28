@@ -8,8 +8,9 @@ This a Composer module for recording metrics.
 composer require stickee/instrumentation
 ```
 
-> Installing the [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php)
-> is recommended for performance reasons if using OpenTelemetry.
+> The [ext-opentelemetry extension](https://github.com/open-telemetry/opentelemetry-php-instrumentation) is required.
+
+> The [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php) is recommended for performance reasons.
 
 ## Configuration
 
@@ -147,20 +148,22 @@ If you want to use the `Instrument` facade alias, add this to the `facades` arra
 
 ### Configuration
 
-| Variable                                           | Description                                                                                                    |
-|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation module. Default: `true`                                                  |
-| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents`   |
-| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpans`      |
-| `INSTRUMENTATION_INFLUXDB_URL`                     | The URL of the InfluxDB database. Default: `http://localhost:8086`                                             |
-| `INSTRUMENTATION_INFLUXDB_TOKEN`                   | The authorization token for the InfluxDB database. Default: `my-super-secret-auth-token`                       |
-| `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                          |
-| `INSTRUMENTATION_INFLUXDB_ORG`                     | The organisation name for the InfluxDB database. Default: `stickee`                                            |
-| `INSTRUMENTATION_INFLUXDB_VERIFY_SSL`              | Verify the SSL certificate for the InfluxDB database. Default: `false`                                         |
-| `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector. Defaults to the value of `OTEL_EXPORTER_OTLP_ENDPOINT` if set and `http://localhost:4318` if not                       |
-| `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to. Default: `instrumentation.log`                                                       |
-| `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware. Default: `true`                                                |
-| `INSTRUMENTATION_TRACE_SAMPLE_RATE`                | The rate at which to sample traces. Default: `1.0`                                                             |
+| Variable                                           | Description                                                                                                                              |
+|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation module. Default: `true`                                                                            |
+| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents`                             |
+| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpans`                                |
+| `INSTRUMENTATION_INFLUXDB_URL`                     | The URL of the InfluxDB database. Default: `http://localhost:8086`                                                                       |
+| `INSTRUMENTATION_INFLUXDB_TOKEN`                   | The authorization token for the InfluxDB database. Default: `my-super-secret-auth-token`                                                 |
+| `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                                                    |
+| `INSTRUMENTATION_INFLUXDB_ORG`                     | The organisation name for the InfluxDB database. Default: `stickee`                                                                      |
+| `INSTRUMENTATION_INFLUXDB_VERIFY_SSL`              | Verify the SSL certificate for the InfluxDB database. Default: `false`                                                                   |
+| `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector. Defaults to the value of `OTEL_EXPORTER_OTLP_ENDPOINT` if set and `http://localhost:4318` if not |
+| `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to. Default: `instrumentation.log`                                                                                 |
+| `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware. Default: `true`                                                                          |
+| `INSTRUMENTATION_TRACE_SAMPLE_RATE`                | The rate at which to sample traces. Default: `1.0`                                                                                       |
+| `INSTRUMENTATION_SCRUBBING_REGEXES`                | A comma-separated list of regular expressions to use for scrubbing data. Default: `null` (null uses built-in defaults)                   |
+| `INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES`     | A comma-separated list of regular expressions to use for scrubbing data from the config. Default: `null` (null uses built-in defaults)   |
 
 The configuration defaults to using `Null` exporters, which discard any data sent to them.
 To change this, set `INSTRUMENTATION_EVENTS_EXPORTER` and / or `INSTRUMENTATION_SPANS_EXPORTER`
@@ -175,8 +178,8 @@ in your `.env` and add any other required variables.
 | LogFile       | `"Stickee\\Instrumentation\\Exporters\\Events\\LogFile"`       | `INSTRUMENTATION_LOG_FILE_FILENAME="/path/to/file.log"` - The log file                                                                                                                                                                                                                                                                                                                        |
 | NullEvents    | `"Stickee\\Instrumentation\\Exporters\\Events\\NullEvents"`    | None                                                                                                                                                                                                                                                                                                                                                                                          |
 
-| Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                         | Other Values                                                                                    |
-|---------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                        | Other Values                                                                                    |
+|---------------|---------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
 | OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Spans\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
 | NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans"`     | None                                                                                            |
 
@@ -207,9 +210,9 @@ If you wish to use a custom exporter class for `INSTRUMENTATION_EVENTS_EXPORTER`
 
 ### Scrubbing Data
 
-By default, data is scrubbed by the `Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber` class.
-To change this behaviour, bind your implementation to the `Stickee\Instrumentation\DataScrubbers\DataScrubberInterface` interface.
-The package ships with `NullDataScrubber` to disable scrubbing, and `CallbackDataScrubber` to allow you to register a callback instead of creating a new class.
+By default, data is scrubbed using regexes from `INSTRUMENTATION_SCRUBBING_REGEXES` and values from the config where the keys match `INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES`.
+To use a custom scrubber, bind your implementation to the `Stickee\Instrumentation\DataScrubbers\DataScrubberInterface` interface.
+The package ships with `NullDataScrubber` to disable scrubbing, `CallbackDataScrubber` to allow you to register a callback instead of creating a new class, and `MultiDataScrubber` to bind multiple scrubbers.
 
 ```php
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
@@ -220,7 +223,7 @@ use Stickee\Instrumentation\DataScrubbers\CallbackDataScrubber;
 app()->bind(DataScrubberInterface::class, NullDataScrubber::class);
 
 // Custom scrubbing
-app()->bind(DataScrubberInterface::class, new CallbackDataScrubber(fn (mixed $key, mixed $value) => preg_replace('/\d/', 'x', $value));
+app()->bind(DataScrubberInterface::class, fn () => new CallbackDataScrubber(fn (mixed $key, mixed $value) => preg_replace('/\d/', 'x', $value)));
 ```
 
 ## Developing

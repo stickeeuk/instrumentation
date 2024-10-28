@@ -9,7 +9,7 @@ use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
 use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
-use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelmetrySpans;
@@ -20,7 +20,7 @@ beforeEach(function (): void {
     $this->mockTransport->method('contentType')
         ->willReturn('application/json');
 
-    $scrubber = new DefaultDataScrubber();
+    $scrubber = app(DataScrubberInterface::class);
     $sampler = new AlwaysOnSampler();
     $exporter = new SpanExporter($this->mockTransport);
     $this->processor = new SimpleSpanProcessor($exporter);

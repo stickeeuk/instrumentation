@@ -3,13 +3,14 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
+use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Event;
@@ -18,8 +19,11 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\ServiceProvider;
 use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\LogWatcher;
+use Stickee\Instrumentation\DataScrubbers\ConfigDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
-use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\MultiDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\NullDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\LogFile;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Laravel\Config;
@@ -31,11 +35,9 @@ use Stickee\Instrumentation\Queue\Connectors\NullConnector;
 use Stickee\Instrumentation\Queue\Connectors\RedisConnector;
 use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
+use Stickee\Instrumentation\Utils\SemConv;
 use Stickee\Instrumentation\Watchers\MemoryWatcher;
 use Stickee\Instrumentation\Watchers\QueryCountWatcher;
-use Stickee\Instrumentation\Utils\SemConv;
-
-use function OpenTelemetry\Instrumentation\hook;
 
 /**
  * Instrumentation service provider
@@ -92,7 +94,23 @@ class InstrumentationServiceProvider extends ServiceProvider
             return $manager;
         });
 
-        $this->app->bind(DataScrubberInterface::class, DefaultDataScrubber::class);
+        $this->app->bind(DataScrubberInterface::class, function (Application $app): DataScrubberInterface {
+            $dataScrubbers = [];
+
+            if (! empty(config('instrumentation.scrubbing.regexes'))) {
+                $dataScrubbers[] = new RegexDataScrubber(config('instrumentation.scrubbing.regexes'));
+            }
+
+            if (! empty(config('instrumentation.scrubbing.config_key_regexes'))) {
+                $dataScrubbers[] = new ConfigDataScrubber(config('instrumentation.scrubbing.config_key_regexes'));
+            }
+
+            if (empty($dataScrubbers)) {
+                return new NullDataScrubber();
+            }
+
+            return new MultiDataScrubber($dataScrubbers);
+        });
 
         // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
         hook(

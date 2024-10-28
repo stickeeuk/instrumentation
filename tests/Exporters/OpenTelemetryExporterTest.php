@@ -97,7 +97,7 @@ it('records data for a while', function (): void {
     $users = 100;
 
     $start = Carbon::now()->subMinutes($minutes);
-    $startTimestamp = $start->getTimestampMs() * ClockInterface::NANOS_PER_SECOND;
+    $startTimestamp = $start->getTimestampMs() * ClockInterface::NANOS_PER_MILLISECOND;
 
     $results = [
         '200' => 0,
@@ -166,7 +166,7 @@ it('records data for a while', function (): void {
             }
 
             $request = Request::create($chosen['route']);
-            $timestamp = $start->clone()->addSeconds($second)->getTimestampMs() * ClockInterface::NANOS_PER_SECOND;
+            $timestamp = $start->clone()->addSeconds($second)->getTimestampMs() * ClockInterface::NANOS_PER_MILLISECOND;
 
             $metrics[] = new \OpenTelemetry\SDK\Metrics\Data\Metric(
                 new \OpenTelemetry\SDK\Common\Instrumentation\InstrumentationScope(
