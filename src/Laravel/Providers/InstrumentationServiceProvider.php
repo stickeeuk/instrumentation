@@ -3,7 +3,6 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
-use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
@@ -37,8 +36,9 @@ use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
 use Stickee\Instrumentation\Utils\SemConv;
 use Stickee\Instrumentation\Watchers\MemoryWatcher;
-
 use Stickee\Instrumentation\Watchers\QueryCountWatcher;
+
+use function OpenTelemetry\Instrumentation\hook;
 
 /**
  * Instrumentation service provider
