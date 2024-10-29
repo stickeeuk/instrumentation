@@ -86,10 +86,10 @@ class MemoryWatcher extends Watcher
     {
         Instrument::histogram(
             SemConv::PROCESS_MEMORY_USAGE_NAME,
+            memory_get_peak_usage() / 1024 / 1024,
             SemConv::PROCESS_MEMORY_USAGE_UNIT,
             SemConv::PROCESS_MEMORY_USAGE_DESCRIPTION,
             SemConv::PROCESS_MEMORY_USAGE_BUCKETS,
-            memory_get_peak_usage() / 1024 / 1024,
             $attributes
         );
     }

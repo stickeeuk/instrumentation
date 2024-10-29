@@ -23,7 +23,7 @@ it('can count queries in jobs', function (): void {
         ->shouldReceive('histogram')
         ->atLeast()
         ->once()
-        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
+        ->andReturnUsing(function (string $name, float|int $value, ?string $unit, ?string $description, array $buckets, array $attributes = []) use (&$pass) {
             if ($name === SemConv::DB_QUERIES_NAME) {
                 $pass = ($value === 2);
             }
@@ -48,7 +48,7 @@ it('can count queries in schedules', function (): void {
     Instrument::shouldReceive('histogram')
         ->atLeast()
         ->once()
-        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
+        ->andReturnUsing(function (string $name, float|int $value, ?string $unit, ?string $description, array $buckets, array $attributes = []) use (&$pass) {
             if ($name === SemConv::DB_QUERIES_NAME) {
                 $pass = ($value === 2);
             }
@@ -80,7 +80,7 @@ it('can count queries in commands', function (): void {
     Instrument::shouldReceive('histogram')
         ->atLeast()
         ->once()
-        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $tags = []) use (&$pass) {
+        ->andReturnUsing(function (string $name, float|int $value, ?string $unit, ?string $description, array $buckets, array $attributes = []) use (&$pass) {
             if ($name === SemConv::DB_QUERIES_NAME) {
                 $pass = ($value === 2);
             }

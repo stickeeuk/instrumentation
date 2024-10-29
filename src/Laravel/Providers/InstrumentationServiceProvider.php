@@ -161,10 +161,10 @@ class InstrumentationServiceProvider extends ServiceProvider
             if (isset($event->job->payload()['created_at'])) {
                 Instrument::histogram(
                     SemConv::JOB_START_DURATION_NAME,
+                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
                     SemConv::JOB_START_DURATION_UNIT,
                     SemConv::JOB_START_DURATION_DESCRIPTION,
                     SemConv::JOB_START_DURATION_BUCKETS,
-                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
                     [
                         SemConv::JOB_NAME => $event->job->resolveName(),
                         SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -181,10 +181,10 @@ class InstrumentationServiceProvider extends ServiceProvider
             ]);
             Instrument::histogram(
                 SemConv::JOB_DURATION_NAME,
+                now()->diffInSeconds(date: $startTime, absolute: true),
                 SemConv::JOB_DURATION_UNIT,
                 SemConv::JOB_DURATION_DESCRIPTION,
                 SemConv::JOB_DURATION_BUCKETS,
-                now()->diffInSeconds(date: $startTime, absolute: true),
                 [
                     SemConv::JOB_NAME => $event->job->resolveName(),
                     SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -201,10 +201,10 @@ class InstrumentationServiceProvider extends ServiceProvider
             ]);
             Instrument::histogram(
                 SemConv::JOB_DURATION_NAME,
+                now()->diffInSeconds(date: $startTime, absolute: true),
                 SemConv::JOB_DURATION_UNIT,
                 SemConv::JOB_DURATION_DESCRIPTION,
                 SemConv::JOB_DURATION_BUCKETS,
-                now()->diffInSeconds(date: $startTime, absolute: true),
                 [
                     SemConv::JOB_NAME => $event->job->resolveName(),
                     SemConv::JOB_QUEUE => $event->job->getQueue(),
