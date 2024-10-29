@@ -89,13 +89,12 @@ This module ships with the following classes:
 | Class         | Description                                                                             |
 |---------------|-----------------------------------------------------------------------------------------|
 | OpenTelemetry | Writes to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)        |
-| InfluxDb      | Writes to [InfluxDB](https://www.influxdata.com/products/influxdb-overview/)            |
 | LaravelDump   | Uses the [Laravel `dump()`](https://laravel.com/docs/master/helpers#method-dump) helper |
 | LaravelLog    | Writes to the [Laravel `Log`](https://laravel.com/docs/master/logging)                  |
 | LogFile       | Writes to a log file                                                                    |
 | NullEvents    | Discards all data                                                                       |
 
-**Note:** Only `OpenTelemetry` and `InfluxDb` are recommended for production use.
+**Note:** Only `OpenTelemetry` is recommended for production use.
 The others are for development / debugging.
 
 ## Span Exporters
@@ -120,10 +119,6 @@ composer require stickee/instrumentation
 
 This module ships with a Laravel service provider and facade, which will be automatically registered.
 
-If you're using InfluxDb then you can simply install the package (see below), set `INSTRUMENTATION_EVENTS_EXPORTER` in your .env file
-(and `INSTRUMENTATION_INFLUXDB_*` if necessary) then use the facade in your code - no further
-configuration is necessary:
-
 ```php
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
 
@@ -135,7 +130,6 @@ Instrument::event('Hello World');
 The module can be manually registered by adding this to the `providers` array in `config/app.php`:
 
 ```php
-Stickee\Instrumentation\Laravel\Providers\InfluxDbServiceProvider::class,
 Stickee\Instrumentation\Laravel\Providers\InstrumentationServiceProvider::class,
 Stickee\Instrumentation\Laravel\Providers\OpenTelemetryServiceProvider::class,
 ```
@@ -153,11 +147,6 @@ If you want to use the `Instrument` facade alias, add this to the `facades` arra
 | `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation module. Default: `true`                                                                            |
 | `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use. Default: `Stickee\Instrumentation\Exporters\Events\NullEvents`                             |
 | `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use. Default: `Stickee\Instrumentation\Exporters\Spans\NullSpans`                                |
-| `INSTRUMENTATION_INFLUXDB_URL`                     | The URL of the InfluxDB database. Default: `http://localhost:8086`                                                                       |
-| `INSTRUMENTATION_INFLUXDB_TOKEN`                   | The authorization token for the InfluxDB database. Default: `my-super-secret-auth-token`                                                 |
-| `INSTRUMENTATION_INFLUXDB_BUCKET`                  | The bucket (database) name for the InfluxDB database. Default: `test`                                                                    |
-| `INSTRUMENTATION_INFLUXDB_ORG`                     | The organisation name for the InfluxDB database. Default: `stickee`                                                                      |
-| `INSTRUMENTATION_INFLUXDB_VERIFY_SSL`              | Verify the SSL certificate for the InfluxDB database. Default: `false`                                                                   |
 | `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector. Defaults to the value of `OTEL_EXPORTER_OTLP_ENDPOINT` if set and `http://localhost:4318` if not |
 | `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to. Default: `instrumentation.log`                                                                                 |
 | `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware. Default: `true`                                                                          |
@@ -172,7 +161,6 @@ in your `.env` and add any other required variables.
 | Class         | `INSTRUMENTATION_EVENTS_EXPORTER` Value                        | Other Values                                                                                                                                                                                                                                                                                                                                                                                  |
 |---------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL                                                                                                                                                                                                                                                                                               |
-| InfluxDb      | `"Stickee\\Instrumentation\\Exporters\\Events\\InfluxDb"`      | `INSTRUMENTATION_INFLUXDB_URL="http://localhost:8086"` - The database URL<br>`INSTRUMENTATION_INFLUXDB_TOKEN="my-super-secret-auth-token"` - The authorization token<br>`INSTRUMENTATION_INFLUXDB_BUCKET="test"` - The bucket (database) name<br>`INSTRUMENTATION_INFLUXDB_ORG="stickee"` - The organisation name<br>`INSTRUMENTATION_INFLUXDB_VERIFY_SSL=false` - Verify the SSL certificate |
 | LaravelDump   | `"Stickee\\Instrumentation\\Exporters\\Events\\LaravelDump"`   | None                                                                                                                                                                                                                                                                                                                                                                                          |
 | LaravelLog    | `"Stickee\\Instrumentation\\Exporters\\Events\\LaravelLog"`    | None                                                                                                                                                                                                                                                                                                                                                                                          |
 | LogFile       | `"Stickee\\Instrumentation\\Exporters\\Events\\LogFile"`       | `INSTRUMENTATION_LOG_FILE_FILENAME="/path/to/file.log"` - The log file                                                                                                                                                                                                                                                                                                                        |
@@ -198,11 +186,6 @@ php artisan vendor:publish --provider="Stickee\Instrumentation\Laravel\ServicePr
    - `composer require plunkettscott/laravel-opentelemetry`
    - Publish the OpenTelemetry config: `php artisan vendor:publish --provider="PlunkettScott\LaravelOpenTelemetry\OtelServiceProvider" --tag=otel-config`
    - Recommended - change `OTEL_ENABLED` to `INSTRUMENTATION_ENABLED`
-
-### Using InfluxDb
-
- - Install the InfluxDB PHP client: `composer require influxdata/influxdb-client-php`
- - Set the required .env variables `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_INFLUXDB_*`
 
 ### Using a Custom Exporter
 
@@ -262,19 +245,10 @@ You can run tests on your own system by invoking Pest:
 #### OpenTelemetry
 
 Go to `./vendor/stickee/instrumentation/docker/opentelemetry` and run `docker compose up`.
-This will start Grafana, Loki, Tempo InfluxDB, and the OpenTelemetry Collector and expose them on your local machine.
+This will start Grafana, Loki, Tempo and the OpenTelemetry Collector and expose them on your local machine.
 
  - Grafana: http://localhost:3000
  - OpenTelemetry Collector: http://localhost:4318 (this should be used for `INSTRUMENTATION_OPENTELEMETRY_DSN`)
- - InfluxDb: http://localhost:8086 (this should be used for `INSTRUMENTATION_INFLUXDB_URL`)
-
-#### InfluxDB
-
-Go to `./vendor/stickee/instrumentation/docker/influxdb` and run `docker compose up`.
-This will start Chronograf and InfluxDB and expose them on your local machine.
-
- - Chronograf: http://localhost:8888
- - InfluxDB: http://localhost:8086 (this should be used for `INSTRUMENTATION_INFLUXDB_URL`)
 
 ## Contributions
 
