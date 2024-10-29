@@ -20,10 +20,10 @@ class InstrumentationResponseTimeMiddleware
 
         Instrument::histogram(
             SemConv::HTTP_SERVER_REQUEST_DURATION_NAME,
+            microtime(true) - $startTime,
             SemConv::HTTP_SERVER_REQUEST_DURATION_UNIT,
             SemConv::HTTP_SERVER_REQUEST_DURATION_DESCRIPTION,
             SemConv::HTTP_SERVER_REQUEST_DURATION_BUCKETS,
-            microtime(true) - $startTime,
             [
                 SemConv::HTTP_RESPONSE_STATUS_CODE => $response->getStatusCode(),
                 SemConv::HTTP_REQUEST_METHOD => $request->method(),
