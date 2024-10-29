@@ -114,7 +114,7 @@ class OpenTelemetry implements EventsExporterInterface
         if (! isset($this->histograms[$name])) {
             $advisory = [];
 
-            if ($buckets !== null) {
+            if ($buckets !== []) {
                 $advisory['ExplicitBucketBoundaries'] = $buckets;
             }
 
