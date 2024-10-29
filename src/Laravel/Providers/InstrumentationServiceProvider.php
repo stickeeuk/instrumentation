@@ -3,6 +3,7 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
+use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
@@ -36,9 +37,8 @@ use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
 use Stickee\Instrumentation\Utils\SemConv;
 use Stickee\Instrumentation\Watchers\MemoryWatcher;
-use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 
-use function OpenTelemetry\Instrumentation\hook;
+use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 
 /**
  * Instrumentation service provider
@@ -161,6 +161,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         ]);
     }
 
+    /**
+     * Instrument jobs
+     */
     private function instrumentJobs(): void
     {
         Queue::createPayloadUsing(fn($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
@@ -233,6 +236,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Instrument job queues
+     */
     private function instrumentJobQueues(): void
     {
         if (! $this->app->runningUnitTests()) {
@@ -259,6 +265,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * Register the flush events
+     */
     private function registerFlushEvents(): void
     {
         Event::listen(CommandFinished::class, fn() => app('instrument')->flush());

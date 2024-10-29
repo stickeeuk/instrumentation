@@ -4,7 +4,7 @@ namespace Stickee\Instrumentation\Utils;
 
 class SemConv
 {
-    // general
+    // General
 
     public const STATUS = 'status';
 
@@ -26,7 +26,7 @@ class SemConv
 
     public const HTTP_SERVER_REQUEST_DURATION_BUCKETS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 100];
 
-    // memory usage
+    // Memory usage
 
     public const PROCESS_MEMORY_USAGE_NAME = 'process.memory.usage';
 
@@ -36,7 +36,7 @@ class SemConv
 
     public const PROCESS_MEMORY_USAGE_BUCKETS = [8, 16, 32, 64, 128, 256, 512, 1024];
 
-    // database queries
+    // Database queries
 
     public const DB_QUERIES_NAME = 'db.queries';
 
@@ -46,7 +46,7 @@ class SemConv
 
     public const DB_QUERIES_BUCKETS = [8, 16, 32, 64, 128, 256, 512, 1024];
 
-    // job
+    // Jobs
 
     public const JOB_NAME = 'job.name';
 
@@ -56,21 +56,21 @@ class SemConv
 
     public const JOB_STATUS_FAILED = 'failed';
 
-    // job queues
+    // Job queues
 
     public const JOB_QUEUE_LENGTH_NAME = 'job.queue.length';
 
     public const JOB_QUEUE_AVAILABLE_LENGTH_NAME = 'job.queue.available.length';
 
-    // jobs queued
+    // Jobs queued
 
     public const JOBS_QUEUED_NAME = 'jobs.queued';
 
-    // jobs processed
+    // Jobs processed
 
     public const JOBS_PROCESSED_NAME = 'jobs.processed';
 
-    // jobs start duration
+    // Jobs start duration
 
     public const JOB_START_DURATION_NAME = 'job.start.duration';
 
@@ -80,7 +80,7 @@ class SemConv
 
     public const JOB_START_DURATION_BUCKETS = [1, 2, 5, 10, 30, 60, 120, 600];
 
-    // jobs duration
+    // Jobs duration
 
     public const JOB_DURATION_NAME = 'job.duration';
 
