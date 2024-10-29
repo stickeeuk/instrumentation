@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void event(string $name, array $attributes = [], float $value = 1)
  * @method static void counter(string $name, array $attributes = [], float $increase = 1)
  * @method static void gauge(string $name, array $attributes, float $value)
- * @method static void histogram(string $name, ?string $unit, ?string $description, array $buckets, float|int $value, array $attributes = [])
+ * @method static void histogram(string $name, float|int $value, ?string $unit, ?string $description, array $buckets = [], array $attributes = [])
  * @method static void flush()
  * @method static mixed span(string $name, callable $callable, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = [])
  * @method static SpanInterface startSpan(string $name, int $kind = SpanKind::KIND_INTERNAL, iterable $attributes = [])
