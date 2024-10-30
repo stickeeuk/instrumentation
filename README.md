@@ -71,7 +71,7 @@ use Stickee\Instrumentation\Facades\Instrumentation;
 Instrumentation::event('my_event', ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK]);
 Instrumentation::counter('my_counter', ['datacentre' => 'uk'], 1);
 Instrumentation::gauge('my_gauge', ['datacentre' => 'uk'], 123);
-Instrument::histogram('my_histogram', 's', '', [1, 2, 4, 8], 123, ['datacentre' => 'uk']);
+Instrument::histogram('my_histogram', 's', '', [1, 2, 4, 8], ['datacentre' => 'uk'], 123);
 ```
 
 ### Observation Types
@@ -83,9 +83,9 @@ There are 4 methods defined in the `Stickee\Instrumentation\Exporters\Interfaces
 | `$exporter->event(string $name, array $attributes = [], float value = 1)`                                                           | `$name` The event name<br>`$attributes` An array of attributes                                                                                                                                                                                                  | Record a single event                   |
 | `$exporter->counter(string $event, array $attributes = [], float $increase = 1)`                                                    | `$name` The counter name<br>`$attributes` An array of attributes<br>`$increase` The amount to increase the counter by                                                                                                                                           | Record an increase in a counter         |
 | `$exporter->gauge(string $event, array $attributes = [], float $value)`                                                             | `$name` The gauge name<br>`$attributes` An array of attributes<br>`$value` The value to record                                                                                                                                                                  | Record the current value of a gauge     |
-| `$exporter->histogram(string $name, ?string $unit, ?string $description, array $buckets, float\|int $value, array $attributes = [])` | `$name` The histogram name<br>`$unit` The unit of the histogram, e.g. `"ms"`<br>`$description` A description of the histogram<br>`$buckets` A set of buckets, e.g. `[0.25, 0.5, 1, 5]`<br>`$value` The value to record<br>`$attributes` An array of attributes | Record the current value of a histogram |
+| `$exporter->histogram(string $name, ?string $unit, ?string $description, array $buckets, array $attributes = [], float\|int $value)` | `$name` The histogram name<br>`$unit` The unit of the histogram, e.g. `"ms"`<br>`$description` A description of the histogram<br>`$buckets` A set of buckets, e.g. `[0.25, 0.5, 1, 5]`<br>`$value` The value to record<br>`$attributes` An array of attributes |  Record the current value of a histogram |
 
-Attributes should be an associative array of `tag_name` ⇒ `tag_value`, e.g.
+Attributes should be an associative array of `attribute_name` ⇒ `attribute_value`, e.g.
 
 ```php
 $attributes = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK];
