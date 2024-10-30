@@ -25,7 +25,9 @@ class QueryCountWatcher extends Watcher
     private int $totalQueries = 0;
 
     /**
-     * Register the watcher.
+     * Register the watcher
+     *
+     * @param \Illuminate\Contracts\Foundation\Application $app The application
      */
     public function register(Application $app): void
     {

@@ -14,6 +14,11 @@ use OpenTelemetry\SDK\Trace\SamplingResult;
  */
 class RecordSampler implements SamplerInterface
 {
+    /**
+     * Constructor
+     *
+     * @param \OpenTelemetry\SDK\Trace\SamplerInterface $sampler The sampler to decorate
+     */
     public function __construct(private readonly SamplerInterface $sampler) {}
 
     /**
@@ -37,6 +42,9 @@ class RecordSampler implements SamplerInterface
         return $result;
     }
 
+    /**
+     * Get the description
+     */
     public function getDescription(): string
     {
         return $this->sampler->getDescription();

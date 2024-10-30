@@ -17,7 +17,7 @@ return [
      |
      | true / false (NullEvents and NullSpans will be used if not enabled)
      */
-    'enabled' => env('INSTRUMENTATION_ENABLED', true),
+    'enabled' => env('INSTRUMENTATION_ENABLED', $isProduction),
 
     /*
      |--------------------------------------------------------------------------

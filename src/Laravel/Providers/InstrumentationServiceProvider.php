@@ -161,6 +161,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         ]);
     }
 
+    /**
+     * Instrument jobs
+     */
     private function instrumentJobs(): void
     {
         Queue::createPayloadUsing(fn($connectionName, $queue, $payload) => [...$payload, 'created_at' => now()]);
@@ -233,6 +236,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Instrument job queues
+     */
     private function instrumentJobQueues(): void
     {
         if (! $this->app->runningUnitTests()) {
@@ -259,6 +265,9 @@ class InstrumentationServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * Register the flush events
+     */
     private function registerFlushEvents(): void
     {
         Event::listen(CommandFinished::class, fn() => app('instrument')->flush());
