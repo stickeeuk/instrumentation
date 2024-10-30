@@ -186,11 +186,11 @@ class InstrumentationServiceProvider extends ServiceProvider
                     SemConv::JOB_START_DURATION_UNIT,
                     SemConv::JOB_START_DURATION_DESCRIPTION,
                     SemConv::JOB_START_DURATION_BUCKETS,
-                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
                     [
                         SemConv::JOB_NAME => $event->job->resolveName(),
                         SemConv::JOB_QUEUE => $event->job->getQueue(),
-                    ]
+                    ],
+                    now()->diffInSeconds(date: $event->job->payload()['created_at'], absolute: true),
                 );
             }
         });
@@ -206,12 +206,12 @@ class InstrumentationServiceProvider extends ServiceProvider
                 SemConv::JOB_DURATION_UNIT,
                 SemConv::JOB_DURATION_DESCRIPTION,
                 SemConv::JOB_DURATION_BUCKETS,
-                now()->diffInSeconds(date: $startTime, absolute: true),
                 [
                     SemConv::JOB_NAME => $event->job->resolveName(),
                     SemConv::JOB_QUEUE => $event->job->getQueue(),
                     SemConv::STATUS => SemConv::JOB_STATUS_PROCESSED,
-                ]
+                ],
+                now()->diffInSeconds(date: $startTime, absolute: true),
             );
         });
 
@@ -226,12 +226,12 @@ class InstrumentationServiceProvider extends ServiceProvider
                 SemConv::JOB_DURATION_UNIT,
                 SemConv::JOB_DURATION_DESCRIPTION,
                 SemConv::JOB_DURATION_BUCKETS,
-                now()->diffInSeconds(date: $startTime, absolute: true),
                 [
                     SemConv::JOB_NAME => $event->job->resolveName(),
                     SemConv::JOB_QUEUE => $event->job->getQueue(),
                     SemConv::STATUS => SemConv::JOB_STATUS_FAILED,
-                ]
+                ],
+                now()->diffInSeconds(date: $startTime, absolute: true),
             );
         });
     }
