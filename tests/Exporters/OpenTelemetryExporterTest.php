@@ -43,8 +43,10 @@ it('auto instruments controller methods', function (): void {
 
 it('auto instruments logs', function (): void {
     Instrument::span('STICKEE TEST LOG SPAN', function (): void {
-        Log::info('STICKEE TEST LOG');
-        Instrument::event('STICKEE TEST EVENT');
+        Instrument::span('STICKEE TEST LOG INNER SPAN', function (): void {
+            Log::info('STICKEE TEST LOG');
+            Instrument::event('STICKEE TEST EVENT');
+        }, SpanKind::KIND_INTERNAL, ['test' => 123]);
     }, SpanKind::KIND_INTERNAL, ['test' => 123]);
 
     // TODO add proper assertion

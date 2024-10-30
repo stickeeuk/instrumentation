@@ -100,22 +100,6 @@ class Config
     }
 
     /**
-     * Configuration for OpenTelemetry
-     *
-     * @param string $key The configuration variable
-     */
-    public function openTelemetry(string $key): mixed
-    {
-        $value = config('instrumentation.opentelemetry.' . $key, null);
-
-        if (($value === null) || ($value === '')) {
-            throw new Exception('Config variable `instrumentation.opentelemetry.' . $key . '` not set');
-        }
-
-        return $value;
-    }
-
-    /**
      * Configuration for the log file
      *
      * @param string $key The configuration variable
