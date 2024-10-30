@@ -100,22 +100,6 @@ class Config
     }
 
     /**
-     * Configuration for InfluxDb
-     *
-     * @param string $key The configuration variable
-     */
-    public function influxDb(string $key): mixed
-    {
-        $value = config('instrumentation.influxdb.' . $key, null);
-
-        if (($value === null) || ($value === '')) {
-            throw new Exception('Config variable `instrumentation.influxdb.' . $key . '` not set');
-        }
-
-        return $value;
-    }
-
-    /**
      * Configuration for OpenTelemetry
      *
      * @param string $key The configuration variable

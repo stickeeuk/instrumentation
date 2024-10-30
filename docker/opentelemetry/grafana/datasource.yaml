@@ -44,15 +44,3 @@ datasources:
           enabled: true
         serviceMap:
           datasourceUid: "prometheus"
-  - name: InfluxDB
-    type: influxdb
-    uid: influxdb
-    url: http://influxdb:8086
-    user: admin
-    database: test
-    jsonData:
-      httpHeaderName1: 'Authorization'
-      httpMode: POST
-    secureJsonData:
-      httpHeaderValue1: 'Token my-super-secret-auth-token'
-      password: Password123

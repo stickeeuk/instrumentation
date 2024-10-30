@@ -39,21 +39,6 @@ return [
 
     /*
      |--------------------------------------------------------------------------
-     | InfluxDB
-     |--------------------------------------------------------------------------
-     |
-     | Configuration for InfluxDb
-     */
-    'influxdb' => [
-        'url' => env('INSTRUMENTATION_INFLUXDB_URL', 'http://localhost:8086'),
-        'token' => env('INSTRUMENTATION_INFLUXDB_TOKEN', 'my-super-secret-auth-token'),
-        'bucket' => env('INSTRUMENTATION_INFLUXDB_BUCKET', 'test'),
-        'org' => env('INSTRUMENTATION_INFLUXDB_ORG', 'stickee'),
-        'verify_ssl' => env('INSTRUMENTATION_INFLUXDB_VERIFY_SSL', false),
-    ],
-
-    /*
-     |--------------------------------------------------------------------------
      | OpenTelemetry
      |--------------------------------------------------------------------------
      |
