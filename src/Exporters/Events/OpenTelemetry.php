@@ -109,7 +109,7 @@ class OpenTelemetry implements EventsExporterInterface
      * @param float|int $value The value of the histogram
      */
     #[\Override]
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value): void
     {
         if (! isset($this->histograms[$name])) {
             $advisory = [];

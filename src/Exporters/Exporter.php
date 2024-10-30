@@ -91,7 +91,7 @@ class Exporter implements EventsExporterInterface, SpansExporterInterface
      * @param float|int $value The value of the histogram
      */
     #[\Override]
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value): void
     {
         $attributes = $this->scrub($attributes);
 

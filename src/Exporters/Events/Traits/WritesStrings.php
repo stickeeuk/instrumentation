@@ -63,7 +63,7 @@ trait WritesStrings
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float|int $value The value of the histogram
      */
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value): void
     {
         $message = date('Y-m-d H:i:s') . ' HISTOGRAM: ' . $name . ' = ' . $value . $unit
             . $this->getAttributesString($attributes);
