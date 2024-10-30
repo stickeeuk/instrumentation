@@ -64,7 +64,7 @@ final class GoodEventsExporter implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float|int $value The value of the histogram
      */
-    public function histogram(string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value): void
     {
         // Do nothing
     }

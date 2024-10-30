@@ -58,7 +58,7 @@ final class BrokenEventsExporter implements EventsExporterInterface
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float|int $value The non-negative value of the histogram
      */
-    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets = [], array $attributes = [], float|int $value): void
+    public function histogram(string $name, ?string $unit, ?string $description, ?array $buckets, array $attributes, float|int $value): void
     {
         $this->handleError(new Exception('This is a test exception'));
     }

@@ -21,7 +21,7 @@ it('can watch memory in jobs', function (): void {
         ->shouldReceive('histogram')
         ->atLeast()
         ->once()
-        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value) use (&$pass) {
+        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value) use (&$pass) {
             if ($name === 'process.memory.usage') {
                 $pass = ($value > 10) && ($value < 100);
             }
@@ -42,7 +42,7 @@ it('can watch memory in schedules', function (): void {
     Instrument::shouldReceive('histogram')
         ->atLeast()
         ->once()
-        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value) use (&$pass) {
+        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value) use (&$pass) {
             if ($name === 'process.memory.usage') {
                 $pass = ($value > 10) && ($value < 100);
             }
@@ -70,7 +70,7 @@ it('can watch memory in commands', function (): void {
     Instrument::shouldReceive('histogram')
         ->atLeast()
         ->once()
-        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value) use (&$pass) {
+        ->andReturnUsing(function (string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value) use (&$pass) {
             if ($name === 'process.memory.usage') {
                 $pass = ($value > 10) && ($value < 100);
             }
