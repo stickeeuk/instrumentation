@@ -1,23 +1,4 @@
 services:
-  influxdb:
-      image: influxdb:2.7-alpine
-      restart: always
-      environment:
-        - DOCKER_INFLUXDB_INIT_MODE=setup
-        - DOCKER_INFLUXDB_INIT_USERNAME=admin
-        - DOCKER_INFLUXDB_INIT_PASSWORD=Password123
-        - DOCKER_INFLUXDB_INIT_ORG=stickee
-        - DOCKER_INFLUXDB_INIT_BUCKET=test
-        - DOCKER_INFLUXDB_INIT_RETENTION=2w
-        - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
-        - INFLUXD_LOG_LEVEL=debug
-      ports:
-       - '8086:8086'
-      # volumes:
-      #  - influxdbdata:/var/lib/influxdb
-      networks:
-          - opentelemetry-network
-
   grafana:
     image: grafana/grafana:11.2.1
     environment:

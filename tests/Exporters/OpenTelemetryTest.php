@@ -16,7 +16,7 @@ use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use Stickee\Instrumentation\DataScrubbers\CallbackDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
-use Stickee\Instrumentation\DataScrubbers\DefaultDataScrubber;
+use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
 use Stickee\Instrumentation\Exporters\Exporter;
 use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelmetrySpans;
@@ -46,7 +46,7 @@ beforeEach(function (): void {
 
     $this->scope = $configurator->activate();
 
-    $this->exporter = new Exporter(app(OpenTelemetryEvents::class), app(OpenTelmetrySpans::class), new DefaultDataScrubber());
+    $this->exporter = new Exporter(app(OpenTelemetryEvents::class), app(OpenTelmetrySpans::class), app(DataScrubberInterface::class));
 });
 
 afterEach(function (): void {
@@ -98,7 +98,7 @@ it('can scrub sensitive data from counters', function (): void {
         ->with($this->logicalAnd(
             $this->logicalNot($this->stringContains('test@example.com')),
             $this->stringContains(
-                DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
+                RegexDataScrubber::DEFAULT_REGEX_REPLACEMENTS[RegexDataScrubber::EMAIL_REGEX]
             )
         ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
@@ -115,7 +115,7 @@ it('can scrub sensitive data from gauges', function (): void {
         ->with($this->logicalAnd(
             $this->logicalNot($this->stringContains('test@example.com')),
             $this->stringContains(
-                DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
+                RegexDataScrubber::DEFAULT_REGEX_REPLACEMENTS[RegexDataScrubber::EMAIL_REGEX]
             )
         ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
@@ -132,7 +132,7 @@ it('can scrub sensitive data from histograms', function (): void {
         ->with($this->logicalAnd(
             $this->logicalNot($this->stringContains('test@example.com')),
             $this->stringContains(
-                DefaultDataScrubber::DEFAULT_REDACTIONS[DefaultDataScrubber::EMAIL_REGEX]
+                RegexDataScrubber::DEFAULT_REGEX_REPLACEMENTS[RegexDataScrubber::EMAIL_REGEX]
             )
         ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
@@ -157,6 +157,18 @@ it('can scrub sensitive data from logs', function (): void {
         ->willReturnCallback(fn() => new CompletedFuture(null));
 
     Log::error('Email: test@example.com', ['email' => 'test@example.com']);
+
+    $this->metricReader->shutdown();
+    $this->logProcessor->shutdown();
+});
+
+it('can scrub config data', function (): void {
+    $this->mockTransport->expects($this->once())
+        ->method('send')
+        ->with($this->logicalNot($this->stringContains(config('app.key'))))
+        ->willReturnCallback(fn() => new CompletedFuture(null));
+
+    Log::error('App Key: ' . config('app.key'));
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();

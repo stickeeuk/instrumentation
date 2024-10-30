@@ -16,7 +16,6 @@
     },
     "require": {
         "php": "^8.3",
-        "influxdata/influxdb-client-php": "^3.6",
         "open-telemetry/exporter-otlp": "^1.1",
         "open-telemetry/opentelemetry-auto-laravel": "^0.0.28",
         "open-telemetry/opentelemetry-auto-psr18": "^1.0",
@@ -33,7 +32,6 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Stickee\\Instrumentation\\Laravel\\Providers\\InfluxDbServiceProvider",
                 "Stickee\\Instrumentation\\Laravel\\Providers\\InstrumentationServiceProvider",
                 "Stickee\\Instrumentation\\Laravel\\Providers\\OpenTelemetryServiceProvider"
             ],

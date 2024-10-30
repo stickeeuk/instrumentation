@@ -16,6 +16,8 @@
   </testsuites>
   <php>
     <env name="APP_ENV" value="testing"/>
+    <env name="INSTRUMENTATION_ENABLED" value="true"/>
+    <ini name="memory_limit" value="256M"/>
   </php>
   <source>
     <include>

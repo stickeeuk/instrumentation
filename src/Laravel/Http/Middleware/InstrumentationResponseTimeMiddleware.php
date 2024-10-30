@@ -11,6 +11,9 @@ class InstrumentationResponseTimeMiddleware
 {
     /**
      * Handle the request
+     *
+     * @param \Illuminate\Http\Request $request The request
+     * @param \Closure $next The next middleware
      */
     public function handle(Request $request, Closure $next)
     {

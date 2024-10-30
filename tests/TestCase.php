@@ -7,7 +7,6 @@ namespace Stickee\Instrumentation\Tests;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Testing\WithFaker;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use Stickee\Instrumentation\Laravel\Providers\InfluxDbServiceProvider;
 use Stickee\Instrumentation\Laravel\Providers\InstrumentationServiceProvider;
 use Stickee\Instrumentation\Laravel\Providers\OpenTelemetryServiceProvider;
 
@@ -22,7 +21,6 @@ abstract class TestCase extends OrchestraTestCase
     protected function getPackageProviders($app): array
     {
         return [
-            InfluxDbServiceProvider::class,
             InstrumentationServiceProvider::class,
             OpenTelemetryServiceProvider::class,
         ];

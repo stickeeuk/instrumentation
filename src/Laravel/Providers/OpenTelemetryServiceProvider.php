@@ -14,7 +14,6 @@ use OpenTelemetry\Contrib\Otlp\LogsExporter;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
-use OpenTelemetry\SDK\Common\Attribute\Attributes;
 use OpenTelemetry\SDK\Common\Export\TransportInterface;
 use OpenTelemetry\SDK\Logs\EventLoggerProvider;
 use OpenTelemetry\SDK\Logs\LoggerProvider;
@@ -26,15 +25,13 @@ use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
+use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
-use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
-use OpenTelemetry\SemConv\ResourceAttributes;
-use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
 use Stickee\Instrumentation\Utils\DataScrubbingSpanProcessor;
@@ -179,9 +176,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     private function getResourceInfo(): ResourceInfo
     {
-        return ResourceInfoFactory::defaultResource()->merge(ResourceInfo::create(Attributes::create([
-            ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
-            ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
-        ])));
+        return ResourceInfoFactory::defaultResource();
     }
 }
