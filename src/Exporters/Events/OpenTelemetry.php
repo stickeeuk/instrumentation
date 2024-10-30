@@ -102,14 +102,14 @@ class OpenTelemetry implements EventsExporterInterface
      * Record a value on a histogram
      *
      * @param string $name The name of the histogram, e.g. "http.server.duration"
-     * @param float|int $value The value of the histogram
      * @param string|null $unit The unit of the histogram, e.g. "ms"
      * @param string|null $description A description of the histogram
      * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
      * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param float|int $value The value of the histogram
      */
     #[\Override]
-    public function histogram(string $name, float|int $value, ?string $unit, ?string $description, array $buckets = [], array $attributes = []): void
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets = [], array $attributes = [], float|int $value): void
     {
         if (! isset($this->histograms[$name])) {
             $advisory = [];

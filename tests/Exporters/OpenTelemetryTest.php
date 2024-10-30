@@ -137,7 +137,14 @@ it('can scrub sensitive data from histograms', function (): void {
         ))
         ->willReturnCallback(fn() => new CompletedFuture(null));
 
-    $this->exporter->histogram('STICKEE TEST HISTOGRAM', 1, '', '', [1], ['email' => 'test@example.com']);
+    $this->exporter->histogram(
+        name: 'STICKEE TEST HISTOGRAM',
+        unit: '',
+        description: '',
+        buckets: [1],
+        attributes: ['email' => 'test@example.com'],
+        value: 1
+    );
 
     $this->metricReader->shutdown();
     $this->logProcessor->shutdown();

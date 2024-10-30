@@ -91,11 +91,11 @@ class QueryCountWatcher extends Watcher
     {
         Instrument::histogram(
             SemConv::DB_QUERIES_NAME,
-            $this->totalQueries,
             SemConv::DB_QUERIES_UNIT,
             SemConv::DB_QUERIES_DESCRIPTION,
             SemConv::DB_QUERIES_BUCKETS,
-            $attributes
+            $attributes,
+            $this->totalQueries,
         );
     }
 }
