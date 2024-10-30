@@ -40,7 +40,7 @@ class ConfigDataScrubber implements DataScrubberInterface
 
         foreach (array_keys($config) as $configKey) {
             foreach ($configKeyRegexes as $pattern) {
-                if (preg_match($pattern, $configKey)) {
+                if (preg_match($pattern, (string) $configKey)) {
                     $this->regexes['/' . preg_quote($config[$configKey], '/') . '/'] = '[REDACTED_CONFIG_VALUE:' . $configKey . ']';
                 }
             }

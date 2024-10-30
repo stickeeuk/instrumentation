@@ -96,8 +96,8 @@ class QueryCountWatcher extends Watcher
             SemConv::DB_QUERIES_UNIT,
             SemConv::DB_QUERIES_DESCRIPTION,
             SemConv::DB_QUERIES_BUCKETS,
+            $attributes,
             $this->totalQueries,
-            $attributes
         );
     }
 }
