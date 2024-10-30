@@ -25,14 +25,13 @@ use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
+use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
-use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
-use Stickee\Instrumentation\Exporters\Events\OpenTelemetry;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
 use Stickee\Instrumentation\Utils\DataScrubbingSpanProcessor;
@@ -148,6 +147,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         return LoggerProvider::builder()
             ->addLogRecordProcessor($processor)
+            ->setResource($this->getResourceInfo())
             ->build();
     }
 

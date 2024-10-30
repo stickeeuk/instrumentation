@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Stickee\Instrumentation\DataScrubbers;
 
-class DefaultDataScrubber implements DataScrubberInterface
+class RegexDataScrubber implements DataScrubberInterface
 {
     /**
      * The default email regex
@@ -17,12 +17,19 @@ class DefaultDataScrubber implements DataScrubberInterface
     public const string UK_POSTCODE_REGEX = '/\b(([A-Z]{1,2}\d[A-Z\d]?|ASCN|STHL|TDCU|BBND|[BFS]IQQ|PCRN|TKCA) ?\d[A-Z]{2}|BFPO ?\d{1,4}|(KY\d|MSR|VG|AI)[ -]?\d{4}|[A-Z]{2} ?\d{2}|GE ?CX|GIR ?0A{2}|SAN ?TA1)\b/i';
 
     /**
-     * The default redactions
+     * The default regex replacements
      */
-    public const array DEFAULT_REDACTIONS = [
+    public const array DEFAULT_REGEX_REPLACEMENTS = [
         self::EMAIL_REGEX => '[REDACTED_EMAIL]',
         self::UK_POSTCODE_REGEX => '[REDACTED_UK_POSTCODE]',
     ];
+
+    /**
+     * Constructor
+     *
+     * @param array<string, string> $regexReplacements The regexes to use. The key is the regex and the value is the replacement.
+     */
+    public function __construct(private readonly array $regexReplacements) {}
 
     /**
      * Scrub data
@@ -37,7 +44,7 @@ class DefaultDataScrubber implements DataScrubberInterface
             return $value;
         }
 
-        foreach (self::DEFAULT_REDACTIONS as $regex => $replacement) {
+        foreach ($this->regexReplacements as $regex => $replacement) {
             $value = preg_replace($regex, $replacement, (string) $value);
         }
 
