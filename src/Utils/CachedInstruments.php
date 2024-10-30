@@ -15,6 +15,9 @@ use OpenTelemetry\API\Trace\TracerInterface;
 use OpenTelemetry\API\Trace\TracerProviderInterface;
 use WeakMap;
 
+/**
+ * This is a copy of OpenTelemetry\API\Instrumentation\CachedInstrumentation with the addition of a flush method
+ */
 final class CachedInstruments
 {
     /** @var WeakMap<TracerProviderInterface, TracerInterface> */

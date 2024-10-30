@@ -17,7 +17,7 @@ return [
      |
      | true / false (NullEvents and NullSpans will be used if not enabled)
      */
-    'enabled' => env('INSTRUMENTATION_ENABLED', true),
+    'enabled' => env('INSTRUMENTATION_ENABLED', $isProduction),
 
     /*
      |--------------------------------------------------------------------------
@@ -36,21 +36,6 @@ return [
      | The instrumentation spans exporter class name
      */
     'spans_exporter' => env('INSTRUMENTATION_SPANS_EXPORTER', $isProduction ? OpenTelemetrySpans::class : NullSpans::class),
-
-    /*
-     |--------------------------------------------------------------------------
-     | InfluxDB
-     |--------------------------------------------------------------------------
-     |
-     | Configuration for InfluxDb
-     */
-    'influxdb' => [
-        'url' => env('INSTRUMENTATION_INFLUXDB_URL', 'http://localhost:8086'),
-        'token' => env('INSTRUMENTATION_INFLUXDB_TOKEN', 'my-super-secret-auth-token'),
-        'bucket' => env('INSTRUMENTATION_INFLUXDB_BUCKET', 'test'),
-        'org' => env('INSTRUMENTATION_INFLUXDB_ORG', 'stickee'),
-        'verify_ssl' => env('INSTRUMENTATION_INFLUXDB_VERIFY_SSL', false),
-    ],
 
     /*
      |--------------------------------------------------------------------------

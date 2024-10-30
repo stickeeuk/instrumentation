@@ -22,7 +22,9 @@ use Stickee\Instrumentation\Utils\SemConv;
 class MemoryWatcher extends Watcher
 {
     /**
-     * Register the watcher.
+     * Register the watcher
+     *
+     * @param \Illuminate\Contracts\Foundation\Application $app The application
      */
     public function register(Application $app): void
     {
