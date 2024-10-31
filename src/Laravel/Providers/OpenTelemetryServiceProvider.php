@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
+use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\API\Trace\Propagation\TraceContextPropagator;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
@@ -69,6 +70,9 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         Sdk::builder()
             ->setTracerProvider($this->getTracerProvider())
+            ->setMeterProvider(Globals::meterProvider())
+            ->setLoggerProvider(Globals::loggerProvider())
+            ->setEventLoggerProvider(Globals::eventLoggerProvider())
             ->setPropagator(TraceContextPropagator::getInstance())
             ->setAutoShutdown(true)
             ->buildAndRegisterGlobal();
