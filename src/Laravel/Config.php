@@ -27,7 +27,7 @@ class Config
     public function eventsExporterClass(): string
     {
         $class = $this->enabled()
-            ? config('instrumentation.events_exporter')
+            ? (string) config('instrumentation.events_exporter')
             : NullEvents::class;
 
         if (empty($class)) {
@@ -51,7 +51,7 @@ class Config
     public function spansExporterClass(): string
     {
         $class = $this->enabled()
-            ? config('instrumentation.spans_exporter')
+            ? (string) config('instrumentation.spans_exporter')
             : NullSpans::class;
 
         if (empty($class)) {
