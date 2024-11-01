@@ -20,6 +20,8 @@ return [
      */
     'enabled' => SdkAutoloader::isEnabled(),
 
+    'exporter_otlp_endpoint' => env('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://localhost:4318'),
+
     /*
      |--------------------------------------------------------------------------
      | Events exporter class

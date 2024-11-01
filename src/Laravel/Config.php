@@ -21,6 +21,11 @@ class Config
         return (bool) config('instrumentation.enabled');
     }
 
+    public function exporterOtlpEndpoint(): string
+    {
+        return (string) config('instrumentation.exporter_otlp_endpoint', 'http://localhost:4318');
+    }
+
     /**
      * Get the events exporter class
      */
