@@ -170,8 +170,8 @@ class InstrumentationServiceProvider extends ServiceProvider
 
         Event::listen(JobQueued::class, function ($event): void {
             Instrument::counter(SemConv::JOBS_QUEUED_NAME, [
-                SemConv::JOB_NAME => $event->job->resolveName(),
-                SemConv::JOB_QUEUE => $event->job->getQueue(),
+                SemConv::JOB_NAME => $event->job->payload()['displayName'],
+                SemConv::JOB_QUEUE => $event->job->queue,
             ]);
         });
 
