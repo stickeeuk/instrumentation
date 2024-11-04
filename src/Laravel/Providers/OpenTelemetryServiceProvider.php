@@ -8,24 +8,18 @@ use Illuminate\Support\Str;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Common\Time\Clock;
+use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\API\Trace\Propagation\TraceContextPropagator;
-use OpenTelemetry\Contrib\Otlp\LogsExporter;
-use OpenTelemetry\Contrib\Otlp\MetricExporter;
-use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
-use OpenTelemetry\Contrib\Otlp\SpanExporter;
-use OpenTelemetry\SDK\Common\Export\TransportInterface;
-use OpenTelemetry\SDK\Logs\EventLoggerProvider;
-use OpenTelemetry\SDK\Logs\LoggerProvider;
+use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\LoggerProviderInterface;
-use OpenTelemetry\SDK\Logs\Processor\BatchLogRecordProcessor;
-use OpenTelemetry\SDK\Metrics\Data\Temporality;
-use OpenTelemetry\SDK\Metrics\MeterProvider;
+use OpenTelemetry\SDK\Logs\NoopEventLoggerProvider;
+use OpenTelemetry\SDK\Logs\NoopLoggerProvider;
 use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
-use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
-use OpenTelemetry\SDK\Resource\ResourceInfo;
+use OpenTelemetry\SDK\Metrics\NoopMeterProvider;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
 use OpenTelemetry\SDK\Sdk;
+use OpenTelemetry\SDK\Trace\ExporterFactory as TraceExporterFactory;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
@@ -80,13 +74,14 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             ]);
         });
 
-        $loggerProvider = $this->getLoggerProvider();
-
+        // During testing Auto Instrumentation may not be initialised if OTEL_PHP_AUTOLOAD_ENABLED is false in the environment.
+        // It gets set to true via putenv in tests/Pest.php, but this happens after Auto Instrumentation is initialised.
+        // In this case the providers will be API no-op providers, which aren't compatible with the SDK interfaces so use SDK no-op providers instead.
         Sdk::builder()
             ->setTracerProvider($this->getTracerProvider())
-            ->setMeterProvider($this->getMeterProvider())
-            ->setLoggerProvider($loggerProvider)
-            ->setEventLoggerProvider(new EventLoggerProvider($loggerProvider))
+            ->setMeterProvider(Globals::meterProvider() instanceof MeterProviderInterface ? Globals::meterProvider() : new NoopMeterProvider())
+            ->setLoggerProvider(Globals::loggerProvider() instanceof LoggerProviderInterface ? Globals::loggerProvider() : new NoopLoggerProvider())
+            ->setEventLoggerProvider(Globals::eventLoggerProvider() instanceof EventLoggerProviderInterface ? Globals::eventLoggerProvider() : new NoopEventLoggerProvider())
             ->setPropagator(TraceContextPropagator::getInstance())
             ->setAutoShutdown(true)
             ->buildAndRegisterGlobal();
@@ -102,7 +97,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             ? new RecordSampler(new TraceIdRatioBasedSampler($this->config->traceSampleRate()))
             : new TraceIdRatioBasedSampler($this->config->traceSampleRate());
 
-        $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
+        $exporter = (new TraceExporterFactory())->create();
         $batchProcessor = BatchSpanProcessor::builder($exporter)->build();
         $processor = $traceLongRequests
             ? new MultiSpanProcessor(
@@ -117,65 +112,9 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
         return TracerProvider::builder()
             ->setSampler($sampler)
-            ->setResource($this->getResourceInfo())
+            ->setResource(ResourceInfoFactory::defaultResource())
             ->addSpanProcessor(app(DataScrubbingSpanProcessor::class))
             ->addSpanProcessor($processor)
             ->build();
-    }
-
-    /**
-     * Create a meter provider
-     */
-    private function getMeterProvider(): MeterProviderInterface
-    {
-        $exporter = new MetricExporter($this->getOtlpTransport('/v1/metrics'), Temporality::CUMULATIVE);
-        $reader = new ExportingReader($exporter);
-
-        return MeterProvider::builder()
-            ->addReader($reader)
-            ->setResource($this->getResourceInfo())
-            ->build();
-    }
-
-    /**
-     * Create a logger provider
-     */
-    private function getLoggerProvider(): LoggerProviderInterface
-    {
-        $exporter = new LogsExporter($this->getOtlpTransport('/v1/logs'));
-        $processor = new BatchLogRecordProcessor($exporter, Clock::getDefault());
-
-        return LoggerProvider::builder()
-            ->addLogRecordProcessor($processor)
-            ->setResource($this->getResourceInfo())
-            ->build();
-    }
-
-    /**
-     * Get an OTLP transport
-     *
-     * @param string $path The path to append to the DSN
-     * @param string $contentType The content type
-     */
-    private function getOtlpTransport(string $path, string $contentType = 'application/json'): TransportInterface
-    {
-        return app(OtlpHttpTransportFactory::class)
-            ->create(
-                endpoint: $this->config->openTelemetry('dsn') . $path,
-                contentType: $contentType,
-                headers: [],
-                compression: null,
-                timeout: 1,
-                retryDelay: 100,
-                maxRetries: 1
-            );
-    }
-
-    /**
-     * Get resource info
-     */
-    private function getResourceInfo(): ResourceInfo
-    {
-        return ResourceInfoFactory::defaultResource();
     }
 }

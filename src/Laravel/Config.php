@@ -27,7 +27,7 @@ class Config
     public function eventsExporterClass(): string
     {
         $class = $this->enabled()
-            ? config('instrumentation.events_exporter')
+            ? (string) config('instrumentation.events_exporter')
             : NullEvents::class;
 
         if (empty($class)) {
@@ -51,7 +51,7 @@ class Config
     public function spansExporterClass(): string
     {
         $class = $this->enabled()
-            ? config('instrumentation.spans_exporter')
+            ? (string) config('instrumentation.spans_exporter')
             : NullSpans::class;
 
         if (empty($class)) {
@@ -97,22 +97,6 @@ class Config
     public function responseTimeMiddlewareEnabled(): bool
     {
         return (bool) config('instrumentation.response_time_middleware_enabled', true);
-    }
-
-    /**
-     * Configuration for OpenTelemetry
-     *
-     * @param string $key The configuration variable
-     */
-    public function openTelemetry(string $key): mixed
-    {
-        $value = config('instrumentation.opentelemetry.' . $key, null);
-
-        if (($value === null) || ($value === '')) {
-            throw new Exception('Config variable `instrumentation.opentelemetry.' . $key . '` not set');
-        }
-
-        return $value;
     }
 
     /**

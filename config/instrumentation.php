@@ -1,5 +1,6 @@
 <?php
 
+use OpenTelemetry\SDK\SdkAutoloader;
 use Stickee\Instrumentation\DataScrubbers\ConfigDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
 use Stickee\Instrumentation\Exporters\Events\NullEvents;
@@ -17,7 +18,7 @@ return [
      |
      | true / false (NullEvents and NullSpans will be used if not enabled)
      */
-    'enabled' => env('INSTRUMENTATION_ENABLED', $isProduction),
+    'enabled' => SdkAutoloader::isEnabled(),
 
     /*
      |--------------------------------------------------------------------------
@@ -36,17 +37,6 @@ return [
      | The instrumentation spans exporter class name
      */
     'spans_exporter' => env('INSTRUMENTATION_SPANS_EXPORTER', $isProduction ? OpenTelemetrySpans::class : NullSpans::class),
-
-    /*
-     |--------------------------------------------------------------------------
-     | OpenTelemetry
-     |--------------------------------------------------------------------------
-     |
-     | Configuration for OpenTelemetry
-     */
-    'opentelemetry' => [
-        'dsn' => env('INSTRUMENTATION_OPENTELEMETRY_DSN', env('OTEL_EXPORTER_OTLP_ENDPOINT') ?: 'http://localhost:4318'),
-    ],
 
     /*
      |--------------------------------------------------------------------------

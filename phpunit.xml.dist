@@ -15,8 +15,12 @@
     </testsuite>
   </testsuites>
   <php>
+    <!--
+      NOTE: Do not add OTEL_* environment variables here, they won't work
+      because they are read by the OpenTelemetry SDK before phpunit sets them
+      in the environment.
+    -->
     <env name="APP_ENV" value="testing"/>
-    <env name="INSTRUMENTATION_ENABLED" value="true"/>
     <ini name="memory_limit" value="256M"/>
   </php>
   <source>
