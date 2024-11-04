@@ -1,6 +1,7 @@
 # Stickee Instrumentation
 
 This a Composer package for recording metrics.
+It builds on the [OpenTelemetry PHP Instrumentation](https://opentelemetry.io/docs/languages/php/) and [OpenTelemetry Laravel auto-instrumentation](https://github.com/open-telemetry/opentelemetry-php-contrib/tree/main/src/Instrumentation/Laravel) packages to automatically record performance metrics and provide a simple interface for recording custom metrics.
 
 ## Quickstart
 
@@ -20,15 +21,19 @@ composer require stickee/instrumentation
 ### Configuration
 
 The package ships with a default configuration that should be suitable for most use cases.
-It is disabled by default in non-production environments; to enable it, set `INSTRUMENTATION_ENABLED=true` in your `.env`,
-then set `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_SPANS_EXPORTER` to the desired exporter classes and set the required configuration for the exporter.
+It is disabled by default; to enable it, set `OTEL_PHP_AUTOLOAD_ENABLED="true"` in your `php.ini` or your environment.
+Then set `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_SPANS_EXPORTER` to the desired exporter classes and set the required configuration for the exporter.
+
+> :warning: `OTEL_PHP_AUTOLOAD_ENABLED="true"` (and other `OTEL_` variables) will **NOT** work properly if set in your `.env` file, as they are used before the `.env` file is loaded.
+
+> Note: You may need to set variables in multiple `php.ini` files, e.g. `/etc/php/8.3/cli/php.ini` and `/etc/php/8.3/apache2/php.ini` to enable it for both CLI (commands, crons and queues) and web requests.
+
+For more advanced configuration, see the [OpenTelemetry SDK Configuration](https://opentelemetry.io/docs/languages/php/sdk/#configuration).
 
 | Variable                                           | Description                                                      | Default                                                                                                                            |
 |----------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `INSTRUMENTATION_ENABLED`                          | Enable or disable the instrumentation package.                   | `true` on production, else `false`                                                                                                 |
 | `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use.                    | `Stickee\Instrumentation\Exporters\Events\OpenTelemetry` on production, else `Stickee\Instrumentation\Exporters\Events\NullEvents` |
 | `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use.                     | `Stickee\Instrumentation\Exporters\Spans\OpenTelemetry` on production, else `Stickee\Instrumentation\Exporters\Spans\NullSpans`    |
-| `INSTRUMENTATION_OPENTELEMETRY_DSN`                | The URL of the OpenTelemetry Collector.                          | The value of `OTEL_EXPORTER_OTLP_ENDPOINT` if set and `http://localhost:4318` if not                                               |
 | `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to.                                        | `instrumentation.log`                                                                                                              |
 | `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware.                  | `true`                                                                                                                             |
 | `INSTRUMENTATION_TRACE_SAMPLE_RATE`                | The rate at which to sample traces.                              | `1.0`                                                                                                                              |
