@@ -8,9 +8,8 @@ This a Composer package for recording metrics.
 
 This package requires PHP 8.3 or later and Laravel 11 or later.
 
-> The [ext-opentelemetry extension](https://github.com/open-telemetry/opentelemetry-php-instrumentation) is required.
-
-> The [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php) is recommended for performance reasons.
+> The [ext-opentelemetry extension](https://github.com/open-telemetry/opentelemetry-php-instrumentation) and
+> [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php) ([Windows download](https://pecl.php.net/package/protobuf)) are required.
 
 ### Installation
 
