@@ -11,20 +11,12 @@ use OpenTelemetry\API\Common\Time\Clock;
 use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\API\Trace\Propagation\TraceContextPropagator;
-<<<<<<< HEAD
-||||||| parent of 5b4c1ff (use globals if available)
-use OpenTelemetry\Contrib\Otlp\LogsExporter;
-use OpenTelemetry\Contrib\Otlp\MetricExporter;
-use OpenTelemetry\Contrib\Otlp\OtlpHttpTransportFactory;
-use OpenTelemetry\Contrib\Otlp\SpanExporter;
-=======
 use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\LoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\NoopEventLoggerProvider;
 use OpenTelemetry\SDK\Logs\NoopLoggerProvider;
 use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\NoopMeterProvider;
->>>>>>> 5b4c1ff (use globals if available)
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
 use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SDK\Trace\ExporterFactory as TraceExporterFactory;
