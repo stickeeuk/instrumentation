@@ -15,12 +15,12 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          extensions: bcmath, mbstring, opentelemetry
+          extensions: bcmath, mbstring, opentelemetry, protobuf
         env:
             COMPOSER_AUTH_JSON: |
                 {
                     "http-basic": {
-                        "repo.stickee.co.uk": {
+                    "repo.stickee.co.uk": {
                             "username": "${{ secrets.STICKEE_REPO_USERNAME }}",
                             "password": "${{ secrets.STICKEE_REPO_PASSWORD }}"
                         }
