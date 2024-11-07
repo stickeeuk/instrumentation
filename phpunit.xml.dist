@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" bootstrap="vendor/autoload.php" backupGlobals="false" colors="true" processIsolation="false" stopOnFailure="false" cacheDirectory=".phpunit.cache" backupStaticProperties="false">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+          bootstrap="vendor/autoload.php"
+          backupGlobals="false"
+          colors="true"
+          processIsolation="false"
+          stopOnFailure="false"
+          cacheDirectory=".phpunit.cache"
+          backupStaticProperties="false"
+>
   <testsuites>
     <testsuite name="Test Suite">
-      <directory>tests</directory>
+      <directory suffix=".php">tests</directory>
     </testsuite>
   </testsuites>
+  <php>
+    <!--
+      NOTE: Do not add OTEL_* environment variables here, they won't work
+      because they are read by the OpenTelemetry SDK before phpunit sets them
+      in the environment.
+    -->
+    <env name="APP_ENV" value="testing"/>
+    <ini name="memory_limit" value="256M"/>
+  </php>
   <source>
     <include>
       <directory suffix=".php">src/</directory>

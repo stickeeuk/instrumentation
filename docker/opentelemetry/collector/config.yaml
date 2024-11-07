@@ -5,77 +5,26 @@ receivers:
         endpoint: 0.0.0.0:4318
       grpc:
         endpoint: 0.0.0.0:4317
-  # prometheus:
-  #   config:
-  #     scrape_configs:
-  #       - job_name: app
-  #         honor_timestamps: true
-  #         scrape_interval: 15s
-  #         scrape_timeout: 10s
-  #         metrics_path: /metrics
-  #         scheme: http
-  #         static_configs:
-  #           - targets:
-  #             - laravel.test:80
 
 exporters:
   logging:
-    # loglevel: debug
     verbosity: detailed
-  influxdb:
-    endpoint: http://influxdb:8086
-    org: stickee
-    bucket: test
-    token: my-super-secret-auth-token
 
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
 
-  otlp:
-    endpoint: tempo:4317
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
     tls:
       insecure: true
-#   prometheus:
-#   endpoint: 'prometheus:9000'
-#   namespace: pet-insurance
-#   const_labels:
-#     label1: value1
-#     "another label": spaced value
-#   send_timestamps: true
-#   metric_expiration: 60m
-#   resource_to_telemetry_conversion:
-#     enabled: true
+
+  otlphttp/prometheus:
+    endpoint: http://prometheus:9090/api/v1/otlp
+    tls:
+      insecure: true
 
 processors:
   batch:
-
-  # TODO make this look for KPIs properly instead of just checking body is a number
-  # Use library name or something?
-  filter/kpis-only:
-    logs:
-      log_record:
-        - 'not IsMatch(body, "^\\d+(\\.\\d+)?$")' # Drop all logs that are not a number
-
-  # TODO make this look for KPIs properly instead of just checking body is a number
-  # Use library name or something?
-  filter/remove-kpis:
-    logs:
-      log_record:
-        - 'IsMatch(body, "^\\d+(\\.\\d+)?$")'
-
-  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor
-  transform:
-    log_statements:
-      - context: resource
-        statements:
-          - keep_keys(attributes, [])
-      # - context: scope
-      #   statements:
-      #     - keep_keys(attributes, ["logs"])
-      #- context: log
-      #  statements:
-      #    - set(attributes["value"], attributes["body"])
-      #    - keep_keys(attributes, ["observed_timestamp", "event.domain", "event.name", "value"])
 
 service:
   pipelines:
@@ -83,30 +32,19 @@ service:
       receivers:
         - otlp
       processors:
-        # May or may not want this
-        - filter/remove-kpis
         - batch
       exporters:
         - logging
         - loki
 
-    logs/kpis:
+    metrics:
       receivers:
-        - otlp
+      - otlp
       processors:
-        - filter/kpis-only
-        - transform
         - batch
       exporters:
-        - logging
-        - influxdb
-
-    # metrics:
-    #   receivers:
-    #   - prometheus
-    #   exporters:
-    #   - logging
-    #   - prometheus
+      - logging
+      - otlphttp/prometheus
 
     traces:
       receivers:
@@ -115,4 +53,4 @@ service:
         - batch
       exporters:
         - logging
-        - otlp
+        - otlphttp/tempo

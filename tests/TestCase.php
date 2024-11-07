@@ -7,7 +7,8 @@ namespace Stickee\Instrumentation\Tests;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Testing\WithFaker;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use Stickee\Instrumentation\Laravel\ServiceProvider;
+use Stickee\Instrumentation\Laravel\Providers\InstrumentationServiceProvider;
+use Stickee\Instrumentation\Laravel\Providers\OpenTelemetryServiceProvider;
 
 /**
  * Class TestCase
@@ -16,18 +17,12 @@ abstract class TestCase extends OrchestraTestCase
 {
     use WithFaker;
 
-    /**
-     * Example DSN for use in tests.
-     *
-     * @var string
-     */
-    public const EXAMPLE_DSN = 'https+influxdb://username:password@localhost:8086/databasename';
-
     /** @inheritDoc */
     protected function getPackageProviders($app): array
     {
         return [
-            ServiceProvider::class,
+            InstrumentationServiceProvider::class,
+            OpenTelemetryServiceProvider::class,
         ];
     }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * The null database
+ * The null exporter for events
  */
 
 namespace Stickee\Instrumentation\Exporters\Events;
@@ -19,10 +19,11 @@ class NullEvents implements EventsExporterInterface
      * Record an event
      *
      * @param string $name The name of the event, e.g. "page_load_time"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $value The value of the event, e.g. 12.3
      */
-    public function event(string $name, array $tags = [], float $value = 1): void
+    #[\Override]
+    public function event(string $name, array $attributes = [], float $value = 1): void
     {
         // Do nothing
     }
@@ -31,10 +32,11 @@ class NullEvents implements EventsExporterInterface
      * Record an increase in a counter
      *
      * @param string $name The counter name, e.g. "page_load"
-     * @param array $tags An array of tags to attach to the event, e.g. ["code" => 200]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["code" => 200]
      * @param float $increase The amount by which to increase the counter
      */
-    public function count(string $name, array $tags = [], float $increase = 1): void
+    #[\Override]
+    public function counter(string $name, array $attributes = [], float $increase = 1): void
     {
         // Do nothing
     }
@@ -43,10 +45,27 @@ class NullEvents implements EventsExporterInterface
      * Record the current value of a gauge
      *
      * @param string $name The name of the gauge, e.g. "queue_length"
-     * @param array $tags An array of tags to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
      * @param float $value The value of the gauge
      */
-    public function gauge(string $name, array $tags, float $value): void
+    #[\Override]
+    public function gauge(string $name, array $attributes, float $value): void
+    {
+        // Do nothing
+    }
+
+    /**
+     * Record a value on a histogram
+     *
+     * @param string $name The name of the histogram, e.g. "http.server.duration"
+     * @param string|null $unit The unit of the histogram, e.g. "ms"
+     * @param string|null $description A description of the histogram
+     * @param array $buckets A set of buckets, e.g. [0.25, 0.5, 1, 5]
+     * @param array $attributes An array of attributes to attach to the event, e.g. ["datacentre" => "uk"]
+     * @param float|int $value The value of the histogram
+     */
+    #[\Override]
+    public function histogram(string $name, ?string $unit, ?string $description, array $buckets, array $attributes, float|int $value): void
     {
         // Do nothing
     }
@@ -54,6 +73,7 @@ class NullEvents implements EventsExporterInterface
     /**
      * Flush any queued writes
      */
+    #[\Override]
     public function flush(): void
     {
         // Do nothing

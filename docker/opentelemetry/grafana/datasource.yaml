@@ -31,8 +31,8 @@ datasources:
         # Field with an internal link pointing to a logs data source in Grafana.
         # datasourceUid value must match the uid value of the logs data source.
         datasourceUid: "loki"
-        spanStartTimeShift: "1h"
-        spanEndTimeShift: "-1h"
+        spanStartTimeShift: "-1h"
+        spanEndTimeShift: "1h"
         # tags: ['trace_id']
         filterByTraceID: false
         filterBySpanID: false
@@ -44,15 +44,3 @@ datasources:
           enabled: true
         serviceMap:
           datasourceUid: "prometheus"
-  - name: InfluxDB
-    type: influxdb
-    uid: influxdb
-    url: http://influxdb:8086
-    user: admin
-    database: test
-    jsonData:
-      httpHeaderName1: 'Authorization'
-      httpMode: POST
-    secureJsonData:
-      httpHeaderValue1: 'Token my-super-secret-auth-token'
-      password: Password123
