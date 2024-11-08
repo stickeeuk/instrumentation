@@ -195,7 +195,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(JobProcessed::class, function ($event) use ($startTime): void {
+        Event::listen(JobProcessed::class, function ($event) use (&$startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -215,7 +215,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             );
         });
 
-        Event::listen(JobFailed::class, function ($event) use ($startTime): void {
+        Event::listen(JobFailed::class, function ($event) use (&$startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
