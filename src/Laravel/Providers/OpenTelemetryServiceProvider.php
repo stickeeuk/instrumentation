@@ -2,7 +2,6 @@
 
 namespace Stickee\Instrumentation\Laravel\Providers;
 
-use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -34,6 +33,8 @@ use Stickee\Instrumentation\Utils\CachedInstruments;
 use Stickee\Instrumentation\Utils\DataScrubbingSpanProcessor;
 use Stickee\Instrumentation\Utils\RecordSampler;
 use Stickee\Instrumentation\Utils\SlowSpanProcessor;
+
+use function OpenTelemetry\Instrumentation\hook;
 
 /**
  * Open Telemetry service provider
