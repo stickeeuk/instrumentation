@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\ServiceProvider;
-use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\LogWatcher;
 use Stickee\Instrumentation\DataScrubbers\ConfigDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\DataScrubbers\MultiDataScrubber;
@@ -37,8 +36,6 @@ use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
 use Stickee\Instrumentation\Utils\SemConv;
 use Stickee\Instrumentation\Watchers\MemoryWatcher;
 use Stickee\Instrumentation\Watchers\QueryCountWatcher;
-
-use function OpenTelemetry\Instrumentation\hook;
 
 /**
  * Instrumentation service provider
@@ -112,23 +109,6 @@ class InstrumentationServiceProvider extends ServiceProvider
 
             return new MultiDataScrubber($dataScrubbers);
         });
-
-        // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
-        hook(
-            LogWatcher::class,
-            'recordLog',
-            pre: function (LogWatcher $watcher, array $params, string $class, string $function, ?string $filename, ?int $lineno): array {
-                $scrubber = app(DataScrubberInterface::class);
-                $message = $params[0];
-                $message->message = $scrubber->scrub('', $message->message);
-
-                foreach ($message->context as $key => $value) {
-                    $message->context[$key] = $scrubber->scrub($key, $value);
-                }
-
-                return $params;
-            },
-        );
     }
 
     /**

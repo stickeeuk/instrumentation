@@ -2,6 +2,7 @@
 
 namespace Stickee\Instrumentation\Laravel\Providers;
 
+use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -11,6 +12,7 @@ use OpenTelemetry\API\Common\Time\Clock;
 use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\LoggerHolder;
 use OpenTelemetry\API\Trace\Propagation\TraceContextPropagator;
+use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\LogWatcher;
 use OpenTelemetry\SDK\Logs\EventLoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\LoggerProviderInterface;
 use OpenTelemetry\SDK\Logs\NoopEventLoggerProvider;
@@ -26,6 +28,7 @@ use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\TracerProviderInterface;
+use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Utils\CachedInstruments;
 use Stickee\Instrumentation\Utils\DataScrubbingSpanProcessor;
@@ -65,6 +68,25 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         // Setting a Logger on the LoggerHolder means that if the OpenTelemetry Collector
         // is not available, the logs will still be sent to stderr instead of throwing an exception
         LoggerHolder::set(new Logger('otel', [new StreamHandler('php://stderr')]));
+
+        // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
+        hook(
+            LogWatcher::class,
+            'recordLog',
+            pre: function (LogWatcher $watcher, array $params, string $class, string $function, ?string $filename, ?int $lineno): array {
+                $scrubber = app(DataScrubberInterface::class);
+                $message = clone $params[0];
+                $message->message = $scrubber->scrub('', $message->message);
+
+                foreach ($message->context as $key => $value) {
+                    $message->context[$key] = $scrubber->scrub($key, mb_substr(json_encode($value), 0, 255));
+                }
+
+                $params[0] = $message;
+
+                return $params;
+            },
+        );
 
         // Send logs as span events as well as log events
         $this->app['events']->listen(MessageLogged::class, function (MessageLogged $log): void {
