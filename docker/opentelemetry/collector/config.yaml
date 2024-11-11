@@ -7,7 +7,7 @@ receivers:
         endpoint: 0.0.0.0:4317
 
 exporters:
-  logging:
+  debug:
     verbosity: detailed
 
   loki:
@@ -35,7 +35,7 @@ service:
       processors:
         - batch
       exporters:
-        - logging
+        - debug
         - loki
 
     metrics:
@@ -45,8 +45,8 @@ service:
         - deltatocumulative
         - batch
       exporters:
-      - logging
-      - otlphttp/prometheus
+        - debug
+        - otlphttp/prometheus
 
     traces:
       receivers:
@@ -54,5 +54,5 @@ service:
       processors:
         - batch
       exporters:
-        - logging
+        - debug
         - otlphttp/tempo
