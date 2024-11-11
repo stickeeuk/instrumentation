@@ -25,6 +25,7 @@ exporters:
 
 processors:
   batch:
+  deltatocumulative:
 
 service:
   pipelines:
@@ -41,6 +42,7 @@ service:
       receivers:
       - otlp
       processors:
+        - deltatocumulative
         - batch
       exporters:
       - logging
