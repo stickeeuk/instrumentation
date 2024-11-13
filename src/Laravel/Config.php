@@ -30,6 +30,7 @@ class Config
     {
         return (bool) config('instrumentation.response_time_middleware_enabled', true);
     }
+
     /**
      * Get the queue names
      */
