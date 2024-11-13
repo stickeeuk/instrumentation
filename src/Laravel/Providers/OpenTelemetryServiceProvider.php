@@ -19,6 +19,7 @@ use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\NoopMeterProvider;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
 use OpenTelemetry\SDK\Sdk;
+use OpenTelemetry\SDK\SdkAutoloader;
 use OpenTelemetry\SDK\Trace\ExporterFactory as TraceExporterFactory;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
@@ -58,7 +59,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (! $this->config->enabled()) {
+        if (! SdkAutoloader::isEnabled()) {
             return;
         }
 

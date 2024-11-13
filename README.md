@@ -1,7 +1,9 @@
 # Stickee Instrumentation
 
 This a Composer package for recording metrics.
-It builds on the [OpenTelemetry PHP Instrumentation](https://opentelemetry.io/docs/languages/php/) and [OpenTelemetry Laravel auto-instrumentation](https://github.com/open-telemetry/opentelemetry-php-contrib/tree/main/src/Instrumentation/Laravel) packages to automatically record performance metrics and provide a simple interface for recording custom metrics.
+It builds on the [OpenTelemetry PHP Instrumentation](https://opentelemetry.io/docs/languages/php/)
+and [OpenTelemetry Laravel auto-instrumentation](https://github.com/open-telemetry/opentelemetry-php-contrib/tree/main/src/Instrumentation/Laravel)
+packages to automatically record performance metrics and provide a simple interface for recording custom metrics.
 
 ## Quickstart
 
@@ -10,7 +12,8 @@ It builds on the [OpenTelemetry PHP Instrumentation](https://opentelemetry.io/do
 This package requires PHP 8.3 or later and Laravel 11 or later.
 
 > The [ext-opentelemetry extension](https://github.com/open-telemetry/opentelemetry-php-instrumentation) and
-> [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php) ([Windows download](https://pecl.php.net/package/protobuf)) are required.
+> [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php)
+> ([Windows download](https://pecl.php.net/package/protobuf)) are required.
 
 ### Installation
 
@@ -22,40 +25,21 @@ composer require stickee/instrumentation
 
 The package ships with a default configuration that should be suitable for most use cases.
 It is disabled by default; to enable it, set `OTEL_PHP_AUTOLOAD_ENABLED="true"` in your `php.ini` or your environment.
-Then set `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_SPANS_EXPORTER` to the desired exporter classes and set the required configuration for the exporter.
 
-> :warning: `OTEL_PHP_AUTOLOAD_ENABLED="true"` (and other `OTEL_` variables) will **NOT** work properly if set in your `.env` file, as they are used before the `.env` file is loaded.
+> :warning: `OTEL_PHP_AUTOLOAD_ENABLED="true"` (and other `OTEL_` variables) will **NOT** work properly if set
+> in your `.env` file, as they are used before the `.env` file is loaded.
 
-> Note: You may need to set variables in multiple `php.ini` files, e.g. `/etc/php/8.3/cli/php.ini` and `/etc/php/8.3/apache2/php.ini` to enable it for both CLI (commands, crons and queues) and web requests.
+> Note: You may need to set variables in multiple `php.ini` files, e.g. `/etc/php/8.3/cli/php.ini` and
+> `/etc/php/8.3/apache2/php.ini` to enable it for both CLI (commands, crons and queues) and web requests.
 
 For more advanced configuration, see the [OpenTelemetry SDK Configuration](https://opentelemetry.io/docs/languages/php/sdk/#configuration).
 
 | Variable                                           | Description                                                      | Default                                                                                                                            |
 |----------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `INSTRUMENTATION_EVENTS_EXPORTER`                  | The class name of the events exporter to use.                    | `Stickee\Instrumentation\Exporters\Events\OpenTelemetry` on production, else `Stickee\Instrumentation\Exporters\Events\NullEvents` |
-| `INSTRUMENTATION_SPANS_EXPORTER`                   | The class name of the spans exporter to use.                     | `Stickee\Instrumentation\Exporters\Spans\OpenTelemetry` on production, else `Stickee\Instrumentation\Exporters\Spans\NullSpans`    |
-| `INSTRUMENTATION_LOG_FILE_FILENAME`                | The log file to write to.                                        | `instrumentation.log`                                                                                                              |
 | `INSTRUMENTATION_RESPONSE_TIME_MIDDLEWARE_ENABLED` | Enable or disable the response time middleware.                  | `true`                                                                                                                             |
 | `INSTRUMENTATION_TRACE_SAMPLE_RATE`                | The rate at which to sample traces.                              | `1.0`                                                                                                                              |
 | `INSTRUMENTATION_SCRUBBING_REGEXES`                | Comma-separated regular expressions for scrubbing data.          | `null` (null uses built-in defaults)                                                                                               |
 | `INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES`     | Comma-separated regular expressions for scrubbing config values. | `null` (null uses built-in defaults)                                                                                               |
-
-#### Event Exporters
-
-| Class         | `INSTRUMENTATION_EVENTS_EXPORTER` Value                        | Other Values                                                                                                                                                                                                                                                                                                                                                                                  |
-|---------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Events\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL                                                                                                                                                                                                                                                                                               |
-| LaravelDump   | `"Stickee\\Instrumentation\\Exporters\\Events\\LaravelDump"`   | None                                                                                                                                                                                                                                                                                                                                                                                          |
-| LaravelLog    | `"Stickee\\Instrumentation\\Exporters\\Events\\LaravelLog"`    | None                                                                                                                                                                                                                                                                                                                                                                                          |
-| LogFile       | `"Stickee\\Instrumentation\\Exporters\\Events\\LogFile"`       | `INSTRUMENTATION_LOG_FILE_FILENAME="/path/to/file.log"` - The log file                                                                                                                                                                                                                                                                                                                        |
-| NullEvents    | `"Stickee\\Instrumentation\\Exporters\\Events\\NullEvents"`    | None                                                                                                                                                                                                                                                                                                                                                                                          |
-
-#### Span Exporters
-
-| Class         | `INSTRUMENTATION_SPANS_EXPORTER` Value                        | Other Values                                                                                    |
-|---------------|---------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| OpenTelemetry | `"Stickee\\Instrumentation\\Exporters\\Spans\\OpenTelemetry"` | `INSTRUMENTATION_OPENTELEMETRY_DSN="http://example.com:4318"` - The OpenTelemetry Collector URL |
-| NullSpans     | `"Stickee\\Instrumentation\\Exporters\\Spans\\NullSpans"`     | None                                                                                            |
 
 If you wish to, you can copy the package config to your local config with the publish command,
 however this is **unnecessary** in normal usage:
@@ -95,52 +79,18 @@ Attributes should be an associative array of `attribute_name` ⇒ `attribute_val
 $attributes = ['datacentre' => 'uk', 'http_status' => \Symfony\Component\HttpFoundation\Response::HTTP_OK];
 ```
 
+> :warning: Every combination of attributes will be recorded as a separate metric, so be careful not to record too many attributes.
+
 ### Viewing Metrics Locally
 
-There are two ways to view metrics locally: run the OpenTelemetry stack and look at Grafana, or change the exporter to one of the local exporters.
+Run the OpenTelemetry stack and view Grafana at http://localhost:3000.
 
-> Note: Spans are only supported by OpenTelemetry.
-
-To choose where the data is exported to, set the `INSTRUMENTATION_EVENTS_EXPORTER` and `INSTRUMENTATION_SPANS_EXPORTER` environment variables..
-
-##### Event Exporters
-
-Event exporters are classes implementing the `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` interface.
-This package ships with the following classes:
-
-| Class         | Description                                                                             |
-|---------------|-----------------------------------------------------------------------------------------|
-| OpenTelemetry | Writes to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)        |
-| LaravelDump   | Uses the [Laravel `dump()`](https://laravel.com/docs/master/helpers#method-dump) helper |
-| LaravelLog    | Writes to the [Laravel `Log`](https://laravel.com/docs/master/logging)                  |
-| LogFile       | Writes to a log file                                                                    |
-| NullEvents    | Discards all data                                                                       |
-
-**Note:** Only `OpenTelemetry` is recommended for production use.
-The others are for development / debugging.
-See the Configuration section for more information.
-
-##### Span Exporters
-
-Span exporters are classes implementing the `Stickee\Instrumentation\Exporters\Interfaces\SpansExporterInterface` interface.
-This package ships with the following classes:
-
-| Class         | Description                                                                      |
-|---------------|----------------------------------------------------------------------------------|
-| OpenTelemetry | Writes to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) |
-| NullSpans     | Discards all data                                                                |
-
-#### OpenTelemetry
-
-Go to `./vendor/stickee/instrumentation/docker/opentelemetry` and run `docker compose up`.
+Go to `./vendor/stickee/instrumentation/docker/opentelemetry` and run `docker compose up -d`.
 This will start Grafana, Loki, Tempo, Prometheus, and the OpenTelemetry Collector and expose them on your local machine.
 
- - Grafana: http://localhost:3000
- - OpenTelemetry Collector: http://localhost:4318 (this should be used for `INSTRUMENTATION_OPENTELEMETRY_DSN`)
-
-### Using a Custom Exporter
-
-If you wish to use a custom exporter class for `INSTRUMENTATION_EVENTS_EXPORTER` then you simply need to implement `Stickee\Instrumentation\Exporters\Interfaces\EventsExporterInterface` and make sure it is constructable by the service container.
+By default the package will send data to the OpenTelemetry Collector on http://localhost:4318.
+If you need to change this, set the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable.
+For example if your PHP is running in a docker container you can set `OTEL_EXPORTER_OTLP_ENDPOINT="http://host.docker.internal:4318"`.
 
 ### Scrubbing Data
 
