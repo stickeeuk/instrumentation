@@ -9,16 +9,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use OpenTelemetry\API\Common\Time\ClockInterface;
 use OpenTelemetry\API\Trace\SpanKind;
-use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEventsExporter;
-use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelemetrySpansExporter;
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
 
 pest()->group('otel-collector');
-
-beforeEach(function (): void {
-    config(['instrumentation.events_exporter' => OpenTelemetryEventsExporter::class]);
-    config(['instrumentation.spans_exporter' => OpenTelemetrySpansExporter::class]);
-});
 
 it('can record an event', function (): void {
     Instrument::span('STICKEE TEST SPAN', function (): void {

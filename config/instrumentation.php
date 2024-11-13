@@ -1,54 +1,9 @@
 <?php
 
-use OpenTelemetry\SDK\SdkAutoloader;
 use Stickee\Instrumentation\DataScrubbers\ConfigDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
-use Stickee\Instrumentation\Exporters\Events\NullEvents;
-use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
-use Stickee\Instrumentation\Exporters\Spans\NullSpans;
-use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelemetrySpans;
-
-$isProduction = env('APP_ENV', 'production') === 'production';
 
 return [
-    /*
-     |--------------------------------------------------------------------------
-     | Enable instrumentation
-     |--------------------------------------------------------------------------
-     |
-     | true / false (NullEvents and NullSpans will be used if not enabled)
-     */
-    'enabled' => SdkAutoloader::isEnabled(),
-
-    /*
-     |--------------------------------------------------------------------------
-     | Events exporter class
-     |--------------------------------------------------------------------------
-     |
-     | The instrumentation events exporter class name
-     */
-    'events_exporter' => env('INSTRUMENTATION_EVENTS_EXPORTER', $isProduction ? OpenTelemetryEvents::class : NullEvents::class),
-
-    /*
-     |--------------------------------------------------------------------------
-     | Spans exporter class
-     |--------------------------------------------------------------------------
-     |
-     | The instrumentation spans exporter class name
-     */
-    'spans_exporter' => env('INSTRUMENTATION_SPANS_EXPORTER', $isProduction ? OpenTelemetrySpans::class : NullSpans::class),
-
-    /*
-     |--------------------------------------------------------------------------
-     | Log file
-     |--------------------------------------------------------------------------
-     |
-     | Configuration for LogFile
-     */
-    'log_file' => [
-        'filename' => env('INSTRUMENTATION_LOG_FILE_FILENAME', 'instrumentation.log'),
-    ],
-
     /*
      |--------------------------------------------------------------------------
      | Response Time Middleware

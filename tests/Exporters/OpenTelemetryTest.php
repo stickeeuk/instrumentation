@@ -17,9 +17,9 @@ use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 use Stickee\Instrumentation\DataScrubbers\CallbackDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
-use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
+use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEventsExporter;
 use Stickee\Instrumentation\Exporters\Exporter;
-use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelmetrySpans;
+use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelmetrySpansExporter;
 
 beforeEach(function (): void {
     $this->mockTransport = $this->createMock(TransportInterface::class);
@@ -46,7 +46,11 @@ beforeEach(function (): void {
 
     $this->scope = $configurator->activate();
 
-    $this->exporter = new Exporter(app(OpenTelemetryEvents::class), app(OpenTelmetrySpans::class), app(DataScrubberInterface::class));
+    $this->exporter = new Exporter(
+        app(OpenTelemetryEventsExporter::class),
+        app(OpenTelmetrySpansExporter::class),
+        app(DataScrubberInterface::class)
+    );
 });
 
 afterEach(function (): void {
