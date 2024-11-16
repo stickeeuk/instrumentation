@@ -19,9 +19,10 @@ use OpenTelemetry\SDK\Metrics\MeterProviderInterface;
 use OpenTelemetry\SDK\Metrics\NoopMeterProvider;
 use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
 use OpenTelemetry\SDK\Sdk;
-use OpenTelemetry\SDK\Trace\ExporterFactory as TraceExporterFactory;
+use OpenTelemetry\SDK\Trace\ExporterFactory;
 use OpenTelemetry\SDK\Trace\Sampler\TraceIdRatioBasedSampler;
 use OpenTelemetry\SDK\Trace\Span;
+use OpenTelemetry\SDK\Trace\SpanExporterInterface;
 use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\SpanProcessor\MultiSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
@@ -74,11 +75,18 @@ class OpenTelemetryServiceProvider extends ServiceProvider
             ]);
         });
 
+        $exporter = (new ExporterFactory())->create();
+
+        // If `OTEL_TRACES_EXPORTER="none"` is set in the environment, the exporter will be null
+        if ($exporter === null) {
+            return;
+        }
+
         // During testing Auto Instrumentation may not be initialised if OTEL_PHP_AUTOLOAD_ENABLED is false in the environment.
         // It gets set to true via putenv in tests/Pest.php, but this happens after Auto Instrumentation is initialised.
         // In this case the providers will be API no-op providers, which aren't compatible with the SDK interfaces so use SDK no-op providers instead.
         Sdk::builder()
-            ->setTracerProvider($this->getTracerProvider())
+            ->setTracerProvider($this->getTracerProvider($exporter))
             ->setMeterProvider(Globals::meterProvider() instanceof MeterProviderInterface ? Globals::meterProvider() : new NoopMeterProvider())
             ->setLoggerProvider(Globals::loggerProvider() instanceof LoggerProviderInterface ? Globals::loggerProvider() : new NoopLoggerProvider())
             ->setEventLoggerProvider(Globals::eventLoggerProvider() instanceof EventLoggerProviderInterface ? Globals::eventLoggerProvider() : new NoopEventLoggerProvider())
@@ -89,15 +97,16 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
     /**
      * Create a tracer provider
+     *
+     * @param \OpenTelemetry\SDK\Trace\SpanExporterInterface $exporter The span exporter
      */
-    private function getTracerProvider(): TracerProviderInterface
+    private function getTracerProvider(SpanExporterInterface $exporter): TracerProviderInterface
     {
         $traceLongRequests = $this->config->longRequestTraceThreshold() && ($this->config->traceSampleRate() < 1);
         $sampler = $traceLongRequests
             ? new RecordSampler(new TraceIdRatioBasedSampler($this->config->traceSampleRate()))
             : new TraceIdRatioBasedSampler($this->config->traceSampleRate());
 
-        $exporter = (new TraceExporterFactory())->create();
         $batchProcessor = BatchSpanProcessor::builder($exporter)->build();
         $processor = $traceLongRequests
             ? new MultiSpanProcessor(
