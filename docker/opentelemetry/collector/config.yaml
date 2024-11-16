@@ -3,8 +3,6 @@ receivers:
     protocols:
       http:
         endpoint: 0.0.0.0:4318
-      grpc:
-        endpoint: 0.0.0.0:4317
 
 exporters:
   debug:
@@ -24,10 +22,22 @@ exporters:
       insecure: true
 
 processors:
+  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor
   batch:
+    timeout: 1s
+
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/deltatocumulativeprocessor
   deltatocumulative:
 
+  # Stickee's custom processor
+  # https://github.com/stickeeuk/opentelemetry-collector-contrib
+  aggregation:
+    interval: 15s
+
 service:
+  telemetry:
+    logs:
+      level: DEBUG
   pipelines:
     logs:
       receivers:
@@ -40,8 +50,9 @@ service:
 
     metrics:
       receivers:
-      - otlp
+        - otlp
       processors:
+        - aggregation
         - deltatocumulative
         - batch
       exporters:
