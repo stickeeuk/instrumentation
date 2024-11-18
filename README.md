@@ -141,6 +141,56 @@ You can run tests on your own system by invoking Pest:
 ./vendor/bin/pest
 ```
 
+## OpenTelemetry Collector
+
+The Instrumentation package uses the OpenTelemetry Collector to export metrics.
+Data is sent from PHP using HTTP + Protobuf to the OpenTelemetry Collector, which is usually running on localhost or as a sidecar in Kubernetes.
+
+
+Due to PHP's shared-nothing architecture, we need to send Delta temporality metrics to the OpenTelemetry Collector, otherwise every
+PHP process (and every hit to a website) would need a unique data stream, which would not perform adequately.
+To get around this, we use Delta temporality and the OpenTelemetry Collector's Aggregation and DeltaToCumulative processors to aggregate metrics in memory before sending them to the exporter.
+Each collector is given a unique `service.instance.id` to allow them to be aggregated together later.
+
+The Aggregation processor is written by Stickee and is available in the [Stickee OpenTelemetry Collector](https://github.com/stickeeuk/opentelemetry-collector-contrib)
+repository on the `feature/aggregation-processor` branch.
+
+To update it, run the following commands based off the [Custom Collector documentation](https://opentelemetry.io/docs/collector/custom-collector/):
+
+```bash
+git clone git@github.com:stickeeuk/opentelemetry-collector-contrib.git
+cd opentelemetry-collector-contrib
+docker run --rm -it -v /$(pwd)://go/src golang:1.22-bookworm # Run a Go docker container
+
+# Inside the container
+apt update && apt install -y vim
+mkdir /builder
+cd /builder
+curl --proto '=https' --tlsv1.2 -fL -o ocb https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.113.0/ocb_0.113.0_linux_amd64
+chmod +x ocb
+
+# Paste in the contents of the `cmd/otelcontribcol/builder-config.yaml` file from the repository
+# but replace `../..` with `/go/src` and add `output_path: ./output` to the `dist:` section.
+vi builder-config.yaml
+
+./ocb --config builder-config.yaml
+cp ./output/otelcontribcol /go/src/bin/otelcontribcol_linux_amd64_stickee
+
+# Exit the container
+exit
+
+# Back on the host
+
+# Copy the binary to the repository
+cp bin/otelcontribcol_linux_amd64_stickee ../instrumentation/docker/opentelemetry-collector/contrib
+
+cd ../instrumentation/docker/opentelemetry-collector/contrib
+
+# Build and push the Docker image
+docker build -t ghcr.io/stickeeuk/opentelemetry-collector .
+docker push ghcr.io/stickeeuk/opentelemetry-collector
+```
+
 ## Contributions
 
 Contributions are welcome to all areas of the project, but please provide tests. Code style will be checked using
