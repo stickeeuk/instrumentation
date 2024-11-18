@@ -14,7 +14,7 @@ class RegexDataScrubber implements DataScrubberInterface
     /**
      * The default UK postcode regex
      */
-    public const string UK_POSTCODE_REGEX = '/\b(([A-Z]{1,2}\d[A-Z\d]?|ASCN|STHL|TDCU|BBND|[BFS]IQQ|PCRN|TKCA) ?\d[A-Z]{2}|BFPO ?\d{1,4}|(KY\d|MSR|VG|AI)[ -]?\d{4}|[A-Z]{2} ?\d{2}|GE ?CX|GIR ?0A{2}|SAN ?TA1)\b/i';
+    public const string UK_POSTCODE_REGEX = '/(^|[ =\'"])(([A-Z]{1,2}\d[A-Z\d]?|ASCN|STHL|TDCU|BBND|[BFS]IQQ|PCRN|TKCA) ?\d[A-Z]{2}|BFPO ?\d{1,4}|(KY\d|MSR|VG|AI)[ -]?\d{4}|[A-Z]{2} ?\d{2}|GE ?CX|GIR ?0A{2}|SAN ?TA1)([ \'"]|$)/i';
 
     /**
      * The default regex replacements

@@ -18,13 +18,15 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\ServiceProvider;
 use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\LogWatcher;
+use OpenTelemetry\SDK\SdkAutoloader;
 use Stickee\Instrumentation\DataScrubbers\ConfigDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\DataScrubberInterface;
 use Stickee\Instrumentation\DataScrubbers\MultiDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\NullDataScrubber;
 use Stickee\Instrumentation\DataScrubbers\RegexDataScrubber;
-use Stickee\Instrumentation\Exporters\Events\LogFile;
+use Stickee\Instrumentation\Exporters\Events\OpenTelemetry as OpenTelemetryEvents;
 use Stickee\Instrumentation\Exporters\Exporter;
+use Stickee\Instrumentation\Exporters\Spans\OpenTelemetry as OpenTelemetrySpans;
 use Stickee\Instrumentation\Laravel\Config;
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
 use Stickee\Instrumentation\Laravel\Http\Middleware\InstrumentationResponseTimeMiddleware;
@@ -63,13 +65,9 @@ class InstrumentationServiceProvider extends ServiceProvider
             'instrumentation'
         );
 
-        $this->app->when(LogFile::class)
-            ->needs('$filename')
-            ->give(fn(): mixed => $this->config->logFile('filename'));
-
         $this->app->bind(Exporter::class, function (Application $app): \Stickee\Instrumentation\Exporters\Exporter {
-            $eventsExporter = $app->make($this->config->eventsExporterClass());
-            $spansExporter = $app->make($this->config->spansExporterClass());
+            $eventsExporter = $app->make(OpenTelemetryEvents::class);
+            $spansExporter = $app->make(OpenTelemetrySpans::class);
 
             return new Exporter($eventsExporter, $spansExporter, $app->make(DataScrubberInterface::class));
         });
@@ -136,7 +134,7 @@ class InstrumentationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (! $this->config->enabled()) {
+        if (! SdkAutoloader::isEnabled()) {
             return;
         }
 
@@ -195,7 +193,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(JobProcessed::class, function ($event) use ($startTime): void {
+        Event::listen(JobProcessed::class, function ($event) use (&$startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
@@ -215,7 +213,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             );
         });
 
-        Event::listen(JobFailed::class, function ($event) use ($startTime): void {
+        Event::listen(JobFailed::class, function ($event) use (&$startTime): void {
             Instrument::counter(SemConv::JOBS_PROCESSED_NAME, [
                 SemConv::JOB_NAME => $event->job->resolveName(),
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
