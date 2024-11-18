@@ -15,6 +15,17 @@ This package requires PHP 8.3 or later and Laravel 11 or later.
 > [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php)
 > ([Windows download](https://pecl.php.net/package/protobuf)) are required.
 
+**NB**: For those running macOS, you should ensure that your PHP installation is managed by Homebrew (`brew install php`) 
+as the default PHP installation on macOS is almost always insufficient. 
+
+For those using [Laravel Herd](https://herd.laravel.com) as
+a means to manage local PHP installations, you will need to consult the 
+[relevant documentation](https://herd.laravel.com/docs/1/technology/php-extensions#installing-php-extensions) to ensure
+your local PHP installation (outside of Docker containers) is correctly configured and has access to the required 
+extensions.
+
+**You are strongly advised to use Docker for your projects.**
+
 ### Installation
 
 ```bash
