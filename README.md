@@ -15,16 +15,14 @@ This package requires PHP 8.3 or later and Laravel 11 or later.
 > [ext-protobuf extension](https://github.com/protocolbuffers/protobuf/tree/main/php)
 > ([Windows download](https://pecl.php.net/package/protobuf)) are required.
 
-**NB**: For those running macOS, you should ensure that your PHP installation is managed by Homebrew (`brew install php`) 
-as the default PHP installation on macOS is almost always insufficient. 
+**NB**: For those running macOS, you should ensure that your PHP installation is managed by Homebrew (`brew install php`)
+as the default PHP installation on macOS is almost always insufficient.
 
 For those using [Laravel Herd](https://herd.laravel.com) as
-a means to manage local PHP installations, you will need to consult the 
+a means to manage local PHP installations, you will need to consult the
 [relevant documentation](https://herd.laravel.com/docs/1/technology/php-extensions#installing-php-extensions) to ensure
-your local PHP installation (outside of Docker containers) is correctly configured and has access to the required 
+your local PHP installation (outside of Docker containers) is correctly configured and has access to the required
 extensions.
-
-**You are strongly advised to use Docker for your projects.**
 
 ### Installation
 
@@ -34,7 +32,8 @@ composer require stickee/instrumentation
 
 ### Configuration
 
-The package ships with a default configuration that should be suitable for most use cases.
+The package ships with a default configuration that should be suitable for most use cases except you should add
+`OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE="delta"`.
 It is disabled by default; to enable it, set `OTEL_PHP_AUTOLOAD_ENABLED="true"` in your `php.ini` or your environment.
 
 > :warning: `OTEL_PHP_AUTOLOAD_ENABLED="true"` (and other `OTEL_` variables) will **NOT** work properly if set
@@ -180,8 +179,7 @@ cd /builder
 curl --proto '=https' --tlsv1.2 -fL -o ocb https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.113.0/ocb_0.113.0_linux_amd64
 chmod +x ocb
 
-# Paste in the contents of the `cmd/otelcontribcol/builder-config.yaml` file from the repository
-# but replace `../..` with `/go/src` and add `output_path: ./output` to the `dist:` section.
+# Paste in the contents of `docker/opentelemetry-collector-contrib/builder-config.yaml`
 vi builder-config.yaml
 
 ./ocb --config builder-config.yaml
@@ -193,9 +191,9 @@ exit
 # Back on the host
 
 # Copy the binary to the repository
-cp bin/otelcontribcol_linux_amd64_stickee ../instrumentation/docker/opentelemetry-collector/contrib
+cp bin/otelcontribcol_linux_amd64_stickee ../instrumentation/docker/opentelemetry-collector-contrib
 
-cd ../instrumentation/docker/opentelemetry-collector/contrib
+cd ../instrumentation/docker/opentelemetry-collector-contrib
 
 # Build and push the Docker image
 docker build -t ghcr.io/stickeeuk/opentelemetry-collector .
