@@ -3,6 +3,7 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
+use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Foundation\Application;
@@ -40,13 +41,16 @@ use Stickee\Instrumentation\Utils\SemConv;
 use Stickee\Instrumentation\Watchers\MemoryWatcher;
 use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 
-use function OpenTelemetry\Instrumentation\hook;
-
 /**
  * Instrumentation service provider
  */
 class InstrumentationServiceProvider extends ServiceProvider
 {
+    /**
+     * Whether the hooks have been added
+     */
+    private static $hooked = false;
+
     /**
      * The config
      */
@@ -101,7 +105,10 @@ class InstrumentationServiceProvider extends ServiceProvider
             }
 
             if (! empty(config('instrumentation.scrubbing.config_key_regexes'))) {
-                $dataScrubbers[] = new ConfigDataScrubber(config('instrumentation.scrubbing.config_key_regexes'));
+                $dataScrubbers[] = new ConfigDataScrubber(
+                    config('instrumentation.scrubbing.config_key_regexes'),
+                    config('instrumentation.scrubbing.config_key_ignore_regexes')
+                );
             }
 
             if (empty($dataScrubbers)) {
@@ -111,22 +118,7 @@ class InstrumentationServiceProvider extends ServiceProvider
             return new MultiDataScrubber($dataScrubbers);
         });
 
-        // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
-        hook(
-            LogWatcher::class,
-            'recordLog',
-            pre: function (LogWatcher $watcher, array $params, string $class, string $function, ?string $filename, ?int $lineno): array {
-                $scrubber = app(DataScrubberInterface::class);
-                $message = $params[0];
-                $message->message = $scrubber->scrub('', $message->message);
-
-                foreach ($message->context as $key => $value) {
-                    $message->context[$key] = $scrubber->scrub($key, $value);
-                }
-
-                return $params;
-            },
-        );
+        $this->hook();
     }
 
     /**
@@ -157,6 +149,43 @@ class InstrumentationServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../../../config/instrumentation.php' => config_path('instrumentation.php'),
         ]);
+    }
+
+    /**
+     * Add extra hooks
+     */
+    private function hook(): void
+    {
+        if (self::$hooked) {
+            return;
+        }
+
+        self::$hooked = true;
+
+        $scrubber = app(DataScrubberInterface::class);
+
+        // Hook in to the opentelemetry-auto-laravel LogWatcher to scrub data
+        hook(
+            LogWatcher::class,
+            'recordLog',
+            pre: function (LogWatcher $watcher, array $params, string $class, string $function, ?string $filename, ?int $lineno) use ($scrubber): array {
+                // TODO: can we do this a better way?
+                if (app()->runningUnitTests()) {
+                    $scrubber = app(DataScrubberInterface::class);
+                }
+
+                $maxLength = config('instrumentation.scrubbing.max_length');
+                $message = $params[0];
+
+                $message->message = $scrubber->scrub('', mb_substr((string) $message->message, 0, $maxLength));
+
+                foreach ($message->context as $key => $value) {
+                    $message->context[$key] = $scrubber->scrub((string) $key, mb_substr((string) $value, 0, $maxLength));
+                }
+
+                return $params;
+            },
+        );
     }
 
     /**

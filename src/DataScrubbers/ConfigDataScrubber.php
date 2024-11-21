@@ -18,6 +18,13 @@ class ConfigDataScrubber implements DataScrubberInterface
     ];
 
     /**
+     * The default config keys to be ignored regexes
+     *
+     * @var array<string>
+     */
+    public const array DEFAULT_CONFIG_KEY_IGNORE_REGEXES = [];
+
+    /**
      * The regexes to use
      *
      * @var array<string, string>
@@ -28,23 +35,51 @@ class ConfigDataScrubber implements DataScrubberInterface
      * Constructor
      *
      * @param array<string> $configKeyRegexes The config key regexes to redact values for
+     * @param array<string> $configKeyIgnoreRegexes The config key regexes to ignore
      */
-    public function __construct(array $configKeyRegexes)
-    {
+    public function __construct(
+        private readonly array $configKeyRegexes,
+        private readonly array $configKeyIgnoreRegexes
+    ) {
         $config = config()->all();
 
         unset($config['auth'], $config['app']['aliases'], $config['instrumentation']['scrubbing']);
 
         $config = Arr::dot($config);
-        $config = array_filter($config, fn($value) => is_string($value) && ($value !== ''));
+
+        // Filter out non-string values and values less than 8 characters long.
+        // Assume that any secrets are at least 8 characters long. This prevents situations where,
+        // for example, a single-character config value is redacted.
+        $config = array_filter($config, function ($value, $key): bool {
+            return is_string($value) && (mb_strlen($value) >= 8)
+                && $this->shouldScrub((string) $key);
+        }, ARRAY_FILTER_USE_BOTH);
 
         foreach (array_keys($config) as $configKey) {
-            foreach ($configKeyRegexes as $pattern) {
-                if (preg_match($pattern, (string) $configKey)) {
-                    $this->regexes['/' . preg_quote($config[$configKey], '/') . '/'] = '[REDACTED_CONFIG_VALUE:' . $configKey . ']';
+            $this->regexes['/' . preg_quote($config[$configKey], '/') . '/'] = '[REDACTED_CONFIG_VALUE:' . $configKey . ']';
+        }
+    }
+
+    /**
+     * Should the value be scrubbed?
+     *
+     * @param string $key The key
+     */
+    private function shouldScrub(string $key): bool
+    {
+        foreach ($this->configKeyRegexes as $pattern) {
+            if (preg_match($pattern, $key)) {
+                foreach ($this->configKeyIgnoreRegexes as $ignorePattern) {
+                    if (preg_match($ignorePattern, $key)) {
+                        return false;
+                    }
                 }
+
+                return true;
             }
         }
+
+        return false;
     }
 
     /**

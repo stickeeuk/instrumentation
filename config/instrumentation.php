@@ -43,6 +43,15 @@ return [
     'scrubbing' => [
         /*
          |--------------------------------------------------------------------------
+         | Maxiumum message or context item length in  bytes
+         |--------------------------------------------------------------------------
+         |
+         | The maximum length of a message or context item before it is scrubbed
+         */
+        'max_length' => env('INSTRUMENTATION_SCRUBBING_MAX_LENGTH', 10240),
+
+        /*
+         |--------------------------------------------------------------------------
          | Scrubbing regexes
          |--------------------------------------------------------------------------
          |
@@ -62,5 +71,16 @@ return [
         'config_key_regexes' => env('INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES') === null
             ? ConfigDataScrubber::DEFAULT_CONFIG_KEY_REGEXES
             : array_map('trim', explode(',', env('INSTRUMENTATION_SCRUBBING_CONFIG_KEY_REGEXES'))),
+
+        /*
+         |--------------------------------------------------------------------------
+         | Scrubbing config key ignore regexes
+         |--------------------------------------------------------------------------
+         |
+         | An array of regexes. Matching config keys will not have their values scrubbed
+         */
+        'config_key_ignore_regexes' => env('INSTRUMENTATION_SCRUBBING_CONFIG_KEY_IGNORE_REGEXES') === null
+            ? ConfigDataScrubber::DEFAULT_CONFIG_KEY_IGNORE_REGEXES
+            : array_map('trim', explode(',', env('INSTRUMENTATION_SCRUBBING_CONFIG_KEY_IGNORE_REGEXES'))),
     ],
 ];
