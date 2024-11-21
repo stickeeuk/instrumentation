@@ -61,6 +61,26 @@ class ConfigDataScrubber implements DataScrubberInterface
     }
 
     /**
+     * Scrub data
+     *
+     * @param mixed $key The key
+     * @param mixed $value The value
+     */
+    #[\Override]
+    public function scrub(mixed $key, mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        foreach ($this->regexes as $regex => $replacement) {
+            $value = preg_replace($regex, $replacement, (string) $value);
+        }
+
+        return $value;
+    }
+
+    /**
      * Should the value be scrubbed?
      *
      * @param string $key The key
@@ -80,25 +100,5 @@ class ConfigDataScrubber implements DataScrubberInterface
         }
 
         return false;
-    }
-
-    /**
-     * Scrub data
-     *
-     * @param mixed $key The key
-     * @param mixed $value The value
-     */
-    #[\Override]
-    public function scrub(mixed $key, mixed $value): mixed
-    {
-        if (! is_string($value)) {
-            return $value;
-        }
-
-        foreach ($this->regexes as $regex => $replacement) {
-            $value = preg_replace($regex, $replacement, (string) $value);
-        }
-
-        return $value;
     }
 }
