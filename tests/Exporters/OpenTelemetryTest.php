@@ -178,6 +178,27 @@ it('can scrub config data', function (): void {
     $this->logProcessor->shutdown();
 });
 
+it('can limit data length', function (): void {
+    $this->mockTransport->expects($this->once())
+        ->method('send')
+        ->with(
+            $this->logicalAnd(
+                $this->logicalNot($this->stringContains('XXXXXX')),
+                $this->stringContains('XXX'),
+                $this->logicalNot($this->stringContains('YYYYYY')),
+                $this->stringContains('YYY')
+            )
+        )
+        ->willReturnCallback(fn() => new CompletedFuture(null));
+
+    config(['instrumentation.scrubbing.max_length' => 3]);
+    Log::error('XXXXXX', ['YYYYYY']);
+    config(['instrumentation.scrubbing.max_length' => 10240]);
+
+    $this->metricReader->shutdown();
+    $this->logProcessor->shutdown();
+});
+
 it('can use a scrubber callback', function (): void {
     $this->mockTransport->expects($this->once())
         ->method('send')
