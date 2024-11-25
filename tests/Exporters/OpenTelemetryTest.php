@@ -181,7 +181,8 @@ it('can scrub config data', function (): void {
 it('can limit data length', function (): void {
     $this->mockTransport->expects($this->once())
         ->method('send')
-        ->with($this->logicalAnd(
+        ->with(
+            $this->logicalAnd(
                 $this->logicalNot($this->stringContains('XXXXXX')),
                 $this->stringContains('XXX'),
                 $this->logicalNot($this->stringContains('YYYYYY')),
