@@ -195,9 +195,13 @@ cp bin/otelcontribcol_linux_amd64_stickee ../instrumentation/docker/opentelemetr
 
 cd ../instrumentation/docker/opentelemetry-collector-contrib
 
-# Build and push the Docker image
+# Build, test and push the Docker image
 docker build -t ghcr.io/stickeeuk/opentelemetry-collector .
+docker run --rm ghcr.io/stickeeuk/opentelemetry-collector
 docker push ghcr.io/stickeeuk/opentelemetry-collector
+
+# Upload the file to the Projects (80.85.84.15) server as
+# /srv/users/repo/apps/repo/public/otelcontribcol_linux_amd64_stickee
 ```
 
 ## Contributions
