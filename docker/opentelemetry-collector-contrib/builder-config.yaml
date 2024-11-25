@@ -10,6 +10,7 @@ dist:
   output_path: ./output
 
 extensions:
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/basicauthextension v0.113.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/encoding/otlpencodingextension v0.113.0
 
 exporters:
