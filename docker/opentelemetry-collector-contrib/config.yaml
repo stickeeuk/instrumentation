@@ -1,134 +1,134 @@
-otel_collector_receivers:
+receivers:
   otlp:
     protocols:
       http:
         endpoint: localhost:4318
 
-otel_collector_processors:
-  aggregation:
-  batch:
+processors:
+  aggregation: null
+  batch: null
+  deltatocumulative: null
   filter/drop_post_to_collector:
     traces:
       span:
-        - attributes["url.full"] == "http://localhost:4318/v1/logs"
-        - attributes["url.full"] == "http://localhost:4318/v1/metrics"
-        - attributes["url.full"] == "http://localhost:4318/v1/traces"
+      - attributes["url.full"] == "http://localhost:4318/v1/logs"
+      - attributes["url.full"] == "http://localhost:4318/v1/metrics"
+      - attributes["url.full"] == "http://localhost:4318/v1/traces"
   filter/log_level:
     error_mode: ignore
     logs:
       log_record:
-        - 'severity_number < SEVERITY_NUMBER_INFO'
+      - severity_number < SEVERITY_NUMBER_INFO
   resourcedetection:
-    # Enriches telemetry data with resource information from the host
-    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor
-    detectors: ["env", "system"]
+    detectors:
+    - env
+    - system
     override: false
-  transform/drop_unneeded_resource_attributes:
-    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor
-    error_mode: ignore
-    trace_statements:
-      - context: resource
-        statements:
-          - delete_key(attributes, "k8s.pod.start_time")
-          - delete_key(attributes, "os.description")
-          - delete_key(attributes, "os.type")
-          - delete_key(attributes, "process.command_args")
-          - delete_key(attributes, "process.executable.path")
-          - delete_key(attributes, "process.pid")
-          - delete_key(attributes, "process.runtime.description")
-          - delete_key(attributes, "process.runtime.name")
-          - delete_key(attributes, "process.runtime.version")
-    metric_statements:
-      - context: resource
-        statements:
-          - delete_key(attributes, "k8s.pod.start_time")
-          - delete_key(attributes, "os.description")
-          - delete_key(attributes, "os.type")
-          - delete_key(attributes, "process.command_args")
-          - delete_key(attributes, "process.executable.path")
-          - delete_key(attributes, "process.pid")
-          - delete_key(attributes, "process.runtime.description")
-          - delete_key(attributes, "process.runtime.name")
-          - delete_key(attributes, "process.runtime.version")
-    log_statements:
-      - context: resource
-        statements:
-          - delete_key(attributes, "k8s.pod.start_time")
-          - delete_key(attributes, "os.description")
-          - delete_key(attributes, "os.type")
-          - delete_key(attributes, "process.command_args")
-          - delete_key(attributes, "process.executable.path")
-          - delete_key(attributes, "process.pid")
-          - delete_key(attributes, "process.runtime.description")
-          - delete_key(attributes, "process.runtime.name")
-          - delete_key(attributes, "process.runtime.version")
   transform/add_resource_attributes_as_metric_attributes:
-    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor
     error_mode: ignore
     metric_statements:
-      - context: datapoint
-        statements:
-          - set(attributes["deployment.environment.id"], resource.attributes["deployment.environment.id"])
-          - set(attributes["deployment.environment.name"], resource.attributes["deployment.environment.name"])
-          - set(attributes["service.version"], resource.attributes["service.version"])
+    - context: datapoint
+      statements:
+      - set(attributes["deployment.environment.id"], resource.attributes["deployment.environment.id"])
+      - set(attributes["deployment.environment.name"], resource.attributes["deployment.environment.name"])
+      - set(attributes["service.version"], resource.attributes["service.version"])
+  transform/drop_unneeded_resource_attributes:
+    error_mode: ignore
+    log_statements:
+    - context: resource
+      statements:
+      - delete_key(attributes, "k8s.pod.start_time")
+      - delete_key(attributes, "os.description")
+      - delete_key(attributes, "os.type")
+      - delete_key(attributes, "process.command_args")
+      - delete_key(attributes, "process.executable.path")
+      - delete_key(attributes, "process.pid")
+      - delete_key(attributes, "process.runtime.description")
+      - delete_key(attributes, "process.runtime.name")
+      - delete_key(attributes, "process.runtime.version")
+    metric_statements:
+    - context: resource
+      statements:
+      - delete_key(attributes, "k8s.pod.start_time")
+      - delete_key(attributes, "os.description")
+      - delete_key(attributes, "os.type")
+      - delete_key(attributes, "process.command_args")
+      - delete_key(attributes, "process.executable.path")
+      - delete_key(attributes, "process.pid")
+      - delete_key(attributes, "process.runtime.description")
+      - delete_key(attributes, "process.runtime.name")
+      - delete_key(attributes, "process.runtime.version")
+    trace_statements:
+    - context: resource
+      statements:
+      - delete_key(attributes, "k8s.pod.start_time")
+      - delete_key(attributes, "os.description")
+      - delete_key(attributes, "os.type")
+      - delete_key(attributes, "process.command_args")
+      - delete_key(attributes, "process.executable.path")
+      - delete_key(attributes, "process.pid")
+      - delete_key(attributes, "process.runtime.description")
+      - delete_key(attributes, "process.runtime.name")
+      - delete_key(attributes, "process.runtime.version")
 
-otel_collector_exporters:
+exporters:
   otlphttp/grafana_cloud:
     auth:
       authenticator: basicauth/grafana_cloud
-    endpoint: "{{ otel_collector_otlp_endpoint }}"
+    endpoint: https://otlp-gateway-prod-eu-west-2.grafana.net/otlp
 
-otel_collector_extensions:
+extensions:
   basicauth/grafana_cloud:
     client_auth:
-      username: "{{ otel_collector_otlp_endpoint_username }}"
-      password: "{{ otel_collector_otlp_endpoint_token }}"
+      password: 'This is a password'
+      username: '709587'
 
-otel_collector_connectors:
-  grafanacloud:
-    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/grafanacloudconnector
-    host_identifiers: ["host.name"]
-
-otel_collector_service:
+service:
   extensions:
-    - basicauth/grafana_cloud
+  - basicauth/grafana_cloud
   pipelines:
     logs:
-      receivers:
-        - otlp
-      processors:
-        - resourcedetection
-        - filter/log_level
-        - transform/drop_unneeded_resource_attributes
-        - batch
       exporters:
-        - otlphttp/grafana_cloud
+      - otlphttp/grafana_cloud
+      processors:
+      - resourcedetection
+      - filter/log_level
+      - transform/drop_unneeded_resource_attributes
+      - batch
+      receivers:
+      - otlp
     metrics:
-      receivers:
-        - otlp
-      processors:
-        - resourcedetection
-        - transform/drop_unneeded_resource_attributes
-        - transform/add_resource_attributes_as_metric_attributes
-        - aggregation
-        - batch
       exporters:
-        - otlphttp/grafana_cloud
+      - otlphttp/grafana_cloud
+      processors:
+      - resourcedetection
+      - transform/drop_unneeded_resource_attributes
+      - transform/add_resource_attributes_as_metric_attributes
+      - aggregation
+      - deltatocumulative
+      - batch
+      receivers:
+      - otlp
     metrics/grafanacloud:
-      receivers:
-        - grafanacloud
-      processors:
-        - batch
       exporters:
-        - otlphttp/grafana_cloud
+      - otlphttp/grafana_cloud
+      processors:
+      - batch
+      receivers:
+      - grafanacloud
     traces:
       exporters:
-        - otlphttp/grafana_cloud
-        - grafanacloud
+      - otlphttp/grafana_cloud
+      - grafanacloud
       processors:
-        - resourcedetection
-        - filter/drop_post_to_collector
-        - transform/drop_unneeded_resource_attributes
-        - batch
+      - resourcedetection
+      - filter/drop_post_to_collector
+      - transform/drop_unneeded_resource_attributes
+      - batch
       receivers:
-        - otlp
+      - otlp
+
+connectors:
+  grafanacloud:
+    host_identifiers:
+    - host.name
