@@ -161,10 +161,10 @@ it('can scrub arrays and objects', function (): void {
     $error = null;
 
     // Pre-hook errors don't throw exceptions normally, so capture them ourselves
-    set_error_handler(function() use (&$error) {
+    set_error_handler(function () use (&$error) {
         $error = func_get_args();
     });
-    $f = fopen('php://memory', 'r');
+    $f = fopen('php://memory', 'rb');
     $data = ['array' => ['test-array'], 'object' => (object) ['testObject' => 'test-object', 'file' => $f]];
     Log::error($data, $data);
     fclose($f);

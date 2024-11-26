@@ -3,7 +3,6 @@
 namespace Stickee\Instrumentation\Laravel\Providers;
 
 use Exception;
-use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
 use Illuminate\Contracts\Support\Arrayable;
@@ -44,6 +43,8 @@ use Stickee\Instrumentation\Watchers\MemoryWatcher;
 use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 use Throwable;
 
+use function OpenTelemetry\Instrumentation\hook;
+
 /**
  * Format the parameters for the logger.
  * From \Illuminate\Log\Logger::formatMessage
@@ -55,9 +56,13 @@ function toString(mixed $value): string
     try {
         if (is_array($value)) {
             return (string) var_export($value, true);
-        } elseif ($value instanceof Jsonable) {
+        }
+
+        if ($value instanceof Jsonable) {
             return (string) $value->toJson();
-        } elseif ($value instanceof Arrayable) {
+        }
+
+        if ($value instanceof Arrayable) {
             return (string) var_export($value->toArray(), true);
         }
 
@@ -202,7 +207,7 @@ class InstrumentationServiceProvider extends ServiceProvider
                     $scrubber = app(DataScrubberInterface::class);
                 }
 
-                set_error_handler(function(int $errNo, string $errStr) {
+                set_error_handler(function (int $errNo, string $errStr) {
                     throw new Exception($errStr, $errNo);
                 });
 
