@@ -17,6 +17,7 @@ class DatabaseQueueWithAvailableSize extends DatabaseQueue
         return $this->database->table($this->table)
             ->where('queue', $this->getQueue($queue))
             ->where('available_at', '<=', Carbon::now()->getTimestamp())
+            ->whereNull('reserved_at')
             ->count();
     }
 }
