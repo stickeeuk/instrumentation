@@ -183,7 +183,7 @@ chmod +x ocb
 vi builder-config.yaml
 
 ./ocb --config builder-config.yaml
-cp ./output/otelcontribcol /go/src/bin/otelcontribcol_linux_amd64_stickee
+cp ./output/otelcontribcol /go/src/bin/otelcol-contrib
 
 # Exit the container
 exit
@@ -191,7 +191,7 @@ exit
 # Back on the host
 
 # Copy the binary to the repository
-cp bin/otelcontribcol_linux_amd64_stickee ../instrumentation/docker/opentelemetry-collector-contrib
+cp bin/otelcol-contrib ../instrumentation/docker/opentelemetry-collector-contrib
 
 cd ../instrumentation/docker/opentelemetry-collector-contrib
 
@@ -200,8 +200,11 @@ docker build -t ghcr.io/stickeeuk/opentelemetry-collector .
 docker run --rm ghcr.io/stickeeuk/opentelemetry-collector
 docker push ghcr.io/stickeeuk/opentelemetry-collector
 
-# Upload the file to the Projects (80.85.84.15) server as
-# /srv/users/repo/apps/repo/public/otelcontribcol_linux_amd64_stickee
+# Tar the binary
+tar -czvf otelcol-contrib-0.114.0.tar.gz otelcol-contrib
+
+# Upload the .tar.gz file to the Projects (80.85.84.15) server as
+# /srv/users/repo/apps/repo/public/otelcol-contrib-0.114.0.tar.gz
 ```
 
 ## Contributions

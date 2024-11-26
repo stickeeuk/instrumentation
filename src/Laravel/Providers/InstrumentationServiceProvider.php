@@ -6,6 +6,8 @@ use Exception;
 use function OpenTelemetry\Instrumentation\hook;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Http\Kernel as KernelInterface;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Queue\Events\JobFailed;
@@ -39,9 +41,33 @@ use Stickee\Instrumentation\Queue\Connectors\SqsConnector;
 use Stickee\Instrumentation\Queue\Connectors\SyncConnector;
 use Stickee\Instrumentation\Utils\SemConv;
 use Stickee\Instrumentation\Watchers\MemoryWatcher;
-
 use Stickee\Instrumentation\Watchers\QueryCountWatcher;
 use Throwable;
+
+/**
+ * Format the parameters for the logger.
+ * From \Illuminate\Log\Logger::formatMessage
+ *
+ * @param mixed $value The value to convert to a string
+ */
+function toString(mixed $value): string
+{
+    try {
+        if (is_array($value)) {
+            return (string) var_export($value, true);
+        } elseif ($value instanceof Jsonable) {
+            return (string) $value->toJson();
+        } elseif ($value instanceof Arrayable) {
+            return (string) var_export($value->toArray(), true);
+        }
+
+        return (string) $value;
+    } catch (Throwable) {
+        // Do nothing
+    }
+
+    return 'Non-stringable value';
+}
 
 /**
  * Instrumentation service provider
@@ -176,34 +202,24 @@ class InstrumentationServiceProvider extends ServiceProvider
                     $scrubber = app(DataScrubberInterface::class);
                 }
 
+                set_error_handler(function(int $errNo, string $errStr) {
+                    throw new Exception($errStr, $errNo);
+                });
+
                 try {
                     $maxLength = (int) config('instrumentation.scrubbing.max_length', 10240);
                     $message = $params[0];
 
-                    try {
-                        $messageString = (string) $message->message;
-                    } catch (Throwable) {
-                        $messageString = 'Non-string error message';
-                    }
-
-                    $message->message = $scrubber->scrub('', mb_substr($messageString, 0, $maxLength));
+                    $message->message = $scrubber->scrub('', mb_substr(toString($message->message), 0, $maxLength));
 
                     foreach ($message->context as $key => $value) {
-                        try {
-                            $stringValue = (string) $value;
-                        } catch (Throwable) {
-                            try {
-                                $stringValue = json_encode($value);
-                            } catch (Throwable) {
-                                $stringValue = 'Non-stringable error context value';
-                            }
-                        }
-
-                        $message->context[$key] = $scrubber->scrub((string) $key, mb_substr($stringValue, 0, $maxLength));
+                        $message->context[$key] = $scrubber->scrub((string) $key, mb_substr(toString($value), 0, $maxLength));
                     }
                 } catch (Throwable) {
                     // Ignore errors
                 }
+
+                restore_error_handler();
 
                 return $params;
             },

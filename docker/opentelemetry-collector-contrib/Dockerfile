@@ -3,7 +3,7 @@ FROM golang:1.22-bookworm
 
 COPY config.yaml /etc/otelcol-contrib/config.yaml
 # COPY --chmod=755 otelcontribcol_linux_amd64 /otelcol-contrib
-COPY --chmod=755 otelcontribcol_linux_amd64_stickee /otelcol-contrib
+COPY --chmod=755 otelcol-contrib /otelcol-contrib
 
 ENTRYPOINT ["/otelcol-contrib"]
 CMD ["--config", "/etc/otelcol-contrib/config.yaml"]
