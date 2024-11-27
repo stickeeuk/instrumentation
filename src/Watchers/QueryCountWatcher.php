@@ -38,14 +38,14 @@ class QueryCountWatcher extends Watcher
             $this->recordQueries([
                 'type' => 'job',
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
-                SemConv::JOB_NAME => $event->job::class,
+                SemConv::JOB_NAME => $event->job->resolveName(),
             ]);
         });
         $app['events']->listen(JobExceptionOccurred::class, function (JobExceptionOccurred $event): void {
             $this->recordQueries([
                 'type' => 'job',
                 SemConv::JOB_QUEUE => $event->job->getQueue(),
-                SemConv::JOB_NAME => $event->job::class,
+                SemConv::JOB_NAME => $event->job->resolveName(),
             ]);
         });
 
