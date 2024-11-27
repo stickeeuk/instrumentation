@@ -12,6 +12,7 @@ use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Routing\Events\ResponsePrepared;
+use Illuminate\Routing\Route;
 use OpenTelemetry\Contrib\Instrumentation\Laravel\Watchers\Watcher;
 use Stickee\Instrumentation\Laravel\Facades\Instrument;
 use Stickee\Instrumentation\Utils\SemConv;
@@ -74,7 +75,7 @@ class MemoryWatcher extends Watcher
             $this->recordQueries([
                 'type' => 'request',
                 SemConv::HTTP_REQUEST_METHOD => request()->method(),
-                SemConv::HTTP_ROUTE => request()->path(),
+                SemConv::HTTP_ROUTE => request()->route() instanceof Route ? request()->route()->uri : null,
             ]);
         });
     }
