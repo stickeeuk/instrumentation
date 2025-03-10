@@ -144,7 +144,7 @@ class ServiceProvider extends LaravelServiceProvider
 
             $resourceInfo = ResourceInfo::create(Attributes::create([
                 ResourceAttributes::SERVICE_NAME => config('app.name', 'laravel'),
-                ResourceAttributes::DEPLOYMENT_ENVIRONMENT => config('app.env', 'production'),
+                ResourceAttributes::DEPLOYMENT_ENVIRONMENT_NAME => config('app.env', 'production'),
             ]));
 
             $exporter = new SpanExporter($this->getOtlpTransport('/v1/traces', 'application/x-protobuf'));
