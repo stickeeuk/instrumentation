@@ -60,6 +60,8 @@ class OpenTelemetryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        static $openTelemetryBooted = false;
+
         if (! SdkAutoloader::isEnabled()) {
             return;
         }
@@ -75,6 +77,13 @@ class OpenTelemetryServiceProvider extends ServiceProvider
                 'level' => $log->level,
             ]);
         });
+
+        // OpenTelemetry must only be initialized once, even if Laravel is booted multiple times.
+        if ($openTelemetryBooted) {
+            return;
+        }
+
+        $openTelemetryBooted = true;
 
         $exporter = (new ExporterFactory())->create();
 
